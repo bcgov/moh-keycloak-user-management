@@ -1,0 +1,71 @@
+/* Body */
+body {
+    background-color: #F1F1F1;
+    padding-bottom: 20px;
+}
+
+
+/* Main */
+main {
+    max-width: 1320px;
+    min-width: 1100px;
+    width: 100%;
+    min-height: calc(100vh - 280px);
+    margin: 0 auto;
+    padding: 20px 60px 60px 60px;
+    background-color: #FFFFFF;
+}
+main .content {
+    padding: 0;
+    font-size: 1rem;
+}
+main .content:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Sub groups */
+.subgroup {
+    padding: 20px; margin:0px -20px 20px -20px; max-width: none
+}
+.subgroup h2 {
+    font-weight: 100;
+    color: #999;
+    font-size: 24px;
+    line-height: 30px;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* Input */ 
+input {
+    display: block;
+    width: 100%;
+}
+
+.checkbox-group .v-input--selection-controls {
+    margin-top: 8px;
+}
+
+/* Vuetify Components */
+.v-icon.v-icon {
+    vertical-align: baseline;
+}
+
+/* tables */
+.theme--light.v-data-table.base-table thead tr:last-child th {
+    border-top: 2px solid #003366;
+    border-bottom: 2px solid #003366;
+}
+
+.v-data-table td, .v-data-table th {
+    padding: 0 16px;
+}
+.select-table tr {
+    cursor: pointer;
+}
+.select-table tr.v-data-table__empty-wrapper {
+    cursor: default;
+}

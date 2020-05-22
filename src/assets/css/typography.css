@@ -1,0 +1,50 @@
+body {
+    font-family: 'BCSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: normal;
+}
+
+h1 {
+    font-size: 2rem;
+    line-height: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+h2 {
+    font-weight: bold;
+}
+h2, p {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin-bottom: 20px;
+}
+h1, h2, h3, h4, h5, p {
+    color: #494949;
+}
+.small {
+    font-size: 0.815rem;
+    line-height: 1.25rem;
+}
+.user-select-off {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+a {
+    color: #1A5A96;
+}
+pre,
+label{
+    font-size: 1rem;
+    font-weight: 600;
+}
+label.disabled {
+    color: #777;
+    opacity: 0.75;
+}
+label.required::after {
+    content: " *";
+    color: #d8292f;
+}
