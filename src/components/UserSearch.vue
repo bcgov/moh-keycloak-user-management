@@ -23,7 +23,7 @@
         />
       </v-col>
       <v-col class="col-1">
-        <v-btn id="search-button" class="secondary" medium v-on:click="searchUser">Search Users</v-btn>
+        <v-btn id="search-button" class="secondary" medium @click.native="searchUser">Search Users</v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { RepositoryFactory } from "./../api/RepositoryFactory";
+import { RepositoryFactory } from "@/api/RepositoryFactory";
 const UsersRepository = RepositoryFactory.get("users");
 
 export default {
@@ -61,7 +61,6 @@ export default {
         { text: "ID", value: "id", class: "table-header" }
       ],
       footerProps: { "items-per-page-options": [15] },
-      result: "",
       userSearchInput: "",
       searchResults: [],
       clients: [],
@@ -85,7 +84,6 @@ export default {
           );
         })
         .then(response => {
-          this.result = response.data;
           this.searchResults = response.data;
         })
         .catch(e => {
