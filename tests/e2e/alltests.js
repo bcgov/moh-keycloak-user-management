@@ -1,7 +1,8 @@
 import { Selector } from 'testcafe';
 
 fixture `All tests`
-    .page `https://common-logon-dev.hlth.gov.bc.ca/webapp/`;
+    .page `http://localhost:8080`;
+    // .page `https://common-logon-dev.hlth.gov.bc.ca/webapp/`;
 
 test('Test login', async t => {
     await t
