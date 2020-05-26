@@ -7,7 +7,7 @@
     "build": "vue-cli-service build",
     "test": "npm run test:unit",
     "test:unit": "vue-cli-service test:unit",
-    "testcafe": "testcafe chrome tests/e2e",
+    "test:e2e": "testcafe chrome tests/e2e",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
