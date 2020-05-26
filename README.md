@@ -51,10 +51,5 @@ Note that these instructions only apply to CGI's Keycloak server which has an LD
 npm run lint
 ```
 
-### Runs unit tests
-```
-npm run test
-```
-
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
