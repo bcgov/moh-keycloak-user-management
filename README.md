@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bcgov/moh-keycloak-user-management.svg?branch=master)](https://travis-ci.org/bcgov/moh-keycloak-user-management)
+
 # moh-keycloak-user-management
 
 The "MoH Keycloak User Management" application is a custom user management console for Keycloak implemented as an SPA using Vue.js. Keycloak already has a fully-featured administration console, but this console has been customized to suit our administrator's requirements around features like ease-of-use and data validation.
