@@ -35,8 +35,6 @@ keycloak.init(initOptions).success((auth) => {
     keycloak.updateToken(70).success((refreshed) => {
       if (refreshed) {
         console.log('Token refreshed');
-        localStorage.token = keycloak.token;
-        localStorage.refreshToken = keycloak.refreshToken;
       } else {
         console.log('Token not refreshed, valid for '
           + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds');

@@ -19,7 +19,6 @@ export default {
     name: "TheHeader",
     methods: {
     logout: function () {
-      localStorage.clear();
       this.$keycloak.logout();
     }
   }
