@@ -10,7 +10,7 @@ This application requires a Keycloak server. It uses the Keycloak server for OID
 
 # Configuration
 
- Before deploying the application, specify Keycloak details using the configuration file at `public/keycloak.json`. The included configuration file is valid for CGI's development environment.
+ Before deploying the application, specify Keycloak details using the configuration file at `public/keycloak.json`. The included configuration file is valid for the MoH's development environment.
 
 The Keycloak REST API uses roles in the [realm-management client](https://www.keycloak.org/docs/latest/server_admin/#_per_realm_admin_permissions). So for Keycloak client configuration you have two options: either create a new client that has access to the `realm-management` roles, or use the `realm-management` client directly.
 
@@ -44,9 +44,9 @@ In one tab, start the server with `npm run serve`. In another tab, run:
 npm run test:e2e
 ```
 
-The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in KeePass. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. 
+The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. 
 
-Note that these instructions only apply to CGI's Keycloak server which has an LDAP identify provider configured. To use a different Keycloak server you would need to update the "login" portion of the tests to use your identity provider.
+Note that these instructions only apply to the MoH's Keycloak server which has an LDAP identify provider configured. To use a different Keycloak server you would need to update the "login" portion of the tests to use your identity provider.
 
 ### Lints and fixes files
 ```
