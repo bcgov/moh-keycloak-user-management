@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { keycloak } from '../main.js';
+import keycloak from '../keycloak';
 
-/* this needs to be a function instead of just exporting axios.create as default
-because there is a circular dependency with main.js -> App.vue -> ClientsRepository.js -> Repository.js -> main.js
-so that Repository.js can get the keycloak access token */
+/* This needs to be a function instead of just exporting axios.create as default
+because the Keycloak Access Token will be periodically updated. */
 function kcRequest() {
     const baseURL = keycloak.authServerUrl + "admin/realms/" + keycloak.realm;
     return axios.create({
@@ -12,4 +11,4 @@ function kcRequest() {
     });
 }
 
-export { kcRequest } 
+export { kcRequest }
