@@ -74,15 +74,8 @@ export default {
     },
     searchUser: function() {
       this.userSearchLoadingStatus = true;
-      this.$keycloak
-        .updateToken()
-        .then(response => {
-          console.log(response);
-          return UsersRepository.get(
-            "?briefRepresentation=true&first=0&max=300&search=" +
-              this.userSearchInput
-          );
-        })
+
+        return UsersRepository.get("?briefRepresentation=true&first=0&max=300&search=" + this.userSearchInput)
         .then(response => {
           this.searchResults = response.data;
         })
