@@ -12,18 +12,20 @@ const regularAccUser = Role('http://localhost:8080', async t => {
 
 fixture
     .disablePageCaching `All tests`
+    .beforeEach(async t => {
+        await t
+            .useRole(regularAccUser);
+    })
     .page `http://localhost:8080`;
 
 test('Smoke test', async t => {
     await t
-        .useRole(regularAccUser)
         .expect(Selector('#search-button').exists)
         .ok();
 });
 
 test('Test search', async t => {
     await t
-        .useRole(regularAccUser)
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
         .expect(Selector('html').textContent)
