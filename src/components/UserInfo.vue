@@ -56,12 +56,15 @@
             v-on:change="getUserClientRoles()"
           ></v-autocomplete>
         </v-col>
-        <v-col class="col-7">
-          <label v-show="selectedClientId">Roles</label>
-          <div class="checkbox-group" v-if="selectedClientId">
+      </v-row>
+      
+        <div v-if="selectedClientId">
+          <v-row no-gutters>
+          <v-col class="col-4">
+            <label>Roles</label>
             <v-checkbox
               hide-details="auto"
-              v-for="role in effectiveClientRoles"
+              v-for="role in activeClientRoles"
               v-model="selectedRoles"
               :value="role"
               :label="role.name"
@@ -75,12 +78,26 @@
               :label="role.name"
               v-bind:key="role.name"
             ></v-checkbox>
-          </div>
-          <div class="my-6" v-if="selectedClientId">
-            <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Role</v-btn>
-          </div>
-        </v-col>
-      </v-row>
+          </v-col>
+          <v-col class="col-4">
+            <label>Effective Roles</label>
+            <v-checkbox
+              hide-details="auto"
+              v-for="role in effectiveClientRoles"
+              v-model="selectedRoles"
+              disabled="true"
+              :value="role"
+              :label="role.name"
+              v-bind:key="role.name"
+            ></v-checkbox>
+          </v-col>
+          </v-row>
+                  <div class="my-6" v-if="selectedClientId">
+          <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Role</v-btn>
+        </div>
+        </div>
+
+      
     </v-card>
   </div>
 </template>
@@ -102,6 +119,7 @@ export default {
       user: { 'attributes': {}},
       clients: [],
       selectedClientId: null,
+      activeClientRoles: [],
       effectiveClientRoles: [],
       availableClientRoles: [],
       selectedRoles: [],
@@ -159,9 +177,25 @@ export default {
     getUserClientRoles: function() {
       this.effectiveClientRoles = [];
       this.availableClientRoles = [];
+      this.activeClientRoles = [];
       this.selectedRoles = [];
       this.getUserEffectiveClientRoles();
       this.getUserAvailableClientRoles();
+      this.getUserActiveClientRoles();
+    },
+
+    getUserActiveClientRoles: function() {
+      UsersRepository.getUserActiveClientRoles(
+        this.user.id,
+        this.selectedClientId
+      )
+        .then(response => {
+          this.activeClientRoles.push(...response.data);
+          this.selectedRoles.push(...response.data);
+        })
+        .catch(e => {
+          console.log(e);
+        });
     },
 
     getUserAvailableClientRoles: function() {
