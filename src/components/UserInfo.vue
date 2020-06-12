@@ -111,9 +111,9 @@ export default {
       ]
     };
   },
-  created() {
-    this.getClients();
-    this.getUser();
+  async created() {
+    await Promise.all([this.getClients(), this.getUser()]);
+    this.dataReady = true;
   },
   methods: {
     updateUser: function () {
@@ -136,20 +136,19 @@ export default {
               });
     },
     getUser: function() {
-      UsersRepository.getUser(this.$route.params.userid)
+      return UsersRepository.getUser(this.$route.params.userid)
         .then(response => {
           this.user = response.data;
           if (this.user.attributes === undefined) {
             this.user.attributes = {};
-          }
-          this.dataReady = true;
+          }        
         })
         .catch(e => {
           console.log(e);
         });
     },
     getClients: function() {
-      ClientsRepository.get()
+      return ClientsRepository.get()
         .then(response => {
           this.clients = response.data;
         })
