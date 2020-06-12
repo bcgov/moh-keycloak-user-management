@@ -1,24 +1,42 @@
+<!--suppress XmlInvalidId -->
 <template>
-  <div id="user-info">
-    <v-alert :value="!!successMessage" type="success" dismissible>{{ successMessage }}</v-alert>
-    <v-alert :value="!!errorMessage" type="error" dismissible>{{ errorMessage }}</v-alert>
+  <div id="user-info" v-if="dataReady">
+    <v-alert v-model="successState" type="success" dismissible>{{ successMessage }}</v-alert>
+    <v-alert v-model="errorState" type="error" dismissible>{{ errorMessage }}</v-alert>
 
     <h1>Update - {{ user.username }}</h1>
-    <v-row no-gutters>
-      <v-col class="col-7">
-        <label for="user-name" class="disabled required">User Name</label>
-        <v-text-field dense outlined disabled id="user-name" v-model="user.username"
-        required :rules="[v => !!v || 'Username is required']"/>
+    <v-card outlined class="subgroup">
+      <h2>User Details</h2>
+      <v-row no-gutters>
+        <v-col class="col-7">
+          <v-form ref="form">
+            <label for="user-name" class="disabled required">User Name</label>
+            <v-text-field dense outlined disabled id="user-name" v-model="user.username"
+                          required :rules="[v => !!v || 'Username is required']"/>
 
-        <label for="first-name" class="required">First Name</label>
-        <v-text-field dense outlined id="first-name" v-model="user.firstName" 
-        required :rules="[v => !!v || 'First Name is required']"/>
+            <label for="first-name" class="required">First Name</label>
+            <v-text-field dense outlined id="first-name" v-model="user.firstName"
+                          required :rules="[v => !!v || 'First Name is required']"/>
 
-        <label for="last-name" class="required">Last Name</label>
-        <v-text-field dense outlined id="last-name" v-model="user.lastName"
-        required :rules="[v => !!v || 'Last Name is required']"/>
-      </v-col>
-    </v-row>
+            <label for="last-name" class="required">Last Name</label>
+            <v-text-field dense outlined id="last-name" v-model="user.lastName"
+                          required :rules="[v => !!v || 'Last Name is required']"/>
+
+            <label for="email" class="required">Email Address</label>
+            <v-text-field dense outlined id="email" v-model="user.email"
+                          required :rules="emailRules" type="email"/>
+
+            <label for="phone" class="required">Telephone Number</label>
+            <v-text-field dense outlined id="phone" v-model="user.attributes.phone"/>
+
+            <label for="org-details">Organization Name and Address</label>
+            <v-textarea outlined dense id="org-details" v-model="user.attributes.orgdetails"/>
+
+            <v-btn id="save-button" class="secondary" medium v-on:click.prevent="updateUser">Save</v-btn>
+          </v-form>
+        </v-col>
+      </v-row>
+    </v-card>
 
     <v-card outlined class="subgroup">
       <h2>Permissions</h2>
@@ -35,7 +53,7 @@
             item-value="id"
             placeholder="Select an Application"
             v-model="selectedClientId"
-            v-on:change="getUserClientRoles();"
+            v-on:change="getUserClientRoles()"
           ></v-autocomplete>
         </v-col>
         <v-col class="col-7">
@@ -76,14 +94,21 @@ export default {
   name: "UserInfo",
   data() {
     return {
+      dataReady: false,
       successMessage: "",
+      successState: false,
       errorMessage: "",
-      user: '',
+      errorState: false,
+      user: { 'attributes': {}},
       clients: [],
       selectedClientId: null,
       effectiveClientRoles: [],
       availableClientRoles: [],
-      selectedRoles: []
+      selectedRoles: [],
+      emailRules: [
+        v => !!v || 'Email is required',
+        v => /^\S+@\S+$/.test(v) || 'Email is not valid'
+      ]
     };
   },
   created() {
@@ -91,10 +116,33 @@ export default {
     this.getUser();
   },
   methods: {
+    updateUser: function () {
+      if (!this.$refs.form.validate()) {
+        this.errorState = true;
+        this.successState = false;
+        this.errorMessage = "Please correct errors before submitting.";
+        window.scrollTo(0, 0);
+        return;
+      }
+      UsersRepository.updateUser(this.$route.params.userid, this.user)
+              .then(() => {
+                this.successState = true;
+                this.errorState = false;
+                this.successMessage = 'User updated';
+                window.scrollTo(0, 0);
+              })
+              .catch(reason => {
+                this.errorMessage = reason;
+              });
+    },
     getUser: function() {
       UsersRepository.getUser(this.$route.params.userid)
         .then(response => {
           this.user = response.data;
+          if (this.user.attributes === undefined) {
+            this.user.attributes = {};
+          }
+          this.dataReady = true;
         })
         .catch(e => {
           console.log(e);

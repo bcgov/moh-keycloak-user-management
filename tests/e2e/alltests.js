@@ -1,7 +1,11 @@
 import { Selector } from 'testcafe';
 import { Role } from 'testcafe';
 
-const regularAccUser = Role('http://localhost:8080', async t => {
+const SITE_UNDER_TEST = 'http://localhost:8080';
+
+const TEST_CAFE_USER_ID = '3195a1bf-4bea-47c4-955d-cf52d4e2fc15';
+
+const regularAccUser = Role(SITE_UNDER_TEST, async t => {
     await t
         .click('#zocial-moh_idp')
         .typeText('#username', 'testcafe')
@@ -9,14 +13,13 @@ const regularAccUser = Role('http://localhost:8080', async t => {
         .click("#kc-login");
 });
 
-
 fixture
     .disablePageCaching `All tests`
     .beforeEach(async t => {
         await t
             .useRole(regularAccUser);
     })
-    .page `http://localhost:8080`;
+    .page `${SITE_UNDER_TEST}`;
 
 test('Smoke test', async t => {
     await t
@@ -25,10 +28,25 @@ test('Smoke test', async t => {
 });
 
 test('Test search', async t => {
-    await t
-        .typeText('#user-search', 'testcafe')
+    await t.typeText('#user-search', 'testcafe')
         .click('#search-button')
         .expect(Selector('html').textContent)
         // This is the ID of the testcafe user.
-        .contains('3195a1bf-4bea-47c4-955d-cf52d4e2fc15');
+        .contains(TEST_CAFE_USER_ID);
 });
+
+test('Test update user', async t => {
+    // We use a random value just to make sure a change is actually made.
+    const random_value = Math.ceil((Math.random() * 100)).toString();
+    await t
+        .typeText('#user-search', 'testcafe')
+        .click('#search-button')
+        // This is the ID of the testcafe user.
+        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        .typeText('#org-details', random_value, { replace: true })
+        .click('#save-button')
+        .expect(Selector('html').textContent)
+        .contains('User updated');
+});
+
+
