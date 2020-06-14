@@ -26,7 +26,7 @@
             <v-text-field dense outlined id="email" v-model="user.email"
                           required :rules="emailRules" type="email"/>
 
-            <label for="phone" class="required">Telephone Number</label>
+            <label for="phone">Telephone Number</label>
             <v-text-field dense outlined id="phone" v-model="user.attributes.phone"/>
 
             <label for="org-details">Organization Name and Address</label>
