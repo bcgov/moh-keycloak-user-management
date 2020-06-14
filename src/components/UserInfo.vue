@@ -30,7 +30,22 @@
             <v-text-field dense outlined id="phone" v-model="user.attributes.phone"/>
 
             <label for="org-details">Organization Name and Address</label>
-            <v-textarea outlined dense id="org-details" v-model="user.attributes.orgdetails"/>
+            <v-textarea outlined dense id="org-details" v-model="user.attributes.org_details"/>
+
+            <label for="enabled-radio">Lockout Status</label>
+            <v-radio-group id="enabled-radio" v-model="computedLockout" row height="1" @click.native="resetFormValidation">
+              <v-radio v-for="n in LOCK_STATES"
+                      :key="n"
+                      :label="n"
+                      :value="n"
+              ></v-radio>
+            </v-radio-group>
+
+            <label for="lockout-reason" v-bind:class="[this.user.enabled ? 'disabled' : 'required']">Lockout Reason</label>
+            <v-text-field dense outlined id="lockout-reason"
+                            v-model="user.attributes.lockout_reason"
+                            :disabled="this.user.enabled"
+                            :rules="[v => this.user.enabled || !!v || 'Lockout Reason is required']"/>
 
             <v-btn id="save-button" class="secondary" medium v-on:click.prevent="updateUser">Save</v-btn>
           </v-form>
@@ -99,7 +114,7 @@ export default {
       successState: false,
       errorMessage: "",
       errorState: false,
-      user: { 'attributes': {}},
+      user: { 'attributes': {'lockout_reason': '', 'org_details': '', 'revoked': ''}},
       clients: [],
       selectedClientId: null,
       effectiveClientRoles: [],
@@ -108,7 +123,10 @@ export default {
       emailRules: [
         v => !!v || 'Email is required',
         v => /^\S+@\S+$/.test(v) || 'Email is not valid'
-      ]
+      ],
+      ENABLED: 'Enabled',
+      LOCKED: 'Locked',
+      REVOKED: 'Revoked'
     };
   },
   async created() {
@@ -116,6 +134,9 @@ export default {
     this.dataReady = true;
   },
   methods: {
+    resetFormValidation: function() {
+      this.$refs.form.resetValidation();
+    },
     updateUser: function () {
       if (!this.$refs.form.validate()) {
         this.errorState = true;
@@ -233,6 +254,40 @@ export default {
           console.log(error);
         });
     }
+  },
+  computed: {
+    LOCK_STATES() {
+      return [this.ENABLED, this.REVOKED, this.LOCKED];
+    },
+    computedLockout: {
+      get: function () {
+        if (this.user.enabled) {
+          return this.ENABLED;
+        } else {
+          if (this.user.attributes.revoked) {
+            return this.REVOKED;
+          } else {
+            return this.LOCKED;
+          }
+        }
+      },
+      set: function(newValue) {
+        if (newValue === this.ENABLED) {
+          this.user.enabled = true;
+          this.user.attributes.revoked = false;
+          this.user.attributes.lockout_reason = '';
+        } else if (newValue === this.REVOKED) {
+          this.user.enabled = false;
+          this.user.attributes.revoked = true;
+        } else if (newValue === this.LOCKED) {
+          this.user.enabled = false;
+          this.user.attributes.revoked = false;
+        } else {
+          throw Error(`Unrecognized lock state '${newValue}'`);
+        }
+      }
+    }
+
   }
 };
 </script>
