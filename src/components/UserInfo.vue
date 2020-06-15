@@ -75,44 +75,34 @@
       
         <div v-if="selectedClientId">
           <v-row no-gutters>
-          <v-col class="col-4">
-            <label>Roles</label>
-            <v-checkbox
-              hide-details="auto"
-              v-for="role in activeClientRoles"
-              v-model="selectedRoles"
-              :value="role"
-              :label="role.name"
-              v-bind:key="role.name"
-            ></v-checkbox>
-            <v-checkbox
-              hide-details="auto"
-              v-for="role in availableClientRoles"
-              v-model="selectedRoles"
-              :value="role"
-              :label="role.name"
-              v-bind:key="role.name"
-            ></v-checkbox>
-          </v-col>
-          <v-col class="col-4">
-            <label>Effective Roles</label>
-            <v-checkbox
-              hide-details="auto"
-              v-for="role in effectiveClientRoles"
-              v-model="selectedRoles"
-              disabled="true"
-              :value="role"
-              :label="role.name"
-              v-bind:key="role.name"
-            ></v-checkbox>
-          </v-col>
+            <v-col class="col-4">
+              <label>Roles</label>
+              <v-checkbox
+                hide-details="auto"
+                v-for="role in clientRoles"
+                v-model="selectedRoles"
+                :value="role"
+                :label="role.name"
+                v-bind:key="role.name"
+              ></v-checkbox>
+            </v-col>
+            <v-col class="col-4">
+              <label>Effective Roles</label>
+              <v-checkbox
+                hide-details="auto"
+                v-for="role in effectiveClientRoles"
+                v-model="effectiveClientRoles"
+                disabled="disabled"
+                :value="role"
+                :label="role.name"
+                v-bind:key="role.name"
+              ></v-checkbox>
+            </v-col>
           </v-row>
-                  <div class="my-6" v-if="selectedClientId">
-          <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Role</v-btn>
-        </div>
-        </div>
-
-      
+          <div class="my-6" v-if="selectedClientId">
+            <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Role</v-btn>
+          </div>
+        </div>    
     </v-card>
   </div>
 </template>
@@ -134,9 +124,8 @@ export default {
       user: { 'attributes': {'lockout_reason': '', 'org_details': '', 'revoked': ''}},
       clients: [],
       selectedClientId: null,
-      activeClientRoles: [],
+      clientRoles: [],
       effectiveClientRoles: [],
-      availableClientRoles: [],
       selectedRoles: [],
       emailRules: [
         v => !!v || 'Email is required',
@@ -151,6 +140,7 @@ export default {
     await Promise.all([this.getClients(), this.getUser()]);
     this.dataReady = true;
   },
+
   methods: {
     resetFormValidation: function() {
       this.$refs.form.resetValidation();
@@ -195,98 +185,84 @@ export default {
           console.log(e);
         });
     },
-    getUserClientRoles: function() {
+    getUserClientRoles: async function() {
       this.effectiveClientRoles = [];
-      this.availableClientRoles = [];
-      this.activeClientRoles = [];
+      this.clientRoles = [];
       this.selectedRoles = [];
-      this.getUserEffectiveClientRoles();
-      this.getUserAvailableClientRoles();
-      this.getUserActiveClientRoles();
+
+      let clientRolesResponses = await Promise.all([this.getUserEffectiveClientRoles(), this.getUserAvailableClientRoles(), this.getUserActiveClientRoles() ]);
+      this.clientRoles.push(...clientRolesResponses[1].data);
+      this.clientRoles.push(...clientRolesResponses[2].data);
+      this.selectedRoles.push(...clientRolesResponses[2].data); 
+      this.effectiveClientRoles.push(...clientRolesResponses[0].data);
+
+      this.clientRoles.sort(function(a, b) {
+        return a.name.localeCompare(b.name);
+      });
     },
 
     getUserActiveClientRoles: function() {
-      UsersRepository.getUserActiveClientRoles(
+      return UsersRepository.getUserActiveClientRoles(
         this.user.id,
         this.selectedClientId
-      )
-        .then(response => {
-          this.activeClientRoles.push(...response.data);
-          this.selectedRoles.push(...response.data);
-        })
-        .catch(e => {
-          console.log(e);
-        });
+      ).catch(e => {
+        console.log(e);
+      });
     },
 
     getUserAvailableClientRoles: function() {
-      UsersRepository.getUserAvailableClientRoles(
+      return UsersRepository.getUserAvailableClientRoles(
         this.user.id,
         this.selectedClientId
-      )
-        .then(response => {
-          this.availableClientRoles.push(...response.data);
-        })
-        .catch(e => {
-          console.log(e);
-        });
+      ).catch(e => {
+        console.log(e);
+      });
     },
 
     getUserEffectiveClientRoles: function() {
-      UsersRepository.getUserEffectiveClientRoles(
+      return UsersRepository.getUserEffectiveClientRoles(
         this.user.id,
         this.selectedClientId
-      )
-        .then(response => {
-          this.effectiveClientRoles.push(...response.data);
-          this.selectedRoles.push(...response.data);
-        })
-        .catch(e => {
-          console.log(e);
-        });
+      ).catch(e => {
+        console.log(e);
+      });
     },
 
     updateUserClientRoles: function() {
-      //If in effective but not selected DELETE
-      var rolesToDelete = this.effectiveClientRoles.filter(
+      //If in roles but not selected DELETE
+      var rolesToDelete = this.clientRoles.filter(
         value => !this.selectedRoles.includes(value)
       );
-
-      //If in available and selected ADD
-      var rolesToAdd = this.availableClientRoles.filter(value =>
+      //If in roles and selected ADD
+      var rolesToAdd = this.clientRoles.filter(value =>
         this.selectedRoles.includes(value)
       );
 
       this.successMessage = "";
       this.errorMessage = "";
 
-      //TODO refactor this
-      UsersRepository.deleteUserClientRoles(
-        this.user.id,
-        this.selectedClientId,
-        rolesToDelete
-      )
-        .then(response => {
-          console.log(response);
-
-          return UsersRepository.addUserClientRoles(
-            this.user.id,
-            this.selectedClientId,
-            rolesToAdd
-          );
-        })
-        .then(response => {
-          console.log(response);
-
-          this.successMessage =
+      Promise.all([
+        UsersRepository.deleteUserClientRoles(
+          this.user.id,
+          this.selectedClientId,
+          rolesToDelete
+        ),
+        UsersRepository.addUserClientRoles(
+          this.user.id,
+          this.selectedClientId,
+          rolesToAdd
+        )
+      ]).then(() => {
+        this.getUserClientRoles();
+        this.successState = true;
+        this.errorState = false;
+        this.successMessage =
             this.successMessage + "Roles Updated Successfully ";
-
-          this.getUserClientRoles();
-        })
-        .catch(error => {
+        window.scrollTo(0, 0);    
+      }).catch(error => {
           this.errorMessage = this.errorMessage + "Error Updating Roles";
           console.log(error);
-        });
+      });
     }
   },
   computed: {
