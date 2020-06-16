@@ -92,7 +92,8 @@
                   <template v-slot:activator="{ on }">
                     <v-icon v-on="on" small>mdi-help-circle</v-icon>
                   </template>
-                  <span>Effective roles represent all roles assigned to a user for this client. <br/> This may include roles provided by group membership which can not be directly removed.</span>
+                  <span>Effective roles represent all roles assigned to a user for this client. <br/>
+                   This may include roles provided by group membership which can not be directly removed.</span>
                 </v-tooltip>
               </label>
               <v-checkbox
@@ -156,7 +157,7 @@ export default {
       if (!this.$refs.form.validate()) {
         this.errorState = true;
         this.successState = false;
-        this.errorMessage = "Please correct errors before submitting.";
+        this.errorMessage = "Please correct errors before submitting";
         window.scrollTo(0, 0);
         return;
       }
@@ -263,13 +264,13 @@ export default {
         this.getUserClientRoles();
         this.successState = true;
         this.errorState = false;
-        this.successMessage = "Roles updated successfully.";
+        this.successMessage = "Roles updated successfully";
         window.scrollTo(0, 0);    
       }).catch(() => {
-          this.successState = false;
-          this.errorState = true;
-          this.errorMessage = "Error updating roles.";
-          window.scrollTo(0, 0);
+        this.successState = false;
+        this.errorState = true;
+        this.errorMessage = "Error updating roles";
+        window.scrollTo(0, 0);
       });
     }
   },
