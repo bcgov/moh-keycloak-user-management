@@ -93,7 +93,7 @@
                     <v-icon v-on="on" small>mdi-help-circle</v-icon>
                   </template>
                   <span>Effective roles represent all roles assigned to a user for this client. <br/>
-                   This may include roles provided by group membership which can not be directly removed.</span>
+                   This may include roles provided by group membership which cannot be directly removed.</span>
                 </v-tooltip>
               </label>
               <v-checkbox
