@@ -39,7 +39,7 @@
     </v-card>
 
     <v-card outlined class="subgroup">
-      <h2>Permissions</h2>
+      <h2>User Roles</h2>
 
       <v-row no-gutters>
         <v-col class="col-7">
@@ -53,7 +53,7 @@
             item-value="id"
             placeholder="Select an Application"
             v-model="selectedClientId"
-            v-on:change="getUserClientRoles()"
+            @change="getUserClientRoles()"
           ></v-autocomplete>
         </v-col>
       </v-row>
@@ -68,11 +68,18 @@
                 v-model="selectedRoles"
                 :value="role"
                 :label="role.name"
-                v-bind:key="role.name"
+                :key="role.name"
               ></v-checkbox>
             </v-col>
             <v-col class="col-4">
-              <label>Effective Roles</label>
+              <label>Effective Roles
+                <v-tooltip right>
+                  <template v-slot:activator="{ on }">
+                    <v-icon v-on="on" small>mdi-help-circle</v-icon>
+                  </template>
+                  <span>Effective roles represent all roles assigned to a user for this client. <br/> This may include roles provided by group membership which can not be directly removed.</span>
+                </v-tooltip>
+              </label>
               <v-checkbox
                 hide-details="auto"
                 v-for="role in effectiveClientRoles"
@@ -80,12 +87,12 @@
                 disabled="disabled"
                 :value="role"
                 :label="role.name"
-                v-bind:key="role.name"
+                :key="role.name"
               ></v-checkbox>
             </v-col>
           </v-row>
           <div class="my-6" v-if="selectedClientId">
-            <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Role</v-btn>
+            <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
           </div>
         </div>    
     </v-card>
@@ -235,12 +242,13 @@ export default {
         this.getUserClientRoles();
         this.successState = true;
         this.errorState = false;
-        this.successMessage =
-            this.successMessage + "Roles Updated Successfully ";
+        this.successMessage = "Roles updated successfully.";
         window.scrollTo(0, 0);    
-      }).catch(error => {
-          this.errorMessage = this.errorMessage + "Error Updating Roles";
-          console.log(error);
+      }).catch(() => {
+          this.successState = false;
+          this.errorState = true;
+          this.errorMessage = "Error updating roles.";
+          window.scrollTo(0, 0);
       });
     }
   }
