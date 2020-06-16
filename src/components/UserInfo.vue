@@ -33,7 +33,7 @@
             <v-textarea outlined dense id="org-details" v-model="user.attributes.org_details"/>
 
             <label for="enabled-radio">Lockout Status</label>
-            <v-radio-group id="enabled-radio" v-model="computedLockout" row height="1" @click.native="resetFormValidation">
+            <v-radio-group id="enabled-radio" v-model="computedLockout" row height="1">
               <v-radio v-for="n in LOCK_STATES"
                       :key="n"
                       :label="n"
@@ -45,7 +45,7 @@
             <v-text-field dense outlined id="lockout-reason"
                             v-model="user.attributes.lockout_reason"
                             :disabled="this.user.enabled"
-                            :rules="[v => this.user.enabled || !!v || 'Lockout Reason is required']"/>
+                            :rules="[lockoutReasonRule]"/>
 
             <v-btn id="save-button" class="secondary" medium v-on:click.prevent="updateUser">Save</v-btn>
           </v-form>
@@ -134,8 +134,14 @@ export default {
     this.dataReady = true;
   },
   methods: {
-    resetFormValidation: function() {
-      this.$refs.form.resetValidation();
+    lockoutReasonRule: function (v) {
+      if (this.user.enabled) {
+        return true;
+      } else if (v === '' || !(typeof v === 'string')) {
+        return 'Lockout Reason is required';
+      } else {
+        return true;
+      }
     },
     updateUser: function () {
       if (!this.$refs.form.validate()) {
