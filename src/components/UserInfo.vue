@@ -45,7 +45,8 @@
             <v-text-field dense outlined id="lockout-reason"
                             v-model="user.attributes.lockout_reason"
                             :disabled="this.user.enabled"
-                            :rules="[lockoutReasonRule]"/>
+                            :rules="lockoutRules"
+                            :required="!this.user.enabled"/>
 
             <v-btn id="save-button" class="secondary" medium v-on:click.prevent="updateUser">Save</v-btn>
           </v-form>
@@ -124,6 +125,9 @@ export default {
         v => !!v || 'Email is required',
         v => /^\S+@\S+$/.test(v) || 'Email is not valid'
       ],
+      lockoutRules: [
+        v => this.user.enabled ? true : (typeof v === 'string' && !!v) || 'Lockout Reason is required'
+      ],
       ENABLED: 'Enabled',
       LOCKED: 'Locked',
       REVOKED: 'Revoked'
@@ -134,15 +138,6 @@ export default {
     this.dataReady = true;
   },
   methods: {
-    lockoutReasonRule: function (v) {
-      if (this.user.enabled) {
-        return true;
-      } else if (v === '' || !(typeof v === 'string')) {
-        return 'Lockout Reason is required';
-      } else {
-        return true;
-      }
-    },
     updateUser: function () {
       if (!this.$refs.form.validate()) {
         this.errorState = true;
