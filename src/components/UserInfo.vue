@@ -54,7 +54,7 @@
     </v-card>
 
     <v-card outlined class="subgroup">
-      <h2>Permissions</h2>
+      <h2>User Roles</h2>
 
       <v-row no-gutters>
         <v-col class="col-7">
@@ -68,34 +68,49 @@
             item-value="id"
             placeholder="Select an Application"
             v-model="selectedClientId"
-            v-on:change="getUserClientRoles()"
+            @change="getUserClientRoles()"
           ></v-autocomplete>
         </v-col>
-        <v-col class="col-7">
-          <label v-show="selectedClientId">Roles</label>
-          <div class="checkbox-group" v-if="selectedClientId">
-            <v-checkbox
-              hide-details="auto"
-              v-for="role in effectiveClientRoles"
-              v-model="selectedRoles"
-              :value="role"
-              :label="role.name"
-              v-bind:key="role.name"
-            ></v-checkbox>
-            <v-checkbox
-              hide-details="auto"
-              v-for="role in availableClientRoles"
-              v-model="selectedRoles"
-              :value="role"
-              :label="role.name"
-              v-bind:key="role.name"
-            ></v-checkbox>
-          </div>
-          <div class="my-6" v-if="selectedClientId">
-            <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Role</v-btn>
-          </div>
-        </v-col>
       </v-row>
+      
+        <div v-if="selectedClientId">
+          <v-row no-gutters>
+            <v-col class="col-4">
+              <label>Roles</label>
+              <v-checkbox
+                hide-details="auto"
+                v-for="role in clientRoles"
+                v-model="selectedRoles"
+                :value="role"
+                :label="role.name"
+                :key="role.name"
+              ></v-checkbox>
+            </v-col>
+            <v-col class="col-4">
+              <label>Effective Roles
+                <v-tooltip right>
+                  <template v-slot:activator="{ on }">
+                    <v-icon v-on="on" small>mdi-help-circle</v-icon>
+                  </template>
+                  <span>Effective roles represent all roles assigned to a user for this client. <br/>
+                   This may include roles provided by group membership which cannot be directly removed.</span>
+                </v-tooltip>
+              </label>
+              <v-checkbox
+                hide-details="auto"
+                v-for="role in effectiveClientRoles"
+                v-model="effectiveClientRoles"
+                disabled="disabled"
+                :value="role"
+                :label="role.name"
+                :key="role.name"
+              ></v-checkbox>
+            </v-col>
+          </v-row>
+          <div class="my-6" v-if="selectedClientId">
+            <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+          </div>
+        </div>    
     </v-card>
   </div>
 </template>
@@ -117,8 +132,8 @@ export default {
       user: { 'attributes': {'lockout_reason': '', 'org_details': '', 'revoked': ''}},
       clients: [],
       selectedClientId: null,
+      clientRoles: [],
       effectiveClientRoles: [],
-      availableClientRoles: [],
       selectedRoles: [],
       emailRules: [
         v => !!v || 'Email is required',
@@ -133,6 +148,7 @@ export default {
     await Promise.all([this.getClients(), this.getUser()]);
     this.dataReady = true;
   },
+
   methods: {
     resetFormValidation: function() {
       this.$refs.form.resetValidation();
@@ -141,7 +157,7 @@ export default {
       if (!this.$refs.form.validate()) {
         this.errorState = true;
         this.successState = false;
-        this.errorMessage = "Please correct errors before submitting.";
+        this.errorMessage = "Please correct errors before submitting";
         window.scrollTo(0, 0);
         return;
       }
@@ -177,82 +193,85 @@ export default {
           console.log(e);
         });
     },
-    getUserClientRoles: function() {
+    getUserClientRoles: async function() {
       this.effectiveClientRoles = [];
-      this.availableClientRoles = [];
+      this.clientRoles = [];
       this.selectedRoles = [];
-      this.getUserEffectiveClientRoles();
-      this.getUserAvailableClientRoles();
+
+      let clientRolesResponses = await Promise.all([this.getUserEffectiveClientRoles(), this.getUserAvailableClientRoles(), this.getUserActiveClientRoles() ]);
+      this.clientRoles.push(...clientRolesResponses[1].data);
+      this.clientRoles.push(...clientRolesResponses[2].data);
+      this.selectedRoles.push(...clientRolesResponses[2].data); 
+      this.effectiveClientRoles.push(...clientRolesResponses[0].data);
+
+      this.clientRoles.sort(function(a, b) {
+        return a.name.localeCompare(b.name);
+      });
+    },
+
+    getUserActiveClientRoles: function() {
+      return UsersRepository.getUserActiveClientRoles(
+        this.user.id,
+        this.selectedClientId
+      ).catch(e => {
+        console.log(e);
+      });
     },
 
     getUserAvailableClientRoles: function() {
-      UsersRepository.getUserAvailableClientRoles(
+      return UsersRepository.getUserAvailableClientRoles(
         this.user.id,
         this.selectedClientId
-      )
-        .then(response => {
-          this.availableClientRoles.push(...response.data);
-        })
-        .catch(e => {
-          console.log(e);
-        });
+      ).catch(e => {
+        console.log(e);
+      });
     },
 
     getUserEffectiveClientRoles: function() {
-      UsersRepository.getUserEffectiveClientRoles(
+      return UsersRepository.getUserEffectiveClientRoles(
         this.user.id,
         this.selectedClientId
-      )
-        .then(response => {
-          this.effectiveClientRoles.push(...response.data);
-          this.selectedRoles.push(...response.data);
-        })
-        .catch(e => {
-          console.log(e);
-        });
+      ).catch(e => {
+        console.log(e);
+      });
     },
 
     updateUserClientRoles: function() {
-      //If in effective but not selected DELETE
-      var rolesToDelete = this.effectiveClientRoles.filter(
+      //If in roles but not selected DELETE
+      var rolesToDelete = this.clientRoles.filter(
         value => !this.selectedRoles.includes(value)
       );
-
-      //If in available and selected ADD
-      var rolesToAdd = this.availableClientRoles.filter(value =>
+      //If in roles and selected ADD
+      var rolesToAdd = this.clientRoles.filter(value =>
         this.selectedRoles.includes(value)
       );
 
       this.successMessage = "";
       this.errorMessage = "";
 
-      //TODO refactor this
-      UsersRepository.deleteUserClientRoles(
-        this.user.id,
-        this.selectedClientId,
-        rolesToDelete
-      )
-        .then(response => {
-          console.log(response);
-
-          return UsersRepository.addUserClientRoles(
-            this.user.id,
-            this.selectedClientId,
-            rolesToAdd
-          );
-        })
-        .then(response => {
-          console.log(response);
-
-          this.successMessage =
-            this.successMessage + "Roles Updated Successfully ";
-
-          this.getUserClientRoles();
-        })
-        .catch(error => {
-          this.errorMessage = this.errorMessage + "Error Updating Roles";
-          console.log(error);
-        });
+      Promise.all([
+        UsersRepository.deleteUserClientRoles(
+          this.user.id,
+          this.selectedClientId,
+          rolesToDelete
+        ),
+        UsersRepository.addUserClientRoles(
+          this.user.id,
+          this.selectedClientId,
+          rolesToAdd
+        )
+      ]).then(() => {
+        this.getUserClientRoles();
+        this.successState = true;
+        this.errorState = false;
+        this.successMessage = "Roles updated successfully";
+        window.scrollTo(0, 0);    
+      }).catch(() => {
+        this.successState = false;
+        this.errorState = true;
+        this.errorMessage = "Error updating roles";
+        window.scrollTo(0, 0);
+      });
     }
   },
   computed: {
