@@ -44,9 +44,9 @@
             <label for="lockout-reason" v-bind:class="[this.user.enabled ? 'disabled' : 'required']">Lockout Reason</label>
             <v-text-field dense outlined id="lockout-reason"
                             v-model="user.attributes.lockout_reason"
-                            :disabled="this.user.enabled"
-                            :rules="lockoutRules"
-                            :required="!this.user.enabled"/>
+                            :disabled="this.user.enabled"                           
+                            :required="!this.user.enabled"
+                            :rules="[v => this.user.enabled ? true : (typeof v === 'string' && !!v) || 'Lockout Reason is required' ]"/>
 
             <v-btn id="save-button" class="secondary" medium v-on:click.prevent="updateUser">Save</v-btn>
           </v-form>
@@ -124,9 +124,6 @@ export default {
       emailRules: [
         v => !!v || 'Email is required',
         v => /^\S+@\S+$/.test(v) || 'Email is not valid'
-      ],
-      lockoutRules: [
-        v => this.user.enabled ? true : (typeof v === 'string' && !!v) || 'Lockout Reason is required'
       ],
       ENABLED: 'Enabled',
       LOCKED: 'Locked',
