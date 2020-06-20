@@ -2,16 +2,12 @@
     <div>
         <button @click="getEvents">Events</button> |
         <button @click="getAdminEvents">Admin Events</button>
-        <ul>
-            <li v-for="(event, index) in events" :key="index">
-                {{event.niceDate}} | {{ event.type }} | {{ event.userId }} | {{event.details.username}}
-            </li>
-        </ul>
-        <ul>
-            <li v-for="(event, index) in adminEvents" :key="index">
-                {{event.niceDate}} | {{event.operationType}} | {{ event.resourceType }}
-            </li>
-        </ul>
+        <v-data-table
+                :headers="headers"
+                :items="events"
+                :items-per-page="5"
+                class="elevation-1"
+        ></v-data-table>
     </div>
 </template>
 
@@ -29,7 +25,13 @@
         data() {
             return {
                 events: [],
-                adminEvents: []
+                adminEvents: [],
+                headers: [
+                    { text: 'Time', value: 'readableDate'},
+                    { text: 'User', value: 'details.username' },
+                    { text: 'Event type', value: 'type' },
+                    { text: 'Application', value: 'clientId' },
+                ],
             }
         },
 
@@ -38,6 +40,7 @@
                 return EventsRepository.getEvents()
                     .then(response => {
                         this.events = response.data;
+                        this.events = this.events.filter(a => a.type === 'LOGIN');
                         for (let e of this.events) {
                             e.readableDate = formatDate(e.time);
                             if (!e.details) {
