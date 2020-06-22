@@ -3,10 +3,13 @@
     <div class="container">
       <ul>
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserInfo') ? 'active' : 'inactive'">
-            <router-link :to="{ name: 'UserSearch'}"> Users</router-link>   
+            <router-link :to="{ name: 'UserSearch'}">Users</router-link>
         </li>
         <li id="event-log-link" :class="$route.name == 'EventLog' ? 'active' : 'inactive'">
             <router-link :to="{ name: 'EventLog'}">Event Log</router-link>
+        </li>
+        <li id="admin-event-log-link" :class="$route.name == 'AdminEventLog' ? 'active' : 'inactive'">
+            <router-link :to="{ name: 'AdminEventLog'}">Admin Event Log</router-link>
         </li>
       </ul>
     </div>

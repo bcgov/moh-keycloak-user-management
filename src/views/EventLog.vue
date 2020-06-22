@@ -1,12 +1,13 @@
 <template>
     <div>
-        <button @click="getEvents">Events</button> |
-        <button @click="getAdminEvents">Admin Events</button>
+        <button @click="getEvents">Refresh</button>
         <v-data-table
                 :headers="headers"
                 :items="events"
-                :items-per-page="5"
+                :items-per-page="15"
                 class="elevation-1"
+                loading-text="Loading events"
+                :loading="loadingStatus"
         ></v-data-table>
     </div>
 </template>
@@ -15,7 +16,6 @@
     import {RepositoryFactory} from "./../api/RepositoryFactory";
 
     const EventsRepository = RepositoryFactory.get("events");
-    const AdminEventsRepository = RepositoryFactory.get("adminEvents");
 
     const options = {dateStyle: 'short', timeStyle: 'short'};
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
@@ -24,8 +24,8 @@
         name: "EventLog",
         data() {
             return {
+                loadingStatus: false,
                 events: [],
-                adminEvents: [],
                 headers: [
                     { text: 'Time', value: 'readableDate'},
                     { text: 'User', value: 'details.username' },
@@ -35,11 +35,17 @@
             }
         },
 
+        created() {
+            this.getEvents();
+        },
+
         methods: {
             getEvents: function () {
+                this.loadingStatus = true;
                 return EventsRepository.getEvents()
                     .then(response => {
                         this.events = response.data;
+                        // TODO What events should we show? All that are recorded? It might make sense not to. Perhaps we want full audit enabled on Keycloak, but the Access Team is only interested in (and understands) a smaller set of events.
                         this.events = this.events.filter(a => a.type === 'LOGIN');
                         for (let e of this.events) {
                             e.readableDate = formatDate(e.time);
@@ -51,20 +57,8 @@
                     .catch(e => {
                         console.log(e);
                         throw e;
-                    });
-            },
-            getAdminEvents: function () {
-                return AdminEventsRepository.getEvents()
-                    .then(response => {
-                        this.adminEvents = response.data;
-                        for (let e of this.adminEvents) {
-                            e.readableDate = formatDate(e.time);
-                        }
                     })
-                    .catch(e => {
-                        console.log(e);
-                        throw e;
-                    });
+                    .finally(() => this.loadingStatus = false);
             }
         }
     };
