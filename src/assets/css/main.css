@@ -26,8 +26,9 @@ main .content:after {
 }
 
 /* Sub groups */
-.subgroup {
-    padding: 20px; margin:0px -20px 20px -20px; max-width: none
+.subgroup,
+.v-card.subgroup {
+    padding: 20px; margin:0px -20px 20px -20px; max-width: 110%;
 }
 .subgroup h2 {
     font-weight: 100;
