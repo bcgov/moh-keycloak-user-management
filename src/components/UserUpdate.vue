@@ -1,6 +1,6 @@
 <!--suppress XmlInvalidId -->
 <template>
-  <div id="user-info">
+  <div id="user-info" v-show="user.username">
     <h1>Update - {{ user.username }}</h1>
     <user-details :userId="this.$route.params.userid" ref="userDetails">
       <v-btn id="save-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>

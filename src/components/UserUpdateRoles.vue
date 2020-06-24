@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="subgroup" v-if="dataReady">
+  <v-card outlined class="subgroup">
     <h2>User Roles</h2>
 
     <v-row no-gutters>
@@ -72,7 +72,6 @@ export default {
   props: ['userId'],
   data() {
     return {
-      dataReady: false,
       clients: [],
       selectedClientId: null,
       clientRoles: [],
@@ -83,7 +82,6 @@ export default {
   async created() {
     //TODO error handling
     await this.getClients();
-    this.dataReady = true;
 
   },
   methods: {

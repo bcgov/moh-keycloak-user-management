@@ -1,6 +1,6 @@
 <!--suppress XmlInvalidId -->
 <template>
-  <div id="user" v-if="dataReady">
+  <div id="user">
     <v-card outlined class="subgroup">
       <h2>User Details</h2>
       <v-row no-gutters>
@@ -86,7 +86,6 @@ export default {
   props: ['userId'],
   data() {
     return {
-      dataReady: false,
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
@@ -101,7 +100,6 @@ export default {
     if (this.userId) {
       await this.getUser();
     }
-    this.dataReady = true;
   },
   methods: {
     getUser: function() {
