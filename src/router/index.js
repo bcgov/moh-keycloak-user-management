@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Users from '../views/Users.vue'
 import UserSearch from '../components/UserSearch.vue'
-import UserInfo from '../components/UserInfo.vue'
+import UserUpdate from '../components/UserUpdate.vue'
 import UserCreate from '../components/UserCreate.vue'
 import EventLog from '../views/EventLog.vue'
 
@@ -26,8 +26,8 @@ const routes = [
       },
       {
         path: ':userid',
-        component: UserInfo,
-        name: 'UserInfo'
+        component: UserUpdate,
+        name: 'UserUpdate'
       }    
     ]
   },

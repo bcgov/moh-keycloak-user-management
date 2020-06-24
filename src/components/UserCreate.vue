@@ -2,16 +2,16 @@
 <template>
   <div id="user">
     <h1>Create New User</h1>
-    <user-details ref="userDetails"></user-details>
-    <v-btn class="secondary" medium @click="createUser()">Create User</v-btn>
+    <user-details ref="userDetails">
+      <v-btn class="secondary" medium @click="createUser()">Create User</v-btn>
+    </user-details>
   </div>
 </template>
 
 <script>
-import { RepositoryFactory } from "./../api/RepositoryFactory";
-const UsersRepository = RepositoryFactory.get("users");
+import UsersRepository from "@/api/UsersRepository";
 
-import UserDetails from "./UserDetails.vue";
+import UserDetails from "@/components/UserDetails.vue";
 
 export default {
   name: "UserCreate",
@@ -37,13 +37,13 @@ export default {
           );
 
           this.$store.commit("alert/setAlert", {
-            message: "User Created Successfully",
+            message: "User created successfully",
             type: "success"
           });
 
           //Redirect to the update user page
           this.$router.push({
-            name: "UserInfo",
+            name: "UserUpdate",
             params: { userid: newUserId }
           });
         })

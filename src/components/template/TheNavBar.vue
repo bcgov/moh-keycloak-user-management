@@ -2,7 +2,7 @@
   <nav role="navigation">
     <div class="container">
       <ul>
-        <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserInfo') ? 'active' : 'inactive'">
+        <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}"> Users</router-link>   
         </li>
         <li id="event-log-link" :class="$route.name == 'EventLog' ? 'active' : 'inactive'">

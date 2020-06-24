@@ -40,14 +40,13 @@
         ></v-data-table>
       </v-col>
     </v-row>
-    <v-btn id="create-user-button" class="secondary" medium @click="$router.push({name: 'UserCreate'})">Create New User</v-btn>
+    <v-btn id="create-user-button" class="secondary" medium @click="goToCreateUser">Create New User</v-btn>
 
   </div>
 </template>
 
 <script>
-import { RepositoryFactory } from "@/api/RepositoryFactory";
-const UsersRepository = RepositoryFactory.get("users");
+import UsersRepository from "@/api/UsersRepository";
 
 export default {
   name: "UserSearch",
@@ -73,7 +72,12 @@ export default {
   methods: {
     selectUser: function(user) {
       this.$store.commit("alert/dismissAlert");
-      this.$router.push({ name: "UserInfo", params: { userid: user.id } });
+      this.$store.commit("user/resetState");
+      this.$router.push({ name: "UserUpdate", params: { userid: user.id } });
+    },
+    goToCreateUser: function() {
+      this.$store.commit("user/resetState");
+      this.$router.push({name: 'UserCreate'});
     },
     searchUser: function() {
       this.userSearchLoadingStatus = true;

@@ -26,10 +26,12 @@ const mutations = {
         state.lastName = user.lastName
         state.email = user.email
         state.enabled = user.enabled
-        state.attributes.phone = user.phone
-        state.attributes.org_details = user.org_details
-        state.attributes.lockout_reason = user.lockout_reason
-        state.attributes.revoked = user.revoked
+        if (user.attributes) {
+            state.attributes.phone = user.attributes.phone
+            state.attributes.org_details = user.attributes.org_details
+            state.attributes.lockout_reason = user.attributes.lockout_reason
+            state.attributes.revoked = user.attributes.revoked
+        }  
     },
     setUsername(state, username) {
         state.username = username

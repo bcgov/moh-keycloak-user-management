@@ -1,6 +1,6 @@
 <!--suppress XmlInvalidId -->
 <template>
-  <div id="user">
+  <div id="user" v-if="dataReady">
     <v-card outlined class="subgroup">
       <h2>User Details</h2>
       <v-row no-gutters>
@@ -73,15 +73,20 @@
           </v-form>
         </v-col>
       </v-row>
+      <slot></slot>
     </v-card>
   </div>
 </template>
 
 <script>
+import UsersRepository from "@/api/UsersRepository";
+
 export default {
   name: "UserInfo",
+  props: ['userId'],
   data() {
     return {
+      dataReady: false,
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
@@ -91,8 +96,23 @@ export default {
       REVOKED: "Revoked"
     };
   },
-  created() {
-    this.$store.commit("user/resetState");
+  async created() {
+    //TODO error handling
+    if (this.userId) {
+      await this.getUser();
+    }
+    this.dataReady = true;
+  },
+  methods: {
+    getUser: function() {
+      return UsersRepository.getUser(this.userId)
+        .then(response => {
+          this.user = response.data;
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    }
   },
   computed: {
     LOCK_STATES() {
@@ -126,6 +146,14 @@ export default {
         }
       }
     },      
+    user: {
+      get() {
+        return this.$store.state.user;
+      },
+      set(user) {
+        this.$store.commit("user/setUser", user);
+      }
+    },
     username: {
       get() {
         return this.$store.state.user.username;
