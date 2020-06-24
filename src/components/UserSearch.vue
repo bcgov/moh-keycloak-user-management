@@ -72,6 +72,7 @@ export default {
   },
   methods: {
     selectUser: function(user) {
+      this.$store.commit("alert/dismissAlert");
       this.$router.push({ name: "UserInfo", params: { userid: user.id } });
     },
     searchUser: function() {

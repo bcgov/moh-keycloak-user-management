@@ -78,9 +78,6 @@
 </template>
 
 <script>
-/* import { RepositoryFactory } from "./../api/RepositoryFactory";
-const UsersRepository = RepositoryFactory.get("users"); */
-
 export default {
   name: "UserInfo",
   data() {
@@ -95,7 +92,7 @@ export default {
     };
   },
   created() {
-    this.$store.commit("resetState");
+    this.$store.commit("user/resetState");
   },
   computed: {
     LOCK_STATES() {
@@ -134,7 +131,7 @@ export default {
         return this.$store.state.user.username;
       },
       set(username) {
-        this.$store.commit("setUsername", username);
+        this.$store.commit("user/setUsername", username);
       }
     },
     firstName: {
@@ -142,7 +139,7 @@ export default {
         return this.$store.state.user.firstName;
       },
       set(firstName) {
-        this.$store.commit("setFirstName", firstName);
+        this.$store.commit("user/setFirstName", firstName);
       }
     },
     lastName: {
@@ -150,7 +147,7 @@ export default {
         return this.$store.state.user.lastName;
       },
       set(lastName) {
-        this.$store.commit("setLastName", lastName);
+        this.$store.commit("user/setLastName", lastName);
       }
     },
     email: {
@@ -158,7 +155,7 @@ export default {
         return this.$store.state.user.email;
       },
       set(email) {
-        this.$store.commit("setEmail", email);
+        this.$store.commit("user/setEmail", email);
       }
     },
     enabled: {
@@ -166,7 +163,7 @@ export default {
         return this.$store.state.user.enabled;
       },
       set(enabled) {
-        this.$store.commit("setEnabled", enabled);
+        this.$store.commit("user/setEnabled", enabled);
       }
     },
     phone: {
@@ -174,7 +171,7 @@ export default {
         return this.$store.state.user.attributes.phone;
       },
       set(phone) {
-        this.$store.commit("setPhone", phone);
+        this.$store.commit("user/setPhone", phone);
       }
     },
     org_details: {
@@ -182,7 +179,7 @@ export default {
         return this.$store.state.user.attributes.org_details;
       },
       set(org_details) {
-        this.$store.commit("setOrgDetails", org_details);
+        this.$store.commit("user/setOrgDetails", org_details);
       }
     },
     lockout_reason: {
@@ -190,7 +187,7 @@ export default {
         return this.$store.state.user.attributes.lockout_reason;
       },
       set(lockout_reason) {
-        this.$store.commit("setLockoutReason", lockout_reason);
+        this.$store.commit("user/setLockoutReason", lockout_reason);
       }
     },
     revoked: {
@@ -198,7 +195,7 @@ export default {
         return this.$store.state.user.attributes.revoked;
       },
       set(revoked) {
-        this.$store.commit("setRevoked", revoked);
+        this.$store.commit("user/setRevoked", revoked);
       }
     }
   }

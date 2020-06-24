@@ -1,8 +1,6 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div id="user">
-    <v-alert v-model="successState" type="success" dismissible>{{ successMessage }}</v-alert>
-    <v-alert v-model="errorState" type="error" dismissible>{{ errorMessage }}</v-alert>
     <h1>Create New User</h1>
     <user-details ref="userDetails"></user-details>
     <v-btn class="secondary" medium @click="createUser()">Create User</v-btn>
@@ -10,42 +8,51 @@
 </template>
 
 <script>
-import UserDetails from "./UserDetails.vue";
 import { RepositoryFactory } from "./../api/RepositoryFactory";
 const UsersRepository = RepositoryFactory.get("users");
+
+import UserDetails from "./UserDetails.vue";
 
 export default {
   name: "UserCreate",
   components: {
     UserDetails
   },
-  data() {
-    return {
-      successMessage: "",
-      successState: false,
-      errorMessage: "",
-      errorState: false
-    };
-  },
   methods: {
     createUser: function() {
       if (!this.$refs.userDetails.$refs.form.validate()) {
-        this.errorState = true;
-        this.successState = false;
-        this.errorMessage = "Please correct errors before submitting";
+        this.$store.commit("alert/setAlert", {
+          message: "Please correct errors before submitting",
+          type: "error"
+        });
         window.scrollTo(0, 0);
         return;
       }
       UsersRepository.createUser(this.user)
-              .then(() => {
-                this.successState = true;
-                this.errorState = false;
-                this.successMessage = 'User created';
-                window.scrollTo(0, 0);
-              })
-              .catch(reason => {
-                this.errorMessage = reason;
-              });
+        .then(response => {
+          //Keycloak returns the newly created user id in the response location
+          let responseLocation = response.headers.location;
+          let newUserId = responseLocation.substring(
+            responseLocation.lastIndexOf("/") + 1
+          );
+
+          this.$store.commit("alert/setAlert", {
+            message: "User Created Successfully",
+            type: "success"
+          });
+
+          //Redirect to the update user page
+          this.$router.push({
+            name: "UserInfo",
+            params: { userid: newUserId }
+          });
+        })
+        .catch(error => {
+          this.$store.commit("alert/setAlert", {
+            message: "Error creating new user: " + error,
+            type: "error"
+          });
+        });
     }
   },
   computed: {

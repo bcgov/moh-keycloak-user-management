@@ -3,10 +3,10 @@
     <div class="container">
       <ul>
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserInfo') ? 'active' : 'inactive'">
-            <router-link :to="{ name: 'UserSearch'}"> Users</router-link>   
+            <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}"> Users</router-link>   
         </li>
         <li id="event-log-link" :class="$route.name == 'EventLog' ? 'active' : 'inactive'">
-            <router-link :to="{ name: 'EventLog'}">Event Log</router-link>
+            <router-link @click.native="resetAlert" :to="{ name: 'EventLog'}">Event Log</router-link>
         </li>
       </ul>
     </div>
@@ -15,7 +15,12 @@
 
 <script>
 export default {
-  name: 'TheNavBar'
+  name: 'TheNavBar',
+  methods: {
+    resetAlert: function () {
+      this.$store.commit("alert/dismissAlert");
+    }
+  }
 }
 </script>
 
