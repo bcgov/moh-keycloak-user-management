@@ -19,9 +19,7 @@
 </template>
 
 <script>
-    import {RepositoryFactory} from "./../api/RepositoryFactory";
-
-    const EventsRepository = RepositoryFactory.get("events");
+    import EventsRepository from "../api/EventsRepository";
 
     const options = {dateStyle: 'short', timeStyle: 'short'};
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
@@ -47,25 +45,20 @@
         },
 
         methods: {
-            getEvents: function () {
-                this.loadingStatus = true;
-                return EventsRepository.getEvents()
-                    .then(response => {
-                        this.events = response.data;
-                        // TODO What events should we show? All that are recorded? It might make sense not to. Perhaps we want full audit enabled on Keycloak, but the Access Team is only interested in (and understands) a smaller set of events.
-                        // this.events = this.events.filter(a => a.type === 'LOGIN');
-                        for (let e of this.events) {
-                            e.readableDate = formatDate(e.time);
-                            if (!e.details) {
-                                e.details = 'no details';
-                            }
-                        }
-                    })
-                    .catch(e => {
-                        console.log(e);
-                        throw e;
-                    })
-                    .finally(() => this.loadingStatus = false);
+            getEvents: async function () {
+              this.loadingStatus = true;
+              try {
+                let promise = await EventsRepository.getEvents();
+                this.events = promise.data;
+                for (let e of this.events) {
+                  e.readableDate = formatDate(e.time);
+                  if (!e.details) {
+                    e.details = 'no details';
+                  }
+                }
+              } finally {
+                this.loadingStatus = false;
+              }
             }
         }
     };

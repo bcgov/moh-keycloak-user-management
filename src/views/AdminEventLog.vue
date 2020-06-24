@@ -26,9 +26,7 @@
 </template>
 
 <script>
-    import {RepositoryFactory} from "./../api/RepositoryFactory";
-
-    const AdminEventsRepository = RepositoryFactory.get("adminEvents");
+    import AdminEventsRepository from "../api/AdminEventsRepository";
 
     const options = {dateStyle: 'short', timeStyle: 'short'};
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
@@ -56,23 +54,19 @@
         },
 
         methods: {
-            getAdminEvents: function () {
-                this.loadingStatus = true;
-                return AdminEventsRepository.getEvents()
-                    .then(response => {
-                        this.adminEvents = response.data;
-                        // this.adminEvents = this.adminEvents.filter(value => value.resourceType === 'USER');
-                        for (let [index, e] of this.adminEvents.entries()) {
-                            e.key = index;
-                            e.readableDate = formatDate(e.time);
-                        }
-                    })
-                    .catch(e => {
-                        console.log(e);
-                        throw e;
-                    })
-                    .finally(() => this.loadingStatus = false);
+          getAdminEvents: async function () {
+            this.loadingStatus = true;
+            try {
+              let promise = await AdminEventsRepository.getEvents();
+              this.adminEvents = promise.data;
+              for (let [index, e] of this.adminEvents.entries()) {
+                e.key = index;
+                e.readableDate = formatDate(e.time);
+              }
+            } finally {
+              this.loadingStatus = false;
             }
+          }
         },
 
         filters: {
