@@ -18,7 +18,12 @@ describe('TheNavBar.vue', () => {
         expect(usersLink.classes()).toContain('active');
     });
     it('shows Users link as active when a Users child route is the current route', () => {
-        const wrapper = factory({ name: 'UserInfo' });
+        const wrapper = factory({ name: 'UserUpdate' });
+        const usersLink = wrapper.find('#users-link');
+        expect(usersLink.classes()).toContain('active');
+    });
+    it('shows Users link as active when a Users child route is the current route', () => {
+        const wrapper = factory({ name: 'UserCreate' });
         const usersLink = wrapper.find('#users-link');
         expect(usersLink.classes()).toContain('active');
     });
