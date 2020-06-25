@@ -17,6 +17,10 @@ export default {
         return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}`));
     },
 
+    createUser(content) {
+        return kcRequest().then(axiosInstance => axiosInstance.post(`${resource}`, content));
+    },
+
     updateUser(userId, content) {
         return kcRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}`, content));
     },
