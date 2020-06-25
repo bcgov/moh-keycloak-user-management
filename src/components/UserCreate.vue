@@ -52,6 +52,9 @@ export default {
             message: "Error creating new user: " + error,
             type: "error"
           });
+        })
+        .finally(() => {
+          window.scrollTo(0, 0);
         });
     }
   },

@@ -21,7 +21,6 @@ export default {
         this.$store.commit("alert/dismissAlert");
       }
     }
-    
   }
 };
 </script>

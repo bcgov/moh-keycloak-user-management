@@ -1,6 +1,5 @@
 <template>
   <div>
-    <v-alert :value="!!errorMessage" type="error" dismissible>{{ errorMessage }}</v-alert>
     <v-row no-gutters>
       <v-col class="col-6">
         <label for="user-search">
@@ -9,7 +8,7 @@
             <template v-slot:activator="{ on }">
               <v-icon v-on="on" small>mdi-help-circle</v-icon>
             </template>
-            <span>Search by username, email, name, or ID</span>
+            <span>Search by username, email, or name</span>
           </v-tooltip>
         </label>
 
@@ -41,7 +40,6 @@
       </v-col>
     </v-row>
     <v-btn id="create-user-button" class="secondary" medium @click="goToCreateUser">Create New User</v-btn>
-
   </div>
 </template>
 
@@ -66,29 +64,33 @@ export default {
       searchResults: [],
       clients: [],
       userSearchLoadingStatus: false,
-      errorMessage: ""
     };
   },
   methods: {
     selectUser: function(user) {
       this.$store.commit("alert/dismissAlert");
-      this.$store.commit("user/resetState");
       this.$router.push({ name: "UserUpdate", params: { userid: user.id } });
     },
     goToCreateUser: function() {
-      this.$store.commit("user/resetState");
-      this.$router.push({name: 'UserCreate'});
+      this.$store.commit("alert/dismissAlert");
+      this.$router.push({ name: "UserCreate" });
     },
     searchUser: function() {
       this.userSearchLoadingStatus = true;
 
-        UsersRepository.get("?briefRepresentation=true&first=0&max=300&search=" + this.userSearchInput)
+      UsersRepository.get(
+        "?briefRepresentation=true&first=0&max=300&search=" +
+          this.userSearchInput
+      )
         .then(response => {
           this.searchResults = response.data;
         })
-        .catch(e => {
-          console.log(e);
-          this.errorMessage = "User Search Failed";
+        .catch(error => {
+          this.$store.commit("alert/setAlert", {
+            message: "User search failed: " + error,
+            type: "error"
+          });
+          window.scrollTo(0, 0);
         })
         .finally(() => (this.userSearchLoadingStatus = false));
     }

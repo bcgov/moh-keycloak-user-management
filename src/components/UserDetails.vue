@@ -68,7 +68,7 @@
               v-model="lockout_reason"
               :disabled="enabled"
               :required="!enabled"
-              :rules="[v => enabled ? true : (typeof v === 'string' && !!v) || 'Lockout Reason is required' ]"
+              :rules="[v => enabled ? true : ((!!v && typeof v === 'string') || (Array.isArray(v) && !!v[0])) || 'Lockout Reason is required' ]"
             />
           </v-form>
         </v-col>
@@ -82,7 +82,7 @@
 import UsersRepository from "@/api/UsersRepository";
 
 export default {
-  name: "UserInfo",
+  name: "UserDetails",
   props: ['userId'],
   data() {
     return {
@@ -97,6 +97,7 @@ export default {
   },
   async created() {
     //TODO error handling
+    this.$store.commit("user/resetState");
     if (this.userId) {
       await this.getUser();
     }

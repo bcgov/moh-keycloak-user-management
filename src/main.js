@@ -11,6 +11,8 @@ Vue.config.productionTip = false
 
 Vue.prototype.$keycloak = keycloak; //maybe be able to remove this and use the export
 
+Vue.config.devtools = true
+
 keycloak.onAuthSuccess = function () {
   new Vue({
     vuetify,

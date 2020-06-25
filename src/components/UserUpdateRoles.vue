@@ -151,9 +151,6 @@ export default {
         this.selectedRoles.includes(value)
       );
 
-      this.successMessage = "";
-      this.errorMessage = "";
-
       Promise.all([
         UsersRepository.deleteUserClientRoles(
           this.userId,

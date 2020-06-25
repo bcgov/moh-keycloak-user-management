@@ -13,7 +13,7 @@
 import UsersRepository from "@/api/UsersRepository";
 
 import UserDetails from "@/components/UserDetails.vue";
-import UserUpdateRoles from "@/components/UserUpdateRoles.vue"
+import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
 
 export default {
   name: "UserInfo",
@@ -39,15 +39,17 @@ export default {
             message: "User updated successfully",
             type: "success"
           });
-          window.scrollTo(0, 0);
         })
         .catch(error => {
           this.$store.commit("alert/setAlert", {
             message: "Error updating user: " + error,
             type: "error"
           });
+        })
+        .finally(() => {
+          window.scrollTo(0, 0);
         });
-    },
+    }
   },
   computed: {
     user() {
