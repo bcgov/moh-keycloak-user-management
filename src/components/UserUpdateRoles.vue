@@ -25,7 +25,8 @@
           <label>Roles</label>
           <v-checkbox
             hide-details="auto"
-            v-for="role in clientRoles"
+            v-for="(role, index) in clientRoles"
+            :id="'role-' + index"
             v-model="selectedRoles"
             :value="role"
             :label="role.name"
@@ -57,7 +58,7 @@
         </v-col>
       </v-row>
       <div class="my-6" v-if="selectedClientId">
-        <v-btn class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+        <v-btn id="save-user-roles" class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
       </div>
     </div>
   </v-card>

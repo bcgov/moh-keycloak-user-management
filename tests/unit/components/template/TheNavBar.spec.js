@@ -32,5 +32,10 @@ describe('TheNavBar.vue', () => {
         const usersLink = wrapper.find('#event-log-link');
         expect(usersLink.classes()).toContain('active');
     });
+    it('shows Admin Event Log link as active when AdminEventLog is the current route', () => {
+        const wrapper = factory({ name: 'AdminEventLog' });
+        const usersLink = wrapper.find('#admin-event-log-link');
+        expect(usersLink.classes()).toContain('active');
+    });
 
 });

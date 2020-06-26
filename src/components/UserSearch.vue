@@ -39,7 +39,7 @@
         ></v-data-table>
       </v-col>
     </v-row>
-    <v-btn id="create-user-button" class="secondary" medium @click="goToCreateUser">Create New User</v-btn>
+    <v-btn id="create-user-button" class="secondary" medium @click.native="goToCreateUser">Create New User</v-btn>
   </div>
 </template>
 
@@ -62,7 +62,6 @@ export default {
       footerProps: { "items-per-page-options": [15] },
       userSearchInput: "",
       searchResults: [],
-      clients: [],
       userSearchLoadingStatus: false,
     };
   },

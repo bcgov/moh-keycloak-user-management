@@ -49,4 +49,22 @@ test('Test update user', async t => {
         .contains('User updated');
 });
 
+test('Test update user role', async t => {
+    // We use a random value just to make sure a change is actually made.
+    const client = 'realm-management'
+    const random_value = Math.ceil((Math.random() * 100)).toString();
+    await t
+        .typeText('#user-search', 'testcafe')
+        .click('#search-button')
+        // This is the ID of the testcafe user.
+        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        .typeText('#select-client', client, { replace: true })
+        .click(Selector('.v-list-item').withText('realm-management'))
+        .click('#role-0')
+        .click('#save-user-roles')
+        .expect(Selector('#primary-alert').textContent)
+        .contains('Roles updated successfully');
+});
+
+
 
