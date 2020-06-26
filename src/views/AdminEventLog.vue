@@ -1,7 +1,22 @@
 <template>
     <div>
       <v-text-field
-          v-model="search"
+          placeholder="User ID"
+          v-model="searchUserId"
+      />
+      <v-text-field
+          placeholder="Date (from)"
+          hint="yyyy-MM-dd"
+          v-model="searchDateFrom"
+      />
+      <v-text-field
+          placeholder="Date (to)"
+          hint="yyyy-MM-dd"
+          v-model="searchDateTo"
+      />
+      <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
+      <v-text-field
+          v-model="filterEvents"
           append-icon="mdi-magnify"
           label=" Search"
       ></v-text-field>
@@ -15,13 +30,13 @@
                 item-key="key"
                 loading-text="Loading events"
                 :loading="loadingStatus"
-                :search="search"
+                :search="filterEvents"
         >
             <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length"><pre>{{item.representation | pretty}}</pre></td>
             </template>
         </v-data-table>
-        <button @click="getAdminEvents">Refresh</button>
+        <button @click="getAllEvents">Refresh</button>
     </div>
 </template>
 
@@ -35,7 +50,10 @@
         name: "AdminEventLog",
         data() {
             return {
-                search: '',
+                searchUserId: '',
+                searchDateFrom: '',
+                searchDateTo: '',
+                filterEvents: '',
                 loadingStatus: false,
                 singleExpand: true,
                 adminEvents: [],
@@ -50,14 +68,31 @@
         },
 
         created() {
-            this.getAdminEvents();
+            this.getAllEvents();
         },
 
         methods: {
-          getAdminEvents: async function () {
+          searchEvents: function () {
+            const params = new URLSearchParams();
+            if (this.searchUserId) {
+              params.append('resourcePath', `users/${this.searchUserId}*`);
+            }
+            [
+              {name: 'dateFrom', value: this.searchDateFrom},
+              {name: 'dateTo', value: this.searchDateTo},
+            ].map(param => {
+              if (param.value) params.append(param.name, param.value);
+            });
+
+            this.getEvents(() => AdminEventsRepository.getEvents(params));
+          },
+          getAllEvents: function () {
+            this.getEvents(AdminEventsRepository.getEvents);
+          },
+          getEvents: async function(getEvents) {
             this.loadingStatus = true;
             try {
-              let promise = await AdminEventsRepository.getEvents();
+              let promise = await getEvents();
               this.adminEvents = promise.data;
               for (let [index, e] of this.adminEvents.entries()) {
                 e.key = index;
@@ -66,6 +101,7 @@
             } finally {
               this.loadingStatus = false;
             }
+
           }
         },
 

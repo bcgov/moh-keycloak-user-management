@@ -1,9 +1,28 @@
 <template>
     <div>
+      <v-text-field
+          placeholder="User ID"
+          v-model="searchUserId"
+      />
+      <v-text-field
+          placeholder="Application"
+      v-model="searchApplication"
+      />
+      <v-text-field
+          placeholder="Date (from)"
+      hint="yyyy-MM-dd"
+      v-model="searchDateFrom"
+      />
+      <v-text-field
+          placeholder="Date (to)"
+      hint="yyyy-MM-dd"
+      v-model="searchDateTo"
+      />
+      <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
         <v-text-field
-          v-model="search"
+          v-model="filterEvents"
           append-icon="mdi-magnify"
-          label="Search"
+          placeholder="Filter"
         ></v-text-field>
         <v-data-table
                 :headers="headers"
@@ -12,9 +31,9 @@
                 class="elevation-1"
                 loading-text="Loading events"
                 :loading="loadingStatus"
-                :search="search"
+                :search="filterEvents"
         ></v-data-table>
-      <button @click="getEvents">Refresh</button>
+      <button @click="getAllEvents">Refresh</button>
     </div>
 </template>
 
@@ -25,41 +44,61 @@
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
 
     export default {
-        name: "EventLog",
-        data() {
-            return {
-                search: '',
-                loadingStatus: false,
-                events: [],
-                headers: [
-                    { text: 'Time', value: 'readableDate'},
-                    { text: 'User', value: 'details.username' },
-                    { text: 'Event type', value: 'type' },
-                    { text: 'Application', value: 'clientId' },
-                ],
-            }
-        },
+      name: "EventLog",
+      data() {
+        return {
+          searchUserId: '',
+          searchApplication: '',
+          searchDateFrom: '',
+          searchDateTo: '',
+          filterEvents: '',
+          loadingStatus: false,
+          events: [],
+          headers: [
+            {text: 'Time', value: 'readableDate'},
+            {text: 'User', value: 'userId'},
+            {text: 'Event type', value: 'type'},
+            {text: 'Application', value: 'clientId'},
+          ],
+        }
+      },
 
-        created() {
-            this.getEvents();
-        },
+      created() {
+        this.getAllEvents();
+      },
 
-        methods: {
-            getEvents: async function () {
-              this.loadingStatus = true;
-              try {
-                let promise = await EventsRepository.getEvents();
-                this.events = promise.data;
-                for (let e of this.events) {
-                  e.readableDate = formatDate(e.time);
-                  if (!e.details) {
-                    e.details = 'no details';
-                  }
-                }
-              } finally {
-                this.loadingStatus = false;
+      methods: {
+        searchEvents: function () {
+          const params = new URLSearchParams();
+          [
+            {name: 'user', value: this.searchUserId},
+            {name: 'client', value: this.searchApplication},
+            {name: 'dateFrom', value: this.searchDateFrom},
+            {name: 'dateTo', value: this.searchDateTo},
+          ].map(param => {
+            if (param.value) params.append(param.name, param.value);
+          });
+
+          this.getEvents(() => EventsRepository.getEvents(params.toString()));
+        },
+        getAllEvents: function () {
+          this.getEvents(EventsRepository.getEvents);
+        },
+        getEvents: async function (getEvents) {
+          this.loadingStatus = true;
+          try {
+            let promise = await getEvents();
+            this.events = promise.data;
+            for (let e of this.events) {
+              e.readableDate = formatDate(e.time);
+              if (!e.details) {
+                e.details = 'no details';
               }
             }
+          } finally {
+            this.loadingStatus = false;
+          }
         }
-    };
+      }
+    }
 </script>

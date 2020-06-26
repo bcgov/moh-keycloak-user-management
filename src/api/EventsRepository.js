@@ -1,10 +1,13 @@
 import { kcRequest } from "./Repository";
 
-const resource = "/events";
+const resource = "/events" +
+    "?type=LOGIN" +
+    "&type=LOGOUT&max=100";
 
 export default {
 
-    getEvents() {
-        return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
+    getEvents(queryParams) {
+        const resourcePath = queryParams ? `${resource}&${queryParams}` : resource;
+        return kcRequest().then(axiosInstance => axiosInstance.get(resourcePath));
     }
 }
