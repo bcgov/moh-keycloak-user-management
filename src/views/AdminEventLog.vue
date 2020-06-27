@@ -80,20 +80,7 @@
 
         methods: {
           searchEvents: function () {
-            const params = new URLSearchParams();
-            if (this.searchUserId && this.searchClientId) {
-              params.append('resourcePath', `users/${this.searchUserId}/role-mappings/clients/${this.searchClientId}/`);
-            } else if (this.searchUserId) {
-              params.append('resourcePath', `users/${this.searchUserId}*`);
-            } else if (this.searchClientId) {
-              params.append('resourcePath', `*role-mappings/clients/${this.searchClientId}*`);
-            }
-            [
-              {name: 'dateFrom', value: this.searchDateFrom},
-              {name: 'dateTo', value: this.searchDateTo},
-            ].map(param => {
-              if (param.value) params.append(param.name, param.value);
-            });
+            const params = getQueryParams.call(this);
 
             this.getEvents(() => AdminEventsRepository.getEvents(params));
           },
@@ -133,4 +120,22 @@
             }
         }
     };
+
+    function getQueryParams() {
+      const params = new URLSearchParams();
+      if (this.searchUserId && this.searchClientId) {
+        params.append('resourcePath', `users/${this.searchUserId}/role-mappings/clients/${this.searchClientId}/`);
+      } else if (this.searchUserId) {
+        params.append('resourcePath', `users/${this.searchUserId}*`);
+      } else if (this.searchClientId) {
+        params.append('resourcePath', `*role-mappings/clients/${this.searchClientId}*`);
+      }
+      [
+        {name: 'dateFrom', value: this.searchDateFrom},
+        {name: 'dateTo', value: this.searchDateTo},
+      ].map(param => {
+        if (param.value) params.append(param.name, param.value);
+      });
+      return params;
+    }
 </script>
