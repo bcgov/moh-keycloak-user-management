@@ -80,8 +80,7 @@
 
         methods: {
           searchEvents: function () {
-            const params = getQueryParams.call(this);
-
+            const params = buildQueryParameters.call(this);
             this.getEvents(() => AdminEventsRepository.getEvents(params));
           },
           getAllEvents: function () {
@@ -121,7 +120,7 @@
         }
     };
 
-    function getQueryParams() {
+    function buildQueryParameters() {
       const params = new URLSearchParams();
       if (this.searchUserId && this.searchClientId) {
         params.append('resourcePath', `users/${this.searchUserId}/role-mappings/clients/${this.searchClientId}/`);
