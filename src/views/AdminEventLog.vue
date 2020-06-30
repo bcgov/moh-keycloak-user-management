@@ -1,7 +1,26 @@
 <template>
     <div>
       <v-text-field
-          v-model="search"
+          placeholder="User ID"
+          v-model="searchUserId"
+      />
+      <v-text-field
+          placeholder="Application ID"
+          v-model="searchClientId"
+      />
+      <v-text-field
+          placeholder="Date (from)"
+          hint="yyyy-MM-dd"
+          v-model="searchDateFrom"
+      />
+      <v-text-field
+          placeholder="Date (to)"
+          hint="yyyy-MM-dd"
+          v-model="searchDateTo"
+      />
+      <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
+      <v-text-field
+          v-model="filterEvents"
           append-icon="mdi-magnify"
           label=" Search"
       ></v-text-field>
@@ -15,13 +34,14 @@
                 item-key="key"
                 loading-text="Loading events"
                 :loading="loadingStatus"
-                :search="search"
+                :search="filterEvents"
         >
             <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length"><pre>{{item.representation | pretty}}</pre></td>
             </template>
+
         </v-data-table>
-        <button @click="getAdminEvents">Refresh</button>
+        <button @click="getAllEvents">Refresh</button>
     </div>
 </template>
 
@@ -35,7 +55,11 @@
         name: "AdminEventLog",
         data() {
             return {
-                search: '',
+                searchUserId: '',
+                searchClientId: '',
+                searchDateFrom: '',
+                searchDateTo: '',
+                filterEvents: '',
                 loadingStatus: false,
                 singleExpand: true,
                 adminEvents: [],
@@ -43,29 +67,47 @@
                     { text: 'Time', value: 'readableDate'},
                     { text: 'Event type', value: 'operationType' },
                     { text: 'Resource type', value: 'resourceType' },
-                    { text: 'User', value: 'resourcePath' },
+                    { text: 'User', value: 'userId' },
+                    { text: 'Application', value: 'clientId' },
                     { text: 'Details', value: 'data-table-expand' },
                 ],
             }
         },
 
         created() {
-            this.getAdminEvents();
+            this.getAllEvents();
         },
 
         methods: {
-          getAdminEvents: async function () {
+          searchEvents: function () {
+            const params = getQueryParams.call(this);
+
+            this.getEvents(() => AdminEventsRepository.getEvents(params));
+          },
+          getAllEvents: function () {
+            this.getEvents(AdminEventsRepository.getEvents);
+          },
+          getEvents: async function(getEvents) {
             this.loadingStatus = true;
             try {
-              let promise = await AdminEventsRepository.getEvents();
+              let promise = await getEvents();
               this.adminEvents = promise.data;
               for (let [index, e] of this.adminEvents.entries()) {
                 e.key = index;
                 e.readableDate = formatDate(e.time);
+                // Assumes format users/nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn
+                // If we ever display non-users path events, we'll need to change this.
+                e.userId = e.resourcePath.substring(6, 42);
+                // CREATE and UPDATE USER events aren't associated with an application, so check for the "clients" path before extracting it.
+                if (e.resourcePath.includes('role-mappings/clients')) {
+                  // Assumes format users/.../role-mappings/clients/nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn/
+                  e.clientId = e.resourcePath.substring(65, 101);
+                }
               }
             } finally {
               this.loadingStatus = false;
             }
+
           }
         },
 
@@ -78,4 +120,22 @@
             }
         }
     };
+
+    function getQueryParams() {
+      const params = new URLSearchParams();
+      if (this.searchUserId && this.searchClientId) {
+        params.append('resourcePath', `users/${this.searchUserId}/role-mappings/clients/${this.searchClientId}/`);
+      } else if (this.searchUserId) {
+        params.append('resourcePath', `users/${this.searchUserId}*`);
+      } else if (this.searchClientId) {
+        params.append('resourcePath', `*role-mappings/clients/${this.searchClientId}*`);
+      }
+      [
+        {name: 'dateFrom', value: this.searchDateFrom},
+        {name: 'dateTo', value: this.searchDateTo},
+      ].map(param => {
+        if (param.value) params.append(param.name, param.value);
+      });
+      return params;
+    }
 </script>
