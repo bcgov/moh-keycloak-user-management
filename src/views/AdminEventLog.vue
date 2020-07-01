@@ -37,7 +37,10 @@
                 :search="filterEvents"
         >
             <template v-slot:expanded-item="{ headers, item }">
-                <td :colspan="headers.length"><pre>{{item.representation | pretty}}</pre></td>
+                <td :colspan="headers.length">
+                  <pre>User ID: {{ item.userId }}</pre>
+                  <pre>Client ID: {{ item.clientId }}</pre>
+                </td>
             </template>
 
         </v-data-table>
@@ -46,9 +49,11 @@
 </template>
 
 <script>
-    import AdminEventsRepository from "../api/AdminEventsRepository";
+import AdminEventsRepository from "../api/AdminEventsRepository";
+import UsersRepository from "../api/UsersRepository";
+import ClientsRepository from "../api/ClientsRepository";
 
-    const options = {dateStyle: 'short', timeStyle: 'short'};
+const options = {dateStyle: 'short', timeStyle: 'short'};
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
 
     export default {
@@ -67,8 +72,8 @@
                     { text: 'Time', value: 'readableDate'},
                     { text: 'Event type', value: 'operationType' },
                     { text: 'Resource type', value: 'resourceType' },
-                    { text: 'User', value: 'userId' },
-                    { text: 'Application', value: 'clientId' },
+                    { text: 'User', value: 'username' },
+                    { text: 'Application', value: 'clientName' },
                     { text: 'Details', value: 'data-table-expand' },
                 ],
             }
@@ -103,6 +108,8 @@
                   e.clientId = e.resourcePath.substring(65, 101);
                 }
               }
+              await ClientsRepository.getClientNames(this.adminEvents);
+              await UsersRepository.getUsernames(this.adminEvents);
             } finally {
               this.loadingStatus = false;
             }
@@ -119,6 +126,7 @@
             }
         }
     };
+
 
     function buildQueryParameters() {
       const params = new URLSearchParams();

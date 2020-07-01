@@ -29,16 +29,26 @@
                 :items="events"
                 :items-per-page="15"
                 class="elevation-1"
+                show-expand
+                :single-expand="singleExpand"
+                item-key="key"
                 loading-text="Loading events"
                 :loading="loadingStatus"
                 :search="filterEvents"
-        ></v-data-table>
+        >
+          <template v-slot:expanded-item="{ headers, item }">
+            <td :colspan="headers.length">
+              <pre>User ID: {{ item.userId }}</pre>
+            </td>
+          </template>
+        </v-data-table>
       <button @click="getAllEvents">Refresh</button>
     </div>
 </template>
 
 <script>
     import EventsRepository from "../api/EventsRepository";
+    import UsersRepository from "../api/UsersRepository";
 
     const options = {dateStyle: 'short', timeStyle: 'short'};
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
@@ -53,12 +63,15 @@
           searchDateTo: '',
           filterEvents: '',
           loadingStatus: false,
+          singleExpand: true,
           events: [],
           headers: [
             {text: 'Time', value: 'readableDate'},
             {text: 'User', value: 'userId'},
+            {text: 'Username', value: 'username'},
             {text: 'Event type', value: 'type'},
             {text: 'Application', value: 'clientId'},
+            {text: 'Details', value: 'data-table-expand'},
           ],
         }
       },
@@ -89,12 +102,14 @@
           try {
             let promise = await getEvents();
             this.events = promise.data;
-            for (let e of this.events) {
+            for (let [index, e] of this.events.entries()) {
+              e.key = index;
               e.readableDate = formatDate(e.time);
               if (!e.details) {
                 e.details = 'no details';
               }
             }
+            await UsersRepository.getUsernames(this.events);
           } finally {
             this.loadingStatus = false;
           }
