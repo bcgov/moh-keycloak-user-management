@@ -108,7 +108,7 @@
                 e.details = 'no details';
               }
             }
-            await UsersRepository.getUsernames(this.events);
+            await UsersRepository.addUsernamesToEvents(this.events);
           } finally {
             this.loadingStatus = false;
           }

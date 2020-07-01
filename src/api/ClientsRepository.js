@@ -25,7 +25,7 @@ export default {
      * @param events object array, objects should contain clientId property.
      * @returns {Promise<void>}
      */
-    async getClientNames(events) {
+    async addClientNamesToEvents(events) {
         for (let event of events) {
             if (event.clientId && !sessionStorage[event.clientId]) {
                 try {

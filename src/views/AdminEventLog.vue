@@ -109,8 +109,8 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
                   e.clientId = e.resourcePath.substring(65, 101);
                 }
               }
-              await ClientsRepository.getClientNames(this.adminEvents);
-              await UsersRepository.getUsernames(this.adminEvents);
+              await ClientsRepository.addClientNamesToEvents(this.adminEvents);
+              await UsersRepository.addUsernamesToEvents(this.adminEvents);
             } finally {
               this.loadingStatus = false;
             }

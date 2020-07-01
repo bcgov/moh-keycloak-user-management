@@ -60,7 +60,7 @@ export default {
      * @param events object array, objects should contain userId property.
      * @returns {Promise<void>}
      */
-    async getUsernames(events) {
+    async addUsernamesToEvents(events) {
         for (let event of events) {
             if (!sessionStorage[event.userId]) {
                 try {
