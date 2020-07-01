@@ -67,8 +67,7 @@
           events: [],
           headers: [
             {text: 'Time', value: 'readableDate'},
-            {text: 'User', value: 'userId'},
-            {text: 'Username', value: 'username'},
+            {text: 'User', value: 'username'},
             {text: 'Event type', value: 'type'},
             {text: 'Application', value: 'clientId'},
             {text: 'Details', value: 'data-table-expand'},

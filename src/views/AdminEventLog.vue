@@ -38,6 +38,7 @@
         >
             <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length">
+                  <pre>Data: {{item.representation | pretty}}</pre>
                   <pre>User ID: {{ item.userId }}</pre>
                   <pre>Client ID: {{ item.clientId }}</pre>
                 </td>
