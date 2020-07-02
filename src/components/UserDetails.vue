@@ -6,7 +6,7 @@
       <v-row no-gutters>
         <v-col class="col-7">
           <v-form ref="form">
-            <label for="user-name" class="required">User Name</label>
+            <label for="user-name" class="required">Username</label>
             <v-text-field
               dense
               outlined

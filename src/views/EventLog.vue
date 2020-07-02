@@ -1,47 +1,62 @@
 <template>
     <div>
+      <label for="user-id">User ID</label>
       <v-text-field
-          placeholder="User ID"
+          id="user-id"
+          dense
+          outlined
           v-model="searchUserId"
       />
+      <label for="app-id">Application ID</label>
       <v-text-field
-          placeholder="Application"
-      v-model="searchApplication"
+          id="app-id"
+          dense
+          outlined
+          v-model="searchClientId"
       />
+      <label for="from-date">Date (from)</label>
       <v-text-field
-          placeholder="Date (from)"
-      hint="yyyy-MM-dd"
-      v-model="searchDateFrom"
+          id="from-date"
+          dense
+          outlined        
+          hint="yyyy-MM-dd"
+          v-model="searchDateFrom"
       />
+      <label for="to-date">Date (to)</label>
       <v-text-field
-          placeholder="Date (to)"
-      hint="yyyy-MM-dd"
-      v-model="searchDateTo"
+          id="to-date"
+          dense
+          outlined
+          hint="yyyy-MM-dd"
+          v-model="searchDateTo"
       />
       <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
-        <v-text-field
-          v-model="filterEvents"
-          append-icon="mdi-magnify"
-          placeholder="Filter"
-        ></v-text-field>
-        <v-data-table
-                :headers="headers"
-                :items="events"
-                :items-per-page="15"
-                class="elevation-1"
-                show-expand
-                :single-expand="singleExpand"
-                item-key="key"
-                loading-text="Loading events"
-                :loading="loadingStatus"
-                :search="filterEvents"
-        >
-          <template v-slot:expanded-item="{ headers, item }">
-            <td :colspan="headers.length">
-              <pre>User ID: {{ item.userId }}</pre>
-            </td>
-          </template>
-        </v-data-table>
+
+      <h1 style="margin-bottom: 10px;">Search Results</h1>
+
+      <v-text-field
+        v-model="filterEvents"
+        append-icon="mdi-magnify"
+        placeholder="Filter"
+      ></v-text-field>
+      <v-data-table
+              :headers="headers"
+              :items="events"
+              :items-per-page="15"
+              class="base-table"
+              show-expand
+              :single-expand="singleExpand"
+              item-key="key"
+              loading-text="Loading events"
+              :loading="loadingStatus"
+              :search="filterEvents"
+      >
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <pre>User ID: {{ item.userId }}</pre>
+          </td>
+        </template>
+      </v-data-table>
       <button @click="getAllEvents">Refresh</button>
     </div>
 </template>
@@ -116,3 +131,9 @@
       }
     }
 </script>
+
+<style scoped>
+#search-button {
+  margin: 0px 0px 25px 0px
+}
+</style>

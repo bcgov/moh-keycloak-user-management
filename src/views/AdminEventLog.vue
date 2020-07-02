@@ -1,34 +1,49 @@
 <template>
     <div>
+      <label for="user-id">User ID</label>
       <v-text-field
-          placeholder="User ID"
+          id="user-id"
+          dense
+          outlined
           v-model="searchUserId"
       />
+      <label for="app-id">Application ID</label>
       <v-text-field
-          placeholder="Application ID"
+          id="app-id"
+          dense
+          outlined
           v-model="searchClientId"
       />
+      <label for="from-date">Date (from)</label>
       <v-text-field
-          placeholder="Date (from)"
+          id="from-date"
+          dense
+          outlined        
           hint="yyyy-MM-dd"
           v-model="searchDateFrom"
       />
+      <label for="to-date">Date (to)</label>
       <v-text-field
-          placeholder="Date (to)"
+          id="to-date"
+          dense
+          outlined
           hint="yyyy-MM-dd"
           v-model="searchDateTo"
       />
       <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
+
+      <h1 style="margin-bottom: 10px;">Search Results</h1>
+
       <v-text-field
           v-model="filterEvents"
           append-icon="mdi-magnify"
-          label=" Search"
+          label=" Filter Results"
       ></v-text-field>
         <v-data-table
                 :headers="headers"
                 :items="adminEvents"
                 :items-per-page="15"
-                class="elevation-1"
+                class="base-table"
                 show-expand
                 :single-expand="singleExpand"
                 item-key="key"
@@ -147,3 +162,9 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
       return params;
     }
 </script>
+
+<style scoped>
+#search-button {
+  margin: 0px 0px 25px 0px
+}
+</style>
