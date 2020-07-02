@@ -37,7 +37,7 @@
       <v-text-field
         v-model="filterEvents"
         append-icon="mdi-magnify"
-        placeholder="Filter"
+        placeholder="Filter Results"
       ></v-text-field>
       <v-data-table
               :headers="headers"
