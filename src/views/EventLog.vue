@@ -7,12 +7,12 @@
           outlined
           v-model="searchUserId"
       />
-      <label for="app-id">Application ID</label>
+      <label for="app-id">Application name</label>
       <v-text-field
           id="app-id"
           dense
           outlined
-          v-model="searchClientId"
+          v-model="searchApplicationName"
       />
       <label for="from-date">Date (from)</label>
       <v-text-field
@@ -73,7 +73,7 @@
       data() {
         return {
           searchUserId: '',
-          searchApplication: '',
+          searchApplicationName: '',
           searchDateFrom: '',
           searchDateTo: '',
           filterEvents: '',
@@ -99,7 +99,7 @@
           const params = new URLSearchParams();
           [
             {name: 'user', value: this.searchUserId},
-            {name: 'client', value: this.searchApplication},
+            {name: 'client', value: this.searchApplicationName},
             {name: 'dateFrom', value: this.searchDateFrom},
             {name: 'dateTo', value: this.searchDateTo},
           ].map(param => {
