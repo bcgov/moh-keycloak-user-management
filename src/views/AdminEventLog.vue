@@ -22,7 +22,7 @@
       <v-text-field
           v-model="filterEvents"
           append-icon="mdi-magnify"
-          label=" Search"
+          placeholder="Filter"
       ></v-text-field>
         <v-data-table
                 :headers="headers"
