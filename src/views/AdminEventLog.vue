@@ -1,34 +1,49 @@
 <template>
     <div>
+      <label for="user-id">User ID</label>
       <v-text-field
-          placeholder="User ID"
+          id="user-id"
+          dense
+          outlined
           v-model="searchUserId"
       />
+      <label for="app-id">Application ID</label>
       <v-text-field
-          placeholder="Application ID"
+          id="app-id"
+          dense
+          outlined
           v-model="searchClientId"
       />
+      <label for="from-date">Date (from)</label>
       <v-text-field
-          placeholder="Date (from)"
+          id="from-date"
+          dense
+          outlined        
           hint="yyyy-MM-dd"
           v-model="searchDateFrom"
       />
+      <label for="to-date">Date (to)</label>
       <v-text-field
-          placeholder="Date (to)"
+          id="to-date"
+          dense
+          outlined
           hint="yyyy-MM-dd"
           v-model="searchDateTo"
       />
       <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
+
+      <h1 style="margin-bottom: 10px;">Search Results</h1>
+
       <v-text-field
           v-model="filterEvents"
           append-icon="mdi-magnify"
-          label=" Search"
+          placeholder="Filter Results"
       ></v-text-field>
         <v-data-table
                 :headers="headers"
                 :items="adminEvents"
                 :items-per-page="15"
-                class="elevation-1"
+                class="base-table"
                 show-expand
                 :single-expand="singleExpand"
                 item-key="key"
@@ -37,7 +52,11 @@
                 :search="filterEvents"
         >
             <template v-slot:expanded-item="{ headers, item }">
-                <td :colspan="headers.length"><pre>{{item.representation | pretty}}</pre></td>
+                <td :colspan="headers.length">
+                  <pre>Data: {{item.representation | pretty}}</pre>
+                  <pre>User ID: {{ item.userId }}</pre>
+                  <pre>Client ID: {{ item.clientId }}</pre>
+                </td>
             </template>
 
         </v-data-table>
@@ -46,9 +65,11 @@
 </template>
 
 <script>
-    import AdminEventsRepository from "../api/AdminEventsRepository";
+import AdminEventsRepository from "../api/AdminEventsRepository";
+import UsersRepository from "../api/UsersRepository";
+import ClientsRepository from "../api/ClientsRepository";
 
-    const options = {dateStyle: 'short', timeStyle: 'short'};
+const options = {dateStyle: 'short', timeStyle: 'short'};
     const formatDate = new Intl.DateTimeFormat(undefined, options).format;
 
     export default {
@@ -67,8 +88,8 @@
                     { text: 'Time', value: 'readableDate'},
                     { text: 'Event type', value: 'operationType' },
                     { text: 'Resource type', value: 'resourceType' },
-                    { text: 'User', value: 'userId' },
-                    { text: 'Application', value: 'clientId' },
+                    { text: 'User', value: 'username' },
+                    { text: 'Application', value: 'clientName' },
                     { text: 'Details', value: 'data-table-expand' },
                 ],
             }
@@ -103,6 +124,8 @@
                   e.clientId = e.resourcePath.substring(65, 101);
                 }
               }
+              await ClientsRepository.addClientNamesToEvents(this.adminEvents);
+              await UsersRepository.addUsernamesToEvents(this.adminEvents);
             } finally {
               this.loadingStatus = false;
             }
@@ -119,6 +142,7 @@
             }
         }
     };
+
 
     function buildQueryParameters() {
       const params = new URLSearchParams();
@@ -138,3 +162,9 @@
       return params;
     }
 </script>
+
+<style scoped>
+#search-button {
+  margin: 0px 0px 25px 0px
+}
+</style>

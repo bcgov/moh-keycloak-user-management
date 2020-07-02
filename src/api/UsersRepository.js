@@ -48,5 +48,30 @@ export default {
         //Keycloak expects the roles that will be removed in the body of the request which Axios doesn't do by default
         const deleteContent = { data: content }
         return kcRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${clientRoleMappings}/${clientId}/`, deleteContent));
+    },
+
+    /**
+     * Adds usernames to the events array using the userId to lookup the username.
+     *
+     * The events array should contain objects with a userId property.
+     * The username will be added to the corresponding object. It caches
+     * the userId:username in sessionStorage.
+     *
+     * @param events object array, objects should contain userId property.
+     * @returns {Promise<void>}
+     */
+    async addUsernamesToEvents(events) {
+        for (let event of events) {
+            if (!sessionStorage[event.userId]) {
+                try {
+                    const userData = await this.getUser(event.userId);
+                    sessionStorage[event.userId] = userData.data.username;
+                } catch (ex) {
+                    console.log(ex);
+                    sessionStorage[event.userId] = 'no user found';
+                }
+            }
+            event.username = sessionStorage[event.userId];
+        }
     }
 }
