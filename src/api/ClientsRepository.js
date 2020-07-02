@@ -6,10 +6,6 @@ export default {
     get() {
         return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
     },
-
-    getClient(clientId) {
-        return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}`));
-    },
     
     getRoles(clientId){
         return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles`));
@@ -26,19 +22,16 @@ export default {
      * @returns {Promise<void>}
      */
     async addClientNamesToEvents(events) {
+        const allClients = await this.get();
+        // Note clientResponse.data.clientId is not the numeric ID, it is actually a name.
+        // There is also a longer display name property ("name").
+        allClients.data.map((client) => sessionStorage[client.id] = client.clientId);
         for (let event of events) {
-            if (event.clientId && !sessionStorage[event.clientId]) {
-                try {
-                    const clientResponse = await this.getClient(event.clientId);
-                    // Note clientResponse.data.clientId is not the numeric ID, it is actually a name.
-                    // There is also a longer display name property ("name").
-                    sessionStorage[event.clientId] = clientResponse.data.clientId;
-                } catch (ex) {
-                    console.log(ex);
-                    sessionStorage[event.clientId] = 'no client found';
-                }
+            if (event.clientId && sessionStorage[event.clientId]) {
+                event.clientName = sessionStorage[event.clientId];
+            } else {
+                event.clientName = 'no client found';
             }
-            event.clientName = sessionStorage[event.clientId];
         }
     }
 
