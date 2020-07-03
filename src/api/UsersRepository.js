@@ -25,6 +25,10 @@ export default {
         return kcRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}`, content));
     },
 
+    deleteUser(userId) {
+        return kcRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}`))
+    },
+
     /*Get available client-level roles that can be mapped to the user*/
     getUserAvailableClientRoles(userId, clientId) {
         return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}/${clientRoleMappings}/${clientId}/available`));

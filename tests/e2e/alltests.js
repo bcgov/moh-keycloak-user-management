@@ -44,7 +44,7 @@ test('Test update user', async t => {
         // This is the ID of the testcafe user.
         .click(Selector('td').withText(TEST_CAFE_USER_ID))
         .typeText('#org-details', random_value, { replace: true })
-        .click('#save-button')
+        .click('#submit-button')
         .expect(Selector('html').textContent)
         .contains('User updated');
 });
