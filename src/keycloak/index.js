@@ -5,7 +5,8 @@ let keycloak = Keycloak();
 let initOptions = {
     responseMode: 'fragment',
     flow: 'standard',
-    onLoad: 'login-required'
+    onLoad: 'login-required',
+    pkceMethod: 'S256'
 };
 
 keycloak.init(initOptions).then((auth) => {
