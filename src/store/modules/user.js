@@ -9,7 +9,8 @@ const getDefaultState = () => {
             phone: '',
             org_details: '',
             lockout_reason: '',
-            revoked: ''
+            revoked: '',
+            access_team_notes: ''
         }
     }
 }
@@ -31,6 +32,7 @@ const mutations = {
             state.attributes.org_details = user.attributes.org_details
             state.attributes.lockout_reason = user.attributes.lockout_reason
             state.attributes.revoked = user.attributes.revoked
+            state.attributes.access_team_notes = user.attributes.access_team_notes
         }  
     },
     setUsername(state, username) {
@@ -59,6 +61,9 @@ const mutations = {
     },
     setRevoked(state, revoked) {
         state.attributes.revoked = revoked
+    },
+    setAccessTeamNotes(state, access_team_notes) {
+        state.attributes.access_team_notes = access_team_notes
     }
 }
 

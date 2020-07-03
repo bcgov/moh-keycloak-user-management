@@ -52,6 +52,9 @@
             <label for="org-details">Organization Name and Address</label>
             <v-textarea outlined dense id="org-details" v-model="org_details" />
 
+            <label for="notes">Notes</label>
+            <v-textarea outlined dense id="notes" v-model="access_team_notes" maxlength="255" />
+
             <label for="enabled-radio">Lockout Status</label>
             <v-radio-group id="enabled-radio" v-model="computedLockout" row height="1">
               <v-radio v-for="n in LOCK_STATES" :key="n" :label="n" :value="n"></v-radio>
@@ -144,7 +147,7 @@ export default {
           throw Error(`Unrecognized lock state '${newValue}'`);
         }
       }
-    },      
+    },
     user: {
       get() {
         return this.$store.state.user;
@@ -223,6 +226,14 @@ export default {
       },
       set(revoked) {
         this.$store.commit("user/setRevoked", revoked);
+      }
+    },
+    access_team_notes: {
+      get() {
+        return this.$store.state.user.attributes.access_team_notes;
+      },
+      set(access_team_notes) {
+        this.$store.commit("user/setAccessTeamNotes", access_team_notes);
       }
     }
   }
