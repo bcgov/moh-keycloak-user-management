@@ -52,7 +52,6 @@ test('Test update user', async t => {
 test('Test update user role', async t => {
     // We use a random value just to make sure a change is actually made.
     const client = 'realm-management'
-    const random_value = Math.ceil((Math.random() * 100)).toString();
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')

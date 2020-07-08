@@ -16,6 +16,7 @@ class UserDetailsPage {
         this.lastnameInput = Selector('#last-name');
         this.emailInput = Selector('#email');
         this.phoneInput = Selector('#phone');
+        this.orgInput = Selector('#org-details');
         this.notesInput = Selector('#notes');
 
         this.enabledStatus = new LockoutStatus('Enabled');

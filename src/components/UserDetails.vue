@@ -6,9 +6,19 @@
       <v-row no-gutters>
         <v-col class="col-7">
           <v-form ref="form">
-            <label for="user-name" class="required">Username</label>
+            <label for="user-name" :disabled="!!userId" class="required">Username</label>
+            <v-tooltip right v-if="!userId">
+              <template v-slot:activator="{ on }">
+                <v-icon id="user-name-tooltip-icon" v-on="on" small>mdi-help-circle</v-icon>
+              </template>
+              <span>Username should be the exact user id
+                  followed directly by @idir, @bceid, or @phsa
+                  in alignment with the digital id type
+                  (e.g. userjane@idir)</span>
+            </v-tooltip>
             <v-text-field
               dense
+              :disabled="!!userId"
               outlined
               id="user-name"
               v-model="username"
@@ -49,8 +59,14 @@
             <label for="phone">Telephone Number</label>
             <v-text-field dense outlined id="phone" v-model="phone" />
 
-            <label for="org-details">Organization Name and Address</label>
-            <v-textarea outlined dense id="org-details" v-model="org_details" />
+            <label for="org-details">Organization</label>
+            <v-autocomplete
+                id="org-details"
+                v-model="org_details"
+                :items="$options.organizations"
+                dense
+                outlined
+            ></v-autocomplete>
 
             <label for="notes">Notes</label>
             <v-textarea outlined dense id="notes" v-model="access_team_notes" maxlength="255" />
@@ -83,10 +99,16 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
+import organizations from "@/assets/organizations"
 
 export default {
   name: "UserDetails",
   props: ['userId'],
+  organizations: organizations.map((item) => {
+    item.value = JSON.stringify(item);
+    item.text = `${item.id} - ${item.name}`;
+    return item;
+  }),
   data() {
     return {
       emailRules: [
@@ -206,7 +228,13 @@ export default {
     },
     org_details: {
       get() {
-        return this.$store.state.user.attributes.org_details;
+        //Keycloak returns attributes as arrays which doesn't work with the autocomplete
+        let org = this.$store.state.user.attributes.org_details;
+        if (Array.isArray(org)) {
+          return org[0];
+        } else {
+          return org;
+        }
       },
       set(org_details) {
         this.$store.commit("user/setOrgDetails", org_details);
@@ -239,3 +267,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+#user-name-tooltip-icon {
+  margin-left: 10px;
+}
+</style>
