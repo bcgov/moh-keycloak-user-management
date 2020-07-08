@@ -7,6 +7,15 @@
         <v-col class="col-7">
           <v-form ref="form">
             <label for="user-name" :disabled="!!userId" class="required">Username</label>
+            <v-tooltip right v-if="!userId">
+              <template v-slot:activator="{ on }">
+                <v-icon id="user-name-tooltip-icon" v-on="on" small>mdi-help-circle</v-icon>
+              </template>
+              <span>Username should be the exact user id
+                  followed directly by @idir, @bceid, or @phsa
+                  in alignment with the digital id type
+                  (e.g. userjane@idir)</span>
+            </v-tooltip>
             <v-text-field
               dense
               :disabled="!!userId"
@@ -55,8 +64,6 @@
                 id="org-details"
                 v-model="org_details"
                 :items="$options.organizations"
-                :item-text="getOrganizationText"
-                :item-value="getOrganizationValue"
                 dense
                 outlined
             ></v-autocomplete>
@@ -97,7 +104,11 @@ import organizations from "@/assets/organizations"
 export default {
   name: "UserDetails",
   props: ['userId'],
-  organizations: organizations,
+  organizations: organizations.map((item) => {
+    item.value = JSON.stringify(item);
+    item.text = `${item.id} - ${item.name}`;
+    return item;
+  }),
   data() {
     return {
       emailRules: [
@@ -125,12 +136,6 @@ export default {
         .catch(e => {
           console.log(e);
         });
-    },
-    getOrganizationText: function(item) {
-      return `${item.id} - ${item.name}`
-    },
-    getOrganizationValue: function(item) {
-      return JSON.stringify(item)
     }
   },
   computed: {
@@ -262,3 +267,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+#user-name-tooltip-icon {
+  margin-left: 10px;
+}
+</style>
