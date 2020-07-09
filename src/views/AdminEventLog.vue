@@ -1,36 +1,39 @@
 <!--suppress XmlInvalidId -->
 <template>
     <div>
-      <label for="user-id">User ID</label>
-      <v-text-field
-          id="user-id"
-          dense
-          outlined
-          v-model="searchUserId"
-      />
-      <label for="app-id">Application ID</label>
-      <v-text-field
-          id="app-id"
-          dense
-          outlined
-          v-model="searchClientId"
-      />
-      <label for="from-date">Date (from)</label>
-      <v-text-field
-          id="from-date"
-          dense
-          outlined        
-          hint="yyyy-MM-dd"
-          v-model="searchDateFrom"
-      />
-      <label for="to-date">Date (to)</label>
-      <v-text-field
-          id="to-date"
-          dense
-          outlined
-          hint="yyyy-MM-dd"
-          v-model="searchDateTo"
-      />
+      <div id="search-inputs" @keyup.enter="searchEvents" >
+        <label for="user-id">User ID</label>
+        <v-text-field
+            id="user-id"
+            dense
+            outlined
+            v-model="searchUserId"
+        />
+        <label for="app-id">Application ID</label>
+        <v-text-field
+            id="app-id"
+            dense
+            outlined
+            v-model="searchClientId"
+        />
+        <label for="from-date">Date (from)</label>
+        <v-text-field
+            id="from-date"
+            dense
+            outlined
+            hint="yyyy-MM-dd"
+            v-model="searchDateFrom"
+        />
+        <label for="to-date">Date (to)</label>
+        <v-text-field
+            id="to-date"
+            dense
+            outlined
+            hint="yyyy-MM-dd"
+            v-model="searchDateTo"
+        />
+      </div>
+
       <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
 
       <h1 style="margin-bottom: 10px;">Search Results</h1>
