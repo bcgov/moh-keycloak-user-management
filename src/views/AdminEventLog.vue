@@ -1,3 +1,4 @@
+<!--suppress XmlInvalidId -->
 <template>
     <div>
       <label for="user-id">User ID</label>
@@ -53,9 +54,10 @@
         >
             <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length">
-                  <pre>Data: {{item.representation | pretty}}</pre>
                   <pre>User ID: {{ item.userId }}</pre>
-                  <pre>Client ID: {{ item.clientId }}</pre>
+                  <pre>Application ID: {{ item.clientId }}</pre>
+                  <pre>Data: {{item.representation | pretty}}</pre>
+                  <pre>Administrator: {{item.authDetails}}</pre>
                 </td>
             </template>
 
@@ -86,6 +88,7 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
                 adminEvents: [],
                 headers: [
                     { text: 'Time', value: 'readableDate'},
+                    { text: 'Administrator', value: 'authDetails.fullName'},
                     { text: 'Event type', value: 'operationType' },
                     { text: 'Resource type', value: 'resourceType' },
                     { text: 'User', value: 'username' },
@@ -126,6 +129,7 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
               }
               await ClientsRepository.addClientNamesToEvents(this.adminEvents);
               await UsersRepository.addUsernamesToEvents(this.adminEvents);
+              await UsersRepository.addAdminNamesToEvents(this.adminEvents);
             } finally {
               this.loadingStatus = false;
             }

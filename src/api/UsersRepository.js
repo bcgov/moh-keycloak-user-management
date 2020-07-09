@@ -62,16 +62,43 @@ export default {
      */
     async addUsernamesToEvents(events) {
         for (let event of events) {
-            if (!sessionStorage[event.userId]) {
+            const storageKey = 'username-' + event.userId;
+            if (!sessionStorage[storageKey]) {
                 try {
                     const userData = await this.getUser(event.userId);
-                    sessionStorage[event.userId] = userData.data.username;
+                    sessionStorage[storageKey] = userData.data.username;
                 } catch (ex) {
                     console.log(ex);
-                    sessionStorage[event.userId] = 'no user found';
+                    sessionStorage[storageKey] = 'no user found';
                 }
             }
-            event.username = sessionStorage[event.userId];
+            event.username = sessionStorage[storageKey];
+        }
+    },
+
+    /**
+     * Adds the administrator's full name to the events array using the userId to lookup the full name.
+     *
+     * The events array should contain objects with a authDetails.userId property.
+     * The full name will be added to the corresponding object. It caches
+     * the authDetails:fullName in sessionStorage.
+     *
+     * @param events object array, objects should contain authDetails.userId property.
+     * @returns {Promise<void>}
+     */
+    async addAdminNamesToEvents(events) {
+        for (let event of events) {
+            const storageKey = 'name-' + event.authDetails.userId;
+            if (!sessionStorage[storageKey]) {
+                try {
+                    const userData = await this.getUser(event.authDetails.userId);
+                    sessionStorage[storageKey] = `${userData.data.firstName} ${userData.data.lastName}`;
+                } catch (ex) {
+                    console.log(ex);
+                    sessionStorage[storageKey] = 'no user found';
+                }
+            }
+            event.authDetails.fullName = sessionStorage[storageKey];
         }
     }
 }
