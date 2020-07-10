@@ -35,8 +35,31 @@ export default {
     return {
       showKeycloakTools: false
     };
+  },
+  mounted() {
+    const missingRoles = getMissingRoles(
+        ["view-events", "manage-users", "view-users", "query-clients", "query-groups", "query-users"],
+        this.$keycloak.tokenParsed.resource_access['realm-management'].roles
+    );
+    if (missingRoles.length > 0) {
+      this.$store.commit("alert/setAlert", {
+        message: `You are missing roles required to use this application.
+          Missing roles: ${missingRoles}.`,
+        type: "error"
+      });
+    }
   }
 };
+
+function getMissingRoles(rolesRequired, actualRoles) {
+  const missingRoles = [];
+  rolesRequired.forEach(requiredRole => {
+    if (!actualRoles.includes(requiredRole)) {
+      missingRoles.push(requiredRole);
+    }
+  });
+  return missingRoles;
+}
 </script>
 
 <style src=./assets/css/main.css></style>
