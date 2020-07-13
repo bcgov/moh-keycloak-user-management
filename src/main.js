@@ -8,14 +8,20 @@ import keycloak from './keycloak';
 import store from './store'
 
 Vue.config.productionTip = false
-
 Vue.prototype.$keycloak = keycloak; //maybe be able to remove this and use the export
 
 keycloak.onAuthSuccess = function () {
-  new Vue({
-    vuetify,
-    router,
-    store,
-    render: h => h(App)
-  }).$mount('#app');
+    fetch(process.env.BASE_URL + "config.json")
+        .then((response) => {
+            return response.json();
+        })
+        .then((config) => {
+                Vue.prototype.$config = config
+                new Vue({
+                    vuetify,
+                    router,
+                    store,
+                    render: h => h(App)
+                }).$mount('#app');
+        })
 }

@@ -19,7 +19,7 @@ export default {
     name: "TheHeader",
     methods: {
     logout: function () {
-      this.$keycloak.logout();
+      this.$keycloak.logout({redirectUri: this.$config.siteminder_logout});
     }
   }
 }
