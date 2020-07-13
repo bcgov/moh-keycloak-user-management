@@ -9,14 +9,6 @@ let initOptions = {
     pkceMethod: 'S256'
 };
 
-keycloak.init(initOptions).then((auth) => {
-
-    if (!auth) {
-        throw "Auth error";
-    }
-
-}).catch(() => {
-    console.log("Authenticated Failed");
-});
+keycloak.init(initOptions);
 
 export default keycloak;
