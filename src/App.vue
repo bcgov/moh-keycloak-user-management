@@ -44,7 +44,7 @@ export default {
     if (missingRoles.length > 0) {
       this.$store.commit("alert/setAlert", {
         message: `You are missing roles required to use this application.
-          Missing roles: ${missingRoles}.`,
+          Missing roles: ${missingRoles.join(', ')}.`,
         type: "error"
       });
     }
