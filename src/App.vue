@@ -37,9 +37,14 @@ export default {
     };
   },
   mounted() {
+    const requiredRoles = ["view-events", "manage-users", "view-users", "query-clients", "query-groups", "query-users"];
+    let actualRoles = [];
+    if (this.$keycloak.tokenParsed.resource_access) {
+      actualRoles = this.$keycloak.tokenParsed.resource_access['realm-management'].roles;
+    }
     const missingRoles = getMissingRoles(
-        ["view-events", "manage-users", "view-users", "query-clients", "query-groups", "query-users"],
-        this.$keycloak.tokenParsed.resource_access['realm-management'].roles
+        requiredRoles,
+        actualRoles
     );
     if (missingRoles.length > 0) {
       this.$store.commit("alert/setAlert", {
@@ -51,9 +56,9 @@ export default {
   }
 };
 
-function getMissingRoles(rolesRequired, actualRoles) {
+function getMissingRoles(requiredRoles, actualRoles) {
   const missingRoles = [];
-  rolesRequired.forEach(requiredRole => {
+  requiredRoles.forEach(requiredRole => {
     if (!actualRoles.includes(requiredRole)) {
       missingRoles.push(requiredRole);
     }
