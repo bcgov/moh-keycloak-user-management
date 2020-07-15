@@ -2,7 +2,7 @@
 <template>
     <div>
       <div id="search-inputs" @keyup.enter="searchEvents" >
-        <label for="user-id">User ID</label>
+        <label for="user-id">Keycloak User ID</label>
         <v-text-field
             id="user-id"
             dense
@@ -94,7 +94,7 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
                     { text: 'Administrator', value: 'authDetails.fullName'},
                     { text: 'Event type', value: 'operationType' },
                     { text: 'Resource type', value: 'resourceType' },
-                    { text: 'User', value: 'username' },
+                    { text: 'Username', value: 'username' },
                     { text: 'Application', value: 'clientName' },
                     { text: 'Details', value: 'data-table-expand' },
                 ],

@@ -57,7 +57,7 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
-        { text: "ID", value: "id", class: "table-header" }
+        { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       footerProps: { "items-per-page-options": [15] },
       userSearchInput: "",
