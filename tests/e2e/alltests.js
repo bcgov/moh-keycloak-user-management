@@ -54,7 +54,6 @@ test('Test update user role', async t => {
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        // This is the ID of the testcafe user.
         .click(Selector('td').withText(TEST_CAFE_USER_ID))
         .typeText('#select-client', client, { replace: true })
         .click(Selector('.v-list-item').withText('realm-management'))
@@ -62,6 +61,15 @@ test('Test update user role', async t => {
         .click('#save-user-roles')
         .expect(Selector('#primary-alert').textContent)
         .contains('Roles updated successfully');
+});
+
+test('Test search by administrator', async t => {
+    await t
+        .click('#admin-event-log-link')
+        .typeText('#admin-id', TEST_CAFE_USER_ID)
+        .pressKey('enter')
+        .expect(Selector('html').textContent)
+        .contains('Test Cafe Cafe');
 });
 
 
