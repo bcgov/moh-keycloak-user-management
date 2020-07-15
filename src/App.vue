@@ -7,8 +7,8 @@
         <alert/>
         <router-view></router-view>
       </section>
-      <v-checkbox v-model="showKeycloakTools" :label="`Keycloak Dev Tools`"></v-checkbox>
-      <KeycloakDevTools v-show="showKeycloakTools" />
+      <v-checkbox v-model="showKeycloakTools" :label="`Keycloak Dev Tools`" v-if="vueCliMode === 'development'"></v-checkbox>
+      <KeycloakDevTools v-if="showKeycloakTools" />
     </main>
     <the-footer></the-footer>
   </v-app>
@@ -33,6 +33,7 @@ export default {
   },
   data() {
     return {
+      vueCliMode: process.env.NODE_ENV,
       showKeycloakTools: false
     };
   },

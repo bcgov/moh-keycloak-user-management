@@ -15,7 +15,9 @@ let initOptions = {
 // https://stackoverflow.com/a/56338011/201891
 let kcLogin = keycloak.login;
 keycloak.login = (options) => {
-    options.idpHint = 'idir';
+    if (process.env.NODE_ENV !== 'development') {
+        options.idpHint = 'idir';
+    }
     return kcLogin(options);
 };
 
