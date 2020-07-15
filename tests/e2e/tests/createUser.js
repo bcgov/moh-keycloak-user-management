@@ -4,8 +4,8 @@ import { itsbAccessTeamUser } from "../roles/roles"
 
 const ERROR_MESSAGE = 'Please correct errors before submitting';
 
-fixture `CreateUser`
-    .disablePageCaching `All tests`
+fixture
+    .disablePageCaching `Create User`
     .page `http://localhost:8080/#/users/create`;
 
 //Skip this test until we have functionality to delete a user afterwards

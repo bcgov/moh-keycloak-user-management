@@ -50,7 +50,6 @@ test('Test update user', async t => {
 });
 
 test('Test update user role', async t => {
-    // We use a random value just to make sure a change is actually made.
     const client = 'realm-management'
     await t
         .typeText('#user-search', 'testcafe')

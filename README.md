@@ -44,6 +44,14 @@ In one tab, start the server with `npm run serve`. In another tab, run:
 npm run test:e2e
 ```
 
+To run a single test (useful for test development and debugging), run:
+
+```
+testcafe chrome tests/e2e/alltests.js -t "Test update user"
+# alltests.js contains a test named "Test update user"
+```
+
+
 The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. 
 
 Note that these instructions only apply to the MoH's Keycloak server which has an LDAP identify provider configured. To use a different Keycloak server you would need to update the "login" portion of the tests to use your identity provider.
