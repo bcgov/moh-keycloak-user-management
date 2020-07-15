@@ -16,6 +16,13 @@
             outlined
             v-model="searchClientId"
         />
+        <label for="admin-id">Administrator ID</label>
+        <v-text-field
+            id="admin-id"
+            dense
+            outlined
+            v-model="searchAdministratorId"
+        />
         <label for="from-date">Date (from)</label>
         <v-text-field
             id="from-date"
@@ -83,6 +90,7 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
             return {
                 searchUserId: '',
                 searchClientId: '',
+                searchAdministratorId: '',
                 searchDateFrom: '',
                 searchDateTo: '',
                 filterEvents: '',
@@ -159,6 +167,9 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
         params.append('resourcePath', `users/${this.searchUserId}*`);
       } else if (this.searchClientId) {
         params.append('resourcePath', `*role-mappings/clients/${this.searchClientId}*`);
+      }
+      if (this.searchAdministratorId) {
+        params.append('authUser', this.searchAdministratorId);
       }
       [
         {name: 'dateFrom', value: this.searchDateFrom},
