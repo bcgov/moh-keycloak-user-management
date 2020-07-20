@@ -53,6 +53,8 @@
               loading-text="Loading events"
               :loading="loadingStatus"
               :search="filterEvents"
+              :page.sync="pageValue"
+              :expanded.sync="expandedValues"
       >
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
@@ -90,6 +92,8 @@
             {text: 'Application', value: 'clientId'},
             {text: 'Details', value: 'data-table-expand'},
           ],
+          pageValue: 1,
+          expandedValues: [],
         }
       },
 
@@ -129,6 +133,9 @@
             await UsersRepository.addUsernamesToEvents(this.events);
           } finally {
             this.loadingStatus = false;
+            // https://github.com/vuetifyjs/vuetify/issues/10949
+            this.pageValue = 1;
+            this.expandedValues = [];
           }
         }
       }
