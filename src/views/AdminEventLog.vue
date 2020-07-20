@@ -147,9 +147,7 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
               await UsersRepository.addAdminNamesToEvents(this.adminEvents);
             } finally {
               this.loadingStatus = false;
-              // The Vuetify data-table component keeps track of the current page and which records are "expanded", so
-              // if there are new search results, reset "pageValue" and "expandedValues". I think this actually
-              // indicates a bug in the data-table component, as the data-table in UserSearch.vue doesn't require resetting.
+              // https://github.com/vuetifyjs/vuetify/issues/10949
               this.pageValue = 1;
               this.expandedValues = [];
             }
