@@ -61,6 +61,8 @@
                 loading-text="Loading events"
                 :loading="loadingStatus"
                 :search="filterEvents"
+                :page.sync="pageValue"
+                :expanded.sync="expandedValues"
         >
             <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length">
@@ -106,6 +108,8 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
                     { text: 'Application', value: 'clientName' },
                     { text: 'Details', value: 'data-table-expand' },
                 ],
+                pageValue: 1,
+                expandedValues: [],
             }
         },
 
@@ -143,6 +147,11 @@ const options = {dateStyle: 'short', timeStyle: 'short'};
               await UsersRepository.addAdminNamesToEvents(this.adminEvents);
             } finally {
               this.loadingStatus = false;
+              // The Vuetify data-table component keeps track of the current page and which records are "expanded", so
+              // if there are new search results, reset "pageValue" and "expandedValues". I think this actually
+              // indicates a bug in the data-table component, as the data-table in UserSearch.vue doesn't require resetting.
+              this.pageValue = 1;
+              this.expandedValues = [];
             }
 
           }
