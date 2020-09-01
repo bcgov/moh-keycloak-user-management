@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="subgroup">
+  <v-card outlined class="subgroup" :disabled="!adminUser">
     <h2>User Groups</h2>
     <v-row no-gutters>
       <v-col class="col-4">
@@ -15,7 +15,11 @@
       </v-col>
     </v-row>
     <div class="my-6">
-      <v-btn id="save-user-groups" class="secondary" medium v-on:click="updateUserGroups()">Save User Groups</v-btn>
+      <v-btn id="save-user-groups" class="secondary"
+             medium v-on:click="updateUserGroups()"
+             v-if="adminUser">
+        Save User Groups
+      </v-btn>
     </div>
   </v-card>
 </template>
@@ -29,15 +33,23 @@ export default {
   props: ['userId'],
   data() {
     return {
+      adminUser: false,
       joinedGroups: [],
       allGroups: [],
       selectedGroups: []
     };
   },
   async created() {
+    this.checkIfAdmin();
     await this.getUserGroupsData();
   },
   methods: {
+    checkIfAdmin: function() {
+      if (this.$keycloak.tokenParsed.resource_access['user-management'] &&
+          this.$keycloak.tokenParsed.resource_access['user-management'].roles.includes('user-management-admin')) {
+        this.adminUser = true;
+      }
+    },
     getUserGroupsData: async function() {
       this.joinedGroups = [];
       this.allGroups = [];
@@ -72,6 +84,7 @@ export default {
       }
       Promise.all(groupUpdates)
           .then(() => {
+            this.checkIfAdmin()
             this.getUserGroupsData();
             this.$store.commit("alert/setAlert", {
               message: "User Groups updated successfully",

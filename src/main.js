@@ -9,7 +9,7 @@ import store from './store'
 
 Vue.config.devtools = true
 Vue.config.productionTip = false
-Vue.prototype.$keycloak = keycloak; //maybe be able to remove this and use the export
+Vue.prototype.$keycloak = keycloak;
 
 keycloak.onAuthSuccess = function () {
     fetch(process.env.BASE_URL + "config.json")
