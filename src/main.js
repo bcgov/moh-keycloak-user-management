@@ -7,6 +7,7 @@ import router from './router'
 import keycloak from './keycloak';
 import store from './store'
 
+Vue.config.devtools = true
 Vue.config.productionTip = false
 Vue.prototype.$keycloak = keycloak; //maybe be able to remove this and use the export
 
