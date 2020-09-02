@@ -34,7 +34,7 @@ export default {
   data() {
     return {
       adminUser: false,
-      joinedGroups: [],
+      currentGroups: [],
       allGroups: [],
       selectedGroups: []
     };
@@ -51,7 +51,7 @@ export default {
       }
     },
     getUserGroupsData: async function() {
-      this.joinedGroups = [];
+      this.currentGroups = [];
       this.allGroups = [];
       this.selectedGroups = [];
 
@@ -63,7 +63,7 @@ export default {
             });
           });
 
-      this.joinedGroups.push(...userGroupResponses[0].data);
+      this.currentGroups.push(...userGroupResponses[0].data);
       this.selectedGroups.push(...userGroupResponses[0].data);
       this.allGroups.push(...userGroupResponses[1].data);
       // Keycloak "Groups" API returns a different object structure than users/groups
@@ -74,11 +74,11 @@ export default {
       let groupUpdates = [];
       for (let group of this.allGroups) {
         //It was originally a joined group but is no longer selected
-        if (this.joinedGroups.some(e => e.id === group.id) && !this.selectedGroups.some(e => e.id === group.id)) {
+        if (this.currentGroups.some(e => e.id === group.id) && !this.selectedGroups.some(e => e.id === group.id)) {
           groupUpdates.push(UsersRepository.removeGroupFromUser(this.userId, group.id))
         }
         //It was not originally a joined group but is now selected
-        if (!this.joinedGroups.some(e => e.id === group.id) && this.selectedGroups.some(e => e.id === group.id)) {
+        if (!this.currentGroups.some(e => e.id === group.id) && this.selectedGroups.some(e => e.id === group.id)) {
           groupUpdates.push(UsersRepository.addGroupToUser(this.userId, group.id))
         }
       }
