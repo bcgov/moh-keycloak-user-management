@@ -6,6 +6,7 @@
       <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
     </user-details>
     <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
+    <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
   </div>
 </template>
 
@@ -14,10 +15,12 @@ import UsersRepository from "@/api/UsersRepository";
 
 import UserDetails from "@/components/UserDetails.vue";
 import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
+import UserUpdateGroups from "@/components/UserUpdateGroups";
 
 export default {
   name: "UserInfo",
   components: {
+    UserUpdateGroups,
     UserDetails,
     UserUpdateRoles
   },

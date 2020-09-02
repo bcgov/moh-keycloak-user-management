@@ -144,11 +144,11 @@ export default {
 
     updateUserClientRoles: function() {
       //If in roles but not selected DELETE
-      var rolesToDelete = this.clientRoles.filter(
+      let rolesToDelete = this.clientRoles.filter(
         value => !this.selectedRoles.includes(value)
       );
       //If in roles and selected ADD
-      var rolesToAdd = this.clientRoles.filter(value =>
+      let rolesToAdd = this.clientRoles.filter(value =>
         this.selectedRoles.includes(value)
       );
 
