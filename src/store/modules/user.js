@@ -11,7 +11,8 @@ const getDefaultState = () => {
             lockout_reason: '',
             revoked: '',
             access_team_notes: ''
-        }
+        },
+        federatedIdentities: []
     }
 }
 
@@ -33,7 +34,8 @@ const mutations = {
             state.attributes.lockout_reason = user.attributes.lockout_reason
             state.attributes.revoked = user.attributes.revoked
             state.attributes.access_team_notes = user.attributes.access_team_notes
-        }  
+        }
+        state.federatedIdentities = user.federatedIdentities;
     },
     setUsername(state, username) {
         state.username = username
