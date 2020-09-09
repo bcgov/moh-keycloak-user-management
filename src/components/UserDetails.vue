@@ -94,8 +94,8 @@
         <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef">
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
-            <li v-for="identity in user.federatedIdentities" :key="identity.id">
-              {{ formatIdentityProvider(identity.identityProvider) }} [{{ identity.userName }}]
+            <li v-for="identity in federatedIdentities" :key="identity.id">
+              {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
             </li>
           </ul>
         </v-col>
@@ -144,29 +144,20 @@ export default {
         .catch(e => {
           console.log(e);
         });
-    },
+    }
+  },
+  filters: {
     // the IDP name in keycloak doesn't always match what's known by users
     // format to match standard naming or capitalization
     formatIdentityProvider: function(idp) {
-      let formattedIdp = idp;
-      switch(idp) {
-        case 'phsa':
-          formattedIdp = 'PHSA';
-          break;
-        case 'moh_idp':
-          formattedIdp = 'MoH LDAP';
-          break;
-        case 'idir':
-          formattedIdp = 'IDIR';
-          break;
-        case 'bceid':
-          formattedIdp = 'BCeID';
-          break;
-        case 'bcsc':
-          formattedIdp = 'BCSC';
-          break;
+      let formattedIdentityProviders = {
+        'phsa': 'PHSA',
+        'moh_idp': 'MoH LDAP',
+        'idir': 'IDIR',
+        'bceid': 'BCeID',
+        'bcsc': 'BCSC'
       }
-      return formattedIdp;
+      return formattedIdentityProviders[idp] || idp;
     }
   },
   computed: {
@@ -297,7 +288,7 @@ export default {
     },
     federatedIdentities: {
       get() {
-        return this.$store.state.user.attributes.federatedIdentities;
+        return this.$store.state.user.federatedIdentities;
       }
     }
   }
