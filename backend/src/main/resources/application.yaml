@@ -1,0 +1,16 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
+          jwk-set-uri: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications/protocol/openid-connect/certs
+keycloak-ums-client:
+  oauth2:
+      client:
+        grantType: client_credentials
+        clientId: user-management-service
+        clientSecret: 76bc95d6-8156-4f04-8122-416262f02034
+        accessTokenUri: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
+        scope: openid
+
