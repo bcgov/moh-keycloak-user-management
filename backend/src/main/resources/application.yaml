@@ -23,3 +23,8 @@ spring:
           keycloak:
             authorization-url: ${keycloak.base-oauth-url}/protocol/openid-connect/auth
             token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
+springdoc:
+  swagger-ui:
+    path: /docs/swagger-ui.html
+  api-docs:
+    path: /docs/api-docs
