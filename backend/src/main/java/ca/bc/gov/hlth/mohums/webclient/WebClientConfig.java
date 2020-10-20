@@ -2,6 +2,7 @@ package ca.bc.gov.hlth.mohums.webclient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
@@ -18,8 +19,10 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class WebClientConfig {
 
-    private Logger testWebClientLogger = LoggerFactory.getLogger("KC_WEB_CLIENT");
-    private String webClientBaseUrl = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications";
+    private final Logger webClientLogger = LoggerFactory.getLogger("KC_WEB_CLIENT");
+
+    @Value("${keycloak.admin-api-url}")
+    private String keycloakAdminBaseUrl;
 
     @Bean
     public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(final ReactiveClientRegistrationRepository clientRegistrationRepository,
@@ -46,7 +49,7 @@ public class WebClientConfig {
         oauth.setDefaultClientRegistrationId(registrationId);
 
         return WebClient.builder()
-                .baseUrl(webClientBaseUrl)
+                .baseUrl(keycloakAdminBaseUrl)
                 .filter(oauth)
                 .filter(logRequest())
                 .build();
@@ -57,10 +60,8 @@ public class WebClientConfig {
      */
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(c -> {
-            testWebClientLogger.info("Request: {} {}", c.method(), c.url());
-            c.headers().forEach((n, v) -> {
-                testWebClientLogger.info("request header {}={}", n, v);
-            });
+            webClientLogger.info("Request: {} {}", c.method(), c.url());
+            c.headers().forEach((n, v) -> webClientLogger.info("request header {}={}", n, v));
             return Mono.just(c);
         });
     }
