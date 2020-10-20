@@ -1,18 +1,19 @@
 package ca.bc.gov.hlth.mohums.group;
 
+import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.concurrent.atomic.AtomicLong;
+import reactor.core.publisher.Mono;
 
 @RestController
 public class GroupController {
 
-    private final AtomicLong counter = new AtomicLong();
+    @Autowired
+    private WebClientService webClientService;
 
     @GetMapping("/groups")
-    public Group groups() {
-        counter.incrementAndGet();
-        return new Group(counter.toString(), "Test Group", "/Test Group");
+    public Mono<Object> groups() {
+        return webClientService.getGroups();
     }
 }
