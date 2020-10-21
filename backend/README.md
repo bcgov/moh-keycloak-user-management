@@ -10,11 +10,15 @@ The Service API is meant to extend capabilities beyond what’s offered directly
 This application uses Spring Boot and requires JDK 11 and Maven to run.
 
 To start the application run:
+```
 ./mvnw spring-boot:run
+```
 
 To create an executable jar run:
+```
 mvn clean package
 java -jar target/<jar-file-name>.jar
+```
 
 # Authentication and Authorization
 TODO
