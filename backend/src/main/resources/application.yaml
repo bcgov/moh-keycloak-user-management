@@ -1,0 +1,30 @@
+keycloak:
+  admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
+  base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
+user-management-client:
+  roles:
+    view-groups: view-groups
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.base-oauth-url}
+          jwk-set-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            client-id: user-management-service
+            client-secret: 
+            authorization-grant-type: client_credentials
+            scope:
+              - openid
+        provider:
+          keycloak:
+            authorization-url: ${keycloak.base-oauth-url}/protocol/openid-connect/auth
+            token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
+springdoc:
+  swagger-ui:
+    path: /docs/swagger-ui.html
+  api-docs:
+    path: /docs/api-docs
