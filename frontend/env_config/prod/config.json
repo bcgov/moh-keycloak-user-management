@@ -1,0 +1,4 @@
+{
+  "idps_to_show": "idir,moh_idp",
+  "siteminder_logout": "https://logon7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://common-logon.hlth.gov.bc.ca/webapp"
+}
