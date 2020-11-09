@@ -25,15 +25,18 @@ public class WebClientConfig {
     private String keycloakAdminBaseUrl;
 
     @Bean
-    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(final ReactiveClientRegistrationRepository clientRegistrationRepository,
-                                                 final ServerOAuth2AuthorizedClientRepository authorizedClientRepository) {
+    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
+            final ReactiveClientRegistrationRepository clientRegistrationRepository,
+            final ServerOAuth2AuthorizedClientRepository authorizedClientRepository) {
 
-        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
-                .clientCredentials()
-                .build();
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider
+                = ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
+                        .clientCredentials()
+                        .build();
 
-        DefaultReactiveOAuth2AuthorizedClientManager authorizedClientManager = new DefaultReactiveOAuth2AuthorizedClientManager(
-                clientRegistrationRepository, authorizedClientRepository);
+        DefaultReactiveOAuth2AuthorizedClientManager authorizedClientManager
+                = new DefaultReactiveOAuth2AuthorizedClientManager(clientRegistrationRepository,
+                        authorizedClientRepository);
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
@@ -45,7 +48,8 @@ public class WebClientConfig {
 
         String registrationId = "keycloak";
 
-        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth
+                = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
         oauth.setDefaultClientRegistrationId(registrationId);
 
         return WebClient.builder()
