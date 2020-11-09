@@ -13,6 +13,9 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    @Value("${user-management-client.roles.view-clients}")
+    private String viewClientsRole;
+
     @Value("${user-management-client.roles.view-groups}")
     private String viewGroupsRole;
 
@@ -34,6 +37,7 @@ public class SecurityConfig {
         http
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/*"))
             .authorizeExchange()
+                .pathMatchers("/clients/*").hasRole(viewClientsRole)
                 .pathMatchers("/groups/*").hasRole(viewGroupsRole)
             .anyExchange().authenticated().and()
             .oauth2ResourceServer().jwt()
