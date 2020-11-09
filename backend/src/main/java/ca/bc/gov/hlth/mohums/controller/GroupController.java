@@ -1,4 +1,4 @@
-package ca.bc.gov.hlth.mohums.group;
+package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.web.bind.annotation.GetMapping;
