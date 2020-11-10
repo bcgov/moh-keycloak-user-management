@@ -25,5 +25,5 @@ TODO
 
 # API Functionality
 Keycloak 'realm-management' functionality currently included exposed by the API Service: 
-view-clients
+view-clients, 
 view-groups
