@@ -23,8 +23,6 @@ public class ClientController {
     private final WebClientService webClientService;
     private final Logger logger = LoggerFactory.getLogger(ClientController.class);
 
-    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-
     public ClientController(WebClientService webClientService) {
         this.webClientService = webClientService;
     }
@@ -40,6 +38,7 @@ public class ClientController {
 
     private JSONArray parseRoles(String token) {
 
+        JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
         JSONArray roles = new JSONArray();
         String[] parts = token.split("\\.");
 
