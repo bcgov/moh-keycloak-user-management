@@ -19,6 +19,9 @@ public class SecurityConfig {
     @Value("${user-management-client.roles.view-groups}")
     private String viewGroupsRole;
 
+    @Value("${user-management-client.roles.view-users")
+    private String viewUsersRole;
+
     @Bean
     @Order(1)
     public SecurityWebFilterChain docsSecurityWebFilterChain(final ServerHttpSecurity http) {
@@ -39,6 +42,7 @@ public class SecurityConfig {
             .authorizeExchange()
                 .pathMatchers("/clients/*").hasRole(viewClientsRole)
                 .pathMatchers("/groups/*").hasRole(viewGroupsRole)
+                .pathMatchers("/users/*").hasRole(viewUsersRole)
             .anyExchange().authenticated().and()
             .oauth2ResourceServer().jwt()
             .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter));

@@ -5,6 +5,7 @@ user-management-client:
   roles:
     view-clients: view-clients
     view-groups: view-groups
+    view-users: view-users
 spring:
   security:
     oauth2:
@@ -16,7 +17,7 @@ spring:
         registration:
           keycloak:
             client-id: user-management-service
-            client-secret: 
+            client-secret: ${UMS_CLIENT_SECRET}
             authorization-grant-type: client_credentials
             scope:
               - openid
