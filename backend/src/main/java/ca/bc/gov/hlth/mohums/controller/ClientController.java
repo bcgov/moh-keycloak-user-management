@@ -49,6 +49,7 @@ public class ClientController {
             roles = (JSONArray) userManagementService.get("roles");
         } catch (ParseException ex) {
             logger.error(ex.getMessage());
+            throw new RuntimeException(ex);
         }
 
         return roles;
