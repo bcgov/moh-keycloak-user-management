@@ -3,9 +3,8 @@ package ca.bc.gov.hlth.mohums.webclient;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 public class WebClientService {
@@ -19,16 +18,12 @@ public class WebClientService {
         this.kcAuthorizedWebClient = kcAuthorizedWebClient;
     }
 
-    public Mono<Object> getClients(List<String> authorizedClients) {
+    public Flux<Object> getClients() {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t.path(clientsPath).build())
                 .exchange()
-                .flatMap(r -> r
-                    .bodyToFlux(ClientRepresentation.class)
-                    .filter(c -> authorizedClients.contains(((ClientRepresentation) c).getClientId().toLowerCase()))
-                    .collectList()
-                );
+                .flatMapMany(r -> r.bodyToFlux(ClientRepresentation.class));
     }
 
     public Mono<Object> getGroups() {

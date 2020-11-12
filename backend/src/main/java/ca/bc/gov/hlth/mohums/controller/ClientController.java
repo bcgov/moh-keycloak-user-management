@@ -5,17 +5,18 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import reactor.core.publisher.Flux;
 
 @RestController
 public class ClientController {
@@ -28,12 +29,12 @@ public class ClientController {
     }
 
     @GetMapping("/clients")
-    public Mono<Object> clients(@RequestHeader("Authorization") String token) {
+    public Flux<Object> clients(@RequestHeader("Authorization") String token) {
 
         JSONArray roles = parseRoles(token);
         List<String> authorizedClients = parseClients(roles);
-
-        return webClientService.getClients(authorizedClients);
+        return webClientService.getClients()
+                .filter(c -> authorizedClients.contains(((ClientRepresentation) c).getClientId().toLowerCase()));
     }
 
     private JSONArray parseRoles(String token) {
