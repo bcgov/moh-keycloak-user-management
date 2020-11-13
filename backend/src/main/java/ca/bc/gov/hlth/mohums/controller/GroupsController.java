@@ -6,16 +6,17 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class GroupController {
+public class GroupsController {
 
     private final WebClientService webClientService;
 
-    public GroupController(WebClientService webClientService) {
+    public GroupsController(WebClientService webClientService) {
         this.webClientService = webClientService;
     }
 
     @GetMapping("/groups")
     public Mono<Object> groups() {
-        return webClientService.getGroups();
+        String groupsPath = "/groups";
+        return webClientService.get(groupsPath, null);
     }
 }

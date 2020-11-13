@@ -2,6 +2,7 @@ package ca.bc.gov.hlth.mohums.webclient;
 
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,7 +11,6 @@ import reactor.core.publisher.Mono;
 public class WebClientService {
 
     private final String clientsPath = "/clients";
-    private final String groupsPath = "/groups";
 
     private final WebClient kcAuthorizedWebClient;
 
@@ -26,10 +26,13 @@ public class WebClientService {
                 .flatMapMany(r -> r.bodyToFlux(ClientRepresentation.class));
     }
 
-    public Mono<Object> getGroups() {
+    public Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
-                .uri(t -> t.path(groupsPath).build())
+                .uri(t -> t
+                        .path(path)
+                        .queryParams(queryParams)
+                        .build())
                 .exchange()
                 .flatMap(r -> r.bodyToMono(Object.class));
     }
