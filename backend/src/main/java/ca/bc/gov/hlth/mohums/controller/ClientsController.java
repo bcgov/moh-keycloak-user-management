@@ -19,12 +19,12 @@ import java.util.List;
 import reactor.core.publisher.Flux;
 
 @RestController
-public class ClientController {
+public class ClientsController {
 
     private final WebClientService webClientService;
-    private final Logger logger = LoggerFactory.getLogger(ClientController.class);
+    private final Logger logger = LoggerFactory.getLogger(ClientsController.class);
 
-    public ClientController(WebClientService webClientService) {
+    public ClientsController(WebClientService webClientService) {
         this.webClientService = webClientService;
     }
 

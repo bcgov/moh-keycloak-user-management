@@ -19,8 +19,6 @@ public class UsersController {
         this.webClientService = webClientService;
     }
 
-    private final String usersPath = "/users";
-
     @GetMapping("/users")
     public Mono<Object> users(
             @RequestParam Optional<Boolean> briefRepresentation,
@@ -42,6 +40,7 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
+        String usersPath = "/users";
         return webClientService.get(usersPath, queryParams);
     }
 }
