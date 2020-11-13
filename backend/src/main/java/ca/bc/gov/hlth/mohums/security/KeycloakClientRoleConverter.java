@@ -1,11 +1,9 @@
 package ca.bc.gov.hlth.mohums.security;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +29,8 @@ public class KeycloakClientRoleConverter implements Converter<Jwt, Collection<Gr
         final Map<String, Object> resourceAccesses = (Map<String, Object>) jwt.getClaims().get("resource_access");
         if (resourceAccesses != null) {
             final Map<String, Object> resource = (Map<String, Object>) resourceAccesses.get(apiClientName);
-            if (resource != null){
-                authorities = ((List<String>)resource.get("roles")).stream()
+            if (resource != null) {
+                authorities = ((List<String>) resource.get("roles")).stream()
                         .map(roleName -> "ROLE_" + roleName) // prefix required to map to a Spring Security "role"
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
