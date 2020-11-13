@@ -64,8 +64,8 @@ public class WebClientConfig {
      */
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(c -> {
-            webClientLogger.info("Request: {} {}", c.method(), c.url());
-            c.headers().forEach((n, v) -> webClientLogger.info("request header {}={}", n, v));
+            webClientLogger.debug("Request: {} {}", c.method(), c.url());
+            c.headers().forEach((n, v) -> webClientLogger.debug("request header {}={}", n, v));
             return Mono.just(c);
         });
     }

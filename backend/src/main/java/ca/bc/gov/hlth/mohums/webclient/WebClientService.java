@@ -14,8 +14,6 @@ import java.util.Optional;
 public class WebClientService {
 
     private final String clientsPath = "/clients";
-    private final String groupsPath = "/groups";
-    private final String usersPath = "/users";
 
     private final WebClient kcAuthorizedWebClient;
 
@@ -35,36 +33,11 @@ public class WebClientService {
                 );
     }
 
-    public Mono<Object> getGroups() {
-        return kcAuthorizedWebClient
-                .get()
-                .uri(t -> t.path(groupsPath).build())
-                .exchange()
-                .flatMap(r -> r.bodyToMono(Object.class));
-    }
-
-    public Mono<Object> getUsers(Optional<Boolean> briefRepresentation,
-                                 Optional<String> email,
-                                 Optional<Integer> first,
-                                 Optional<String> firstName,
-                                 Optional<String> lastName,
-                                 Optional<Integer> max,
-                                 Optional<String> search,
-                                 Optional<String> username) {
-        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
-        email.ifPresent(emailValue -> queryParams.add("email", emailValue));
-        first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
-        firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
-        lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
-        max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
-        search.ifPresent(searchValue -> queryParams.add("search", searchValue));
-        username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
-
+    public Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t
-                        .path(usersPath)
+                        .path(path)
                         .queryParams(queryParams)
                         .build())
                 .exchange()
