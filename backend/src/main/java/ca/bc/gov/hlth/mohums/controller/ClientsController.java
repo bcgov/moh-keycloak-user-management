@@ -30,7 +30,6 @@ public class ClientsController {
 
     @GetMapping("/clients")
     public Flux<Object> clients(@RequestHeader("Authorization") String token) {
-
         JSONArray roles = parseRoles(token);
         List<String> authorizedClients = parseClients(roles);
         return webClientService.getClients()
