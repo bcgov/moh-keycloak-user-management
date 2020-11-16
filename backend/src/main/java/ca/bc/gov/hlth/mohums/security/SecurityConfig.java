@@ -49,10 +49,11 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         super.configure(http);
         http
                 .authorizeRequests()
+                .antMatchers("/swagger-ui.html").permitAll()
                 .antMatchers("/clients/*").hasRole(viewClientsRole)
                 .antMatchers("/groups/*").hasRole(viewGroupsRole)
                 .antMatchers("/users/*").hasRole(viewUsersRole)
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .oauth2Client();
     }
