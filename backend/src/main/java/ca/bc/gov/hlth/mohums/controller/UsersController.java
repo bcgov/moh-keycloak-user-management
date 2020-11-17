@@ -1,9 +1,11 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -13,11 +15,10 @@ import java.util.Optional;
 @RestController
 public class UsersController {
 
-    private final WebClientService webClientService;
+    @Autowired
+    private WebClientService webClientService;
 
-    public UsersController(WebClientService webClientService) {
-        this.webClientService = webClientService;
-    }
+    private final String usersPath = "/users";
 
     @GetMapping("/users")
     public Mono<Object> users(
@@ -42,5 +43,11 @@ public class UsersController {
 
         String usersPath = "/users";
         return webClientService.get(usersPath, queryParams);
+    }
+
+    @GetMapping("/users/{id}")
+    public Mono<Object> getUserById(@PathVariable String id) {
+        String path = usersPath + "/" + id;
+        return webClientService.get(path, null);
     }
 }

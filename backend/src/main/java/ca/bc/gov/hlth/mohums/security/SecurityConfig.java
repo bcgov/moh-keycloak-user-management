@@ -26,7 +26,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityWebFilterChain docsSecurityWebFilterChain(final ServerHttpSecurity http) {
         // Disable security on the /docs path for Open API and Swagger Docs
-        http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/docs/*"));
+        http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/docs/**"));
         return http.build();
     }
 
@@ -38,11 +38,12 @@ public class SecurityConfig {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakClientRoleConverter());
 
         http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/*"))
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/**"))
             .authorizeExchange()
-                .pathMatchers("/clients/*").hasRole(viewClientsRole)
-                .pathMatchers("/groups/*").hasRole(viewGroupsRole)
-                .pathMatchers("/users/*").hasRole(viewUsersRole)
+                .pathMatchers("/clients/**").hasRole(viewClientsRole)
+                .pathMatchers("/groups/**").hasRole(viewGroupsRole)
+                .pathMatchers("/users/**").hasRole(viewUsersRole)
+                .pathMatchers("/docs/*").permitAll()
             .anyExchange().authenticated().and()
             .oauth2ResourceServer().jwt()
             .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter));
