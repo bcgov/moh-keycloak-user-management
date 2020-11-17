@@ -23,7 +23,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.view-groups}")
     private String viewGroupsRole;
 
-    @Value("${user-management-client.roles.view-users")
+    @Value("${user-management-client.roles.view-users}")
     private String viewUsersRole;
 
     @Autowired
@@ -48,12 +48,12 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         super.configure(http);
         http
+                .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/swagger-ui.html").permitAll()
-                .antMatchers("/clients/*").hasRole(viewClientsRole)
-                .antMatchers("/groups/*").hasRole(viewGroupsRole)
-                .antMatchers("/users/*").hasRole(viewUsersRole)
-                .anyRequest().authenticated()
+                .mvcMatchers("/clients/**").hasRole(viewClientsRole)
+                .mvcMatchers("/users/**").hasRole(viewUsersRole)
+                .mvcMatchers("/groups/**").hasRole(viewGroupsRole)
+                .anyRequest().permitAll()
                 .and()
                 .oauth2Client();
     }

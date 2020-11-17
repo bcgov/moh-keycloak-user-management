@@ -3,7 +3,7 @@ keycloak:
   auth-server-url: https://common-logon-dev.hlth.gov.bc.ca/auth/
   bearer-only: true
   use-resource-role-mappings: true
-  resource: user-management
+  resource: user-management-service
 config:
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
 user-management-client:
