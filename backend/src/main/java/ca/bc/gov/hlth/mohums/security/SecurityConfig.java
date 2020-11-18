@@ -19,19 +19,10 @@ public class SecurityConfig {
     @Value("${user-management-client.roles.view-groups}")
     private String viewGroupsRole;
 
-    @Value("${user-management-client.roles.view-users")
+    @Value("${user-management-client.roles.view-users}")
     private String viewUsersRole;
 
     @Bean
-    @Order(1)
-    public SecurityWebFilterChain docsSecurityWebFilterChain(final ServerHttpSecurity http) {
-        // Disable security on the /docs path for Open API and Swagger Docs
-        http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/docs/**"));
-        return http.build();
-    }
-
-    @Bean
-    @Order(2)
     public SecurityWebFilterChain securityWebFilterChain(final ServerHttpSecurity http) {
 
         final JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
@@ -40,10 +31,11 @@ public class SecurityConfig {
         http
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/**"))
             .authorizeExchange()
+                .pathMatchers("/docs/**").permitAll()
                 .pathMatchers("/clients/**").hasRole(viewClientsRole)
                 .pathMatchers("/groups/**").hasRole(viewGroupsRole)
                 .pathMatchers("/users/**").hasRole(viewUsersRole)
-                .pathMatchers("/docs/*").permitAll()
+                .pathMatchers("/*").denyAll()
             .anyExchange().authenticated().and()
             .oauth2ResourceServer().jwt()
             .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter));
