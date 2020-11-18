@@ -19,8 +19,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -96,6 +94,16 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void lookupUserAuthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("/users/abcd-efgh-1234-5678")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
     public void openApiNoAuthRequired() throws Exception {
         webTestClient
                 .get()
@@ -118,6 +126,15 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 .uri("/users")
+                .exchange()
+                .expectStatus().isUnauthorized(); //HTTP 401
+    }
+
+    @Test
+    public void lookupUserNoJwtUnauthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("/users/abcd-efgh-1234-5678")
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
     }

@@ -4,6 +4,7 @@ import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -12,6 +13,8 @@ import java.util.Optional;
 
 @RestController
 public class UsersController {
+
+    private final String usersPath = "/users";
 
     private final WebClientService webClientService;
 
@@ -40,7 +43,12 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
-        String usersPath = "/users";
         return webClientService.get(usersPath, queryParams);
+    }
+
+    @GetMapping("/users/{id}")
+    public Mono<Object> users(@PathVariable String id) {
+        String path = usersPath + "/" + id;
+        return webClientService.get(path, null);
     }
 }
