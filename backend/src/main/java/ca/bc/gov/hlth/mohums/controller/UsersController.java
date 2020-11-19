@@ -1,15 +1,9 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
@@ -58,12 +52,12 @@ public class UsersController {
     }
 
     @PostMapping(value = "/users")
-    public ResponseEntity<Object> createUser(@RequestBody Object body) {
-        ClientResponse post = webClientService.post("https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications/users", body).block();
-        Object responseBody = post.bodyToMono(Object.class).block();
-        HttpHeaders httpHeaders = post.headers().asHttpHeaders();
-        HttpStatus status = post.statusCode();
-        return new ResponseEntity<>(responseBody, httpHeaders, status);
+    public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
+        Mono<ClientResponse> post = webClientService.post("https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications/users", body);
+        return post.flatMap(response -> Mono.just(
+                ResponseEntity.status(response.statusCode())
+                        .headers(response.headers().asHttpHeaders())
+                        .body(response.bodyToMono(Object.class))));
     }
 
 }
