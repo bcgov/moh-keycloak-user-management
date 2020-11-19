@@ -35,9 +35,12 @@ public class SecurityConfig {
                 .pathMatchers("/groups/**").hasRole(viewGroupsRole)
                 .pathMatchers("/users/**").hasRole(viewUsersRole)
                 .pathMatchers("/*").denyAll()
-            .anyExchange().authenticated().and()
-            .oauth2ResourceServer().jwt()
-            .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter));
+                .anyExchange().authenticated()
+            .and()
+                .oauth2Client()
+            .and()
+                .oauth2ResourceServer().jwt()
+                .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter));
 
         return http.build();
     }

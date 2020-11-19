@@ -3,9 +3,12 @@ package ca.bc.gov.hlth.mohums.webclient;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 @Service
 public class WebClientService {
@@ -35,5 +38,12 @@ public class WebClientService {
                         .build())
                 .exchange()
                 .flatMap(r -> r.bodyToMono(Object.class));
+    }
+
+    public Mono<ClientResponse> post(String path, Object data) {
+        return kcAuthorizedWebClient.post()
+                .uri(URI.create(path))
+                .bodyValue(data)
+                .exchange();
     }
 }
