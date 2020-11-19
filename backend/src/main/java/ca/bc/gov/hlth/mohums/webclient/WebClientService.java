@@ -1,6 +1,5 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
-import org.keycloak.representations.idm.ClientRepresentation;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -26,7 +25,7 @@ public class WebClientService {
                 .get()
                 .uri(t -> t.path(clientsPath).build())
                 .exchange()
-                .flatMapMany(r -> r.bodyToFlux(ClientRepresentation.class));
+                .flatMapMany(r -> r.bodyToFlux(Object.class));
     }
 
     public Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
