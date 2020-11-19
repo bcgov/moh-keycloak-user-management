@@ -1,6 +1,7 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -8,7 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 public class UsersController {
@@ -58,6 +62,27 @@ public class UsersController {
                 ResponseEntity.status(response.statusCode())
                         .headers(response.headers().asHttpHeaders())
                         .body(response.bodyToMono(Object.class))));
+    }
+
+    private static final Pattern pattern = Pattern.compile(".*/users/(........-....-....-....-............)");
+
+    private static HttpHeaders getHeaders(HttpHeaders response) {
+        String location = response.getLocation().toASCIIString();
+        Matcher matcher = pattern.matcher(location);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        if (matcher.matches() && matcher.groupCount() == 1) {
+            httpHeaders.setLocation(URI.create("https://localhost/users/" + matcher.group(1)));
+        }
+        return httpHeaders;
+    }
+
+    public static void main(String[] args) {
+        var httpHeaders = new HttpHeaders();
+        httpHeaders.setLocation(URI.create("https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications/users/d862b0ee-1e3f-423b-a200-55f2e8f103d9"));
+
+        var httpHeaders2 = getHeaders(httpHeaders);
+        System.out.println(httpHeaders2);
     }
 
 }
