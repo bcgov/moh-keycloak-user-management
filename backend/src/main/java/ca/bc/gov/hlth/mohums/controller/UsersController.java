@@ -53,7 +53,7 @@ public class UsersController {
 
     @PostMapping(value = "/users")
     public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
-        Mono<ClientResponse> post = webClientService.post("https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications/users", body);
+        Mono<ClientResponse> post = webClientService.post(usersPath, body);
         return post.flatMap(response -> Mono.just(
                 ResponseEntity.status(response.statusCode())
                         .headers(response.headers().asHttpHeaders())

@@ -42,7 +42,7 @@ public class WebClientService {
 
     public Mono<ClientResponse> post(String path, Object data) {
         return kcAuthorizedWebClient.post()
-                .uri(URI.create(path))
+                .uri(t -> t.path(path).build())
                 .bodyValue(data)
                 .exchange();
     }
