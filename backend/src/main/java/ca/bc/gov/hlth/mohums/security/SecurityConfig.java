@@ -2,6 +2,7 @@ package ca.bc.gov.hlth.mohums.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -20,6 +21,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.view-users}")
     private String viewUsersRole;
 
+    @Value("${user-management-client.roles.manage-users}")
+    private String manageUsersRole;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -28,10 +32,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                .mvcMatchers("/docs/**").permitAll()
-                .mvcMatchers("/clients/**").hasRole(viewClientsRole)
-                .mvcMatchers("/groups/**").hasRole(viewGroupsRole)
-                .mvcMatchers("/users/**").hasRole(viewUsersRole)
+                .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
+                .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
+                .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
+                .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
+                .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(manageUsersRole)
                 .mvcMatchers("/*").denyAll()
                 .and()
             .oauth2ResourceServer().jwt()
