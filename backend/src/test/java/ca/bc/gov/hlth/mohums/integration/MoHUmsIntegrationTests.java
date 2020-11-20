@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -104,6 +107,19 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk();
+    }
+
+    @Test
+    public void addUser() throws Exception {
+        WebTestClient.ResponseSpec created = webTestClient
+                .post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"enabled\":true,\"attributes\":{},\"username\":\"bingo\",\"emailVerified\":\"\"}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
+        // We expect a 409 (Conflict) because the user already exists.
     }
 
     @Test

@@ -6,6 +6,8 @@ user-management-client:
     view-clients: view-clients
     view-groups: view-groups
     view-users: view-users
+config:
+  vanity-hostname: localhost
 spring:
   security:
     oauth2:

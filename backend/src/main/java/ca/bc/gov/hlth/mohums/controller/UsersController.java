@@ -1,15 +1,19 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 public class UsersController {
@@ -18,8 +22,11 @@ public class UsersController {
 
     private final WebClientService webClientService;
 
-    public UsersController(WebClientService webClientService) {
+    private final String vanityHostname;
+
+    public UsersController(WebClientService webClientService, @Value("${config.vanity-hostname}") String vanityHostname) {
         this.webClientService = webClientService;
+        this.vanityHostname = vanityHostname;
     }
 
     @GetMapping("/users")
@@ -51,4 +58,33 @@ public class UsersController {
         String path = usersPath + "/" + id;
         return webClientService.get(path, null);
     }
+
+    @PostMapping(value = "/users")
+    public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
+        Mono<ClientResponse> post = webClientService.post(usersPath, body);
+        return post.flatMap(response -> Mono.just(
+                ResponseEntity.status(response.statusCode())
+                        .headers(getHeaders(response.headers().asHttpHeaders()))
+                        .body(response.bodyToMono(Object.class))));
+    }
+
+    private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
+
+    HttpHeaders getHeaders(HttpHeaders response) {
+
+        // If no Location header found, return empty Headers.
+        HttpHeaders newHeaders = new HttpHeaders();
+        if (response == null || response.getLocation() == null) {
+            return newHeaders;
+        }
+
+        // If Location header found, replace Keycloak hostname with service vanity hostname.
+        Matcher matcher = patternGuid.matcher(response.getLocation().toASCIIString());
+        if (matcher.matches() && matcher.groupCount() == 1) {
+            newHeaders.setLocation(URI.create("https://" + vanityHostname + "/users/" + matcher.group(1)));
+        }
+
+        return newHeaders;
+    }
+
 }
