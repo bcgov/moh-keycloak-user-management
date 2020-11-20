@@ -31,10 +31,7 @@ public class WebClientConfig {
 
         OAuth2AuthorizedClientProvider authorizedClientProvider =
                 OAuth2AuthorizedClientProviderBuilder.builder()
-                        .authorizationCode()
-                        .refreshToken()
                         .clientCredentials()
-                        .password()
                         .build();
 
         DefaultOAuth2AuthorizedClientManager authorizedClientManager =
