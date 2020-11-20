@@ -49,8 +49,6 @@ public class UsersController {
     @GetMapping("/users/{id}")
     public Mono<Object> users(@PathVariable String id) {
         String path = usersPath + "/" + id;
-        Mono<Object> mono = webClientService.get(path, null);
-        Object data = mono.block();
-        return mono;
+        return webClientService.get(path, null);
     }
 }
