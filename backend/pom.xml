@@ -35,11 +35,6 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-resource-server</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-admin-client</artifactId>
-            <version>9.0.2</version>
-        </dependency>
 
         <!-- open api and swagger documentation -->
         <dependency>
