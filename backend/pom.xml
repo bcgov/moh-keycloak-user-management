@@ -25,6 +25,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
@@ -39,10 +43,9 @@
         <!-- open api and swagger documentation -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-webflux-ui</artifactId>
-            <version>1.4.8</version>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.5.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
