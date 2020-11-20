@@ -1,6 +1,7 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,8 +22,11 @@ public class UsersController {
 
     private final WebClientService webClientService;
 
-    public UsersController(WebClientService webClientService) {
+    private final String vanityHostname;
+
+    public UsersController(WebClientService webClientService, @Value("${config.vanity-hostname}") String vanityHostname) {
         this.webClientService = webClientService;
+        this.vanityHostname = vanityHostname;
     }
 
     @GetMapping("/users")
@@ -60,29 +64,27 @@ public class UsersController {
         Mono<ClientResponse> post = webClientService.post(usersPath, body);
         return post.flatMap(response -> Mono.just(
                 ResponseEntity.status(response.statusCode())
-                        .headers(response.headers().asHttpHeaders())
+                        .headers(getHeaders(response.headers().asHttpHeaders()))
                         .body(response.bodyToMono(Object.class))));
     }
 
-    private static final Pattern pattern = Pattern.compile(".*/users/(........-....-....-....-............)");
+    private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
-    private static HttpHeaders getHeaders(HttpHeaders response) {
-        String location = response.getLocation().toASCIIString();
-        Matcher matcher = pattern.matcher(location);
+    HttpHeaders getHeaders(HttpHeaders response) {
 
-        HttpHeaders httpHeaders = new HttpHeaders();
-        if (matcher.matches() && matcher.groupCount() == 1) {
-            httpHeaders.setLocation(URI.create("https://localhost/users/" + matcher.group(1)));
+        // If no Location header found, return empty Headers.
+        HttpHeaders newHeaders = new HttpHeaders();
+        if (response == null || response.getLocation() == null) {
+            return newHeaders;
         }
-        return httpHeaders;
-    }
 
-    public static void main(String[] args) {
-        var httpHeaders = new HttpHeaders();
-        httpHeaders.setLocation(URI.create("https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications/users/d862b0ee-1e3f-423b-a200-55f2e8f103d9"));
+        // If Location header found, replace Keycloak hostname with service vanity hostname.
+        Matcher matcher = patternGuid.matcher(response.getLocation().toASCIIString());
+        if (matcher.matches() && matcher.groupCount() == 1) {
+            newHeaders.setLocation(URI.create("https://" + vanityHostname + "/users/" + matcher.group(1)));
+        }
 
-        var httpHeaders2 = getHeaders(httpHeaders);
-        System.out.println(httpHeaders2);
+        return newHeaders;
     }
 
 }
