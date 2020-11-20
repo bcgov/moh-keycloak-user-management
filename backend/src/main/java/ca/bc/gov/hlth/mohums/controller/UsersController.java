@@ -59,7 +59,7 @@ public class UsersController {
         return webClientService.get(path, null);
     }
 
-    @PostMapping(value = "/users")
+    @PostMapping( "/users")
     public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
         Mono<ClientResponse> post = webClientService.post(usersPath, body);
         return post.flatMap(response -> Mono.just(
