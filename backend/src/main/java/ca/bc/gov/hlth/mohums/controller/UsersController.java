@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.controller;
 
+import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +12,8 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,7 +33,7 @@ public class UsersController {
     }
 
     @GetMapping("/users")
-    public Mono<Object> users(
+    public Mono<Object> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<Integer> first,
@@ -53,9 +56,9 @@ public class UsersController {
         return webClientService.get(usersPath, queryParams);
     }
 
-    @GetMapping("/users/{id}")
-    public Mono<Object> users(@PathVariable String id) {
-        String path = usersPath + "/" + id;
+    @GetMapping("/users/{userId}")
+    public Mono<Object> getUser(@PathVariable String userId) {
+        String path = usersPath + "/" + userId;
         return webClientService.get(path, null);
     }
 
@@ -66,6 +69,42 @@ public class UsersController {
                 ResponseEntity.status(response.statusCode())
                         .headers(getHeaders(response.headers().asHttpHeaders()))
                         .body(response.bodyToMono(Object.class))));
+    }
+
+    @GetMapping("/users/{userId}/roles-mappings/clients/{clientId}")
+    public Mono<Object> getAssignedUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientId) {
+
+        AuthorizedClientsParser acp = new AuthorizedClientsParser();
+        List<String> authorizedClients = acp.parse(token);
+
+        return webClientService.getAssignedUserClientRoleMappings(userId, clientId)
+                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
+                .collectList()
+                .cast(Object.class);
+    }
+
+    @GetMapping("/users/{userId}/roles-mappings/clients/{clientId}/available")
+    public Mono<Object> getAvailableUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientId) {
+
+        AuthorizedClientsParser acp = new AuthorizedClientsParser();
+        List<String> authorizedClients = acp.parse(token);
+
+        return webClientService.getAvailableUserClientRoleMappings(userId, clientId)
+                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
+                .collectList()
+                .cast(Object.class);
+    }
+
+    @GetMapping("/users/{userId}/roles-mappings/clients/{clientId}/composite")
+    public Mono<Object> getEffectiveUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientId) {
+
+        AuthorizedClientsParser acp = new AuthorizedClientsParser();
+        List<String> authorizedClients = acp.parse(token);
+
+        return webClientService.getEffectiveUserClientRoleMappings(userId, clientId)
+                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
+                .collectList()
+                .cast(Object.class);
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
