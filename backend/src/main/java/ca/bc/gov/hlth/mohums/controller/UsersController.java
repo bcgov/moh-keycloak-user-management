@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.controller;
 
+import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,40 +72,37 @@ public class UsersController {
                         .body(response.bodyToMono(Object.class))));
     }
 
-    @GetMapping("/users/{userId}/roles-mappings/clients/{clientId}")
-    public Mono<Object> getAssignedUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientId) {
+    @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}")
+    public Mono<Object> getAssignedUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientGuid) {
 
-        AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parse(token);
-
-        return webClientService.getAssignedUserClientRoleMappings(userId, clientId)
-                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
-                .collectList()
-                .cast(Object.class);
+        //Check if the user has the required role to view information related to this client
+        if (isAuthorizedToViewClient(token, clientGuid)) {
+            return webClientService.getAssignedUserClientRoleMappings(userId, clientGuid);
+        } else {
+            throw new HttpUnauthorizedException("Token does not have a valid role to view user details for this client");
+        }
     }
 
-    @GetMapping("/users/{userId}/roles-mappings/clients/{clientId}/available")
-    public Mono<Object> getAvailableUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientId) {
+    @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/available")
+    public Mono<Object> getAvailableUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientGuid) {
 
-        AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parse(token);
-
-        return webClientService.getAvailableUserClientRoleMappings(userId, clientId)
-                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
-                .collectList()
-                .cast(Object.class);
+        //Check if the user has the required role to view information related to this client
+        if (isAuthorizedToViewClient(token, clientGuid)) {
+            return webClientService.getAvailableUserClientRoleMappings(userId, clientGuid);
+        } else {
+            throw new HttpUnauthorizedException("Token does not have a valid role to view user details for this client");
+        }
     }
 
-    @GetMapping("/users/{userId}/roles-mappings/clients/{clientId}/composite")
-    public Mono<Object> getEffectiveUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientId) {
+    @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/composite")
+    public Mono<Object> getEffectiveUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientGuid) {
 
-        AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parse(token);
-
-        return webClientService.getEffectiveUserClientRoleMappings(userId, clientId)
-                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
-                .collectList()
-                .cast(Object.class);
+        //Check if the user has the required role to view information related to this client
+        if (isAuthorizedToViewClient(token, clientGuid)) {
+            return webClientService.getEffectiveUserClientRoleMappings(userId, clientGuid);
+        } else {
+            throw new HttpUnauthorizedException("Token does not have a valid role to view user details for this client");
+        }
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
@@ -124,6 +122,20 @@ public class UsersController {
         }
 
         return newHeaders;
+    }
+
+    /* This method checks the client guid from the request against the users roles
+    * Since the roles match by Client ID and the request uses the guid we need to do a lookup against keycloak to get the
+    * Client ID*/
+    boolean isAuthorizedToViewClient(String token, String clientGuid) {
+        AuthorizedClientsParser acp = new AuthorizedClientsParser();
+        List<String> authorizedClients = acp.parse(token);
+
+        Object authFilteredClient = webClientService.getClient(clientGuid)
+                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
+                .block();
+
+        return authFilteredClient != null;
     }
 
 }
