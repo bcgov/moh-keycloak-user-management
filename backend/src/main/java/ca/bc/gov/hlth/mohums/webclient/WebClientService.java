@@ -11,6 +11,8 @@ import reactor.core.publisher.Mono;
 public class WebClientService {
 
     private final String clientsPath = "/clients";
+    private final String usersPath = "/users";
+    private final String userClientRoleMappingPath = "/role-mappings/clients/";
 
     private final WebClient kcAuthorizedWebClient;
 
@@ -26,6 +28,26 @@ public class WebClientService {
                 .flatMapMany(r -> r.bodyToFlux(Object.class));
     }
 
+    public Mono<Object> getClient(String clientId) {
+        String path = clientsPath + "/" + clientId;
+        return get(path, null);
+    }
+
+    public Mono<Object> getAssignedUserClientRoleMappings(String userId, String clientId) {
+        String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
+        return get(path, null);
+    }
+
+    public Mono<Object> getAvailableUserClientRoleMappings(String userId, String clientId) {
+        String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/available";
+        return get(path, null);
+    }
+
+    public Mono<Object> getEffectiveUserClientRoleMappings(String userId, String clientId) {
+        String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/composite";
+        return get(path, null);
+    }
+    
     public Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
