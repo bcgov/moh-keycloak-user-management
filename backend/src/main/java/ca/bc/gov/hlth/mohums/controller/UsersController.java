@@ -74,7 +74,10 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}")
-    public Mono<Object> getAssignedUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientGuid) {
+    public Mono<Object> getAssignedUserClientRoleMapping(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String userId,
+            @PathVariable String clientGuid) {
 
         //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
@@ -85,7 +88,10 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/available")
-    public Mono<Object> getAvailableUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientGuid) {
+    public Mono<Object> getAvailableUserClientRoleMapping(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String userId,
+            @PathVariable String clientGuid) {
 
         //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
@@ -96,7 +102,10 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/composite")
-    public Mono<Object> getEffectiveUserClientRoleMapping(@RequestHeader("Authorization") String token, @PathVariable String userId, @PathVariable String clientGuid) {
+    public Mono<Object> getEffectiveUserClientRoleMapping(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String userId,
+            @PathVariable String clientGuid) {
 
         //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
