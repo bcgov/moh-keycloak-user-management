@@ -18,8 +18,7 @@ public class AuthorizedClientsParser {
 
     public List<String> parse(String token) {
         JSONArray roles = parseRoles(token);
-        List<String> authorizedClients = parseClients(roles);
-        return authorizedClients;
+        return parseClients(roles);
     }
 
     private JSONArray parseRoles(String token) {
@@ -59,8 +58,7 @@ public class AuthorizedClientsParser {
 
         byte[] bytesToDecode = stringToDecode.getBytes(StandardCharsets.UTF_8);
         byte[] decodedBytes = Base64.getDecoder().decode(bytesToDecode);
-        String decodedString = new String(decodedBytes, StandardCharsets.UTF_8);
 
-        return decodedString;
+        return new String(decodedBytes, StandardCharsets.UTF_8);
     }
 }

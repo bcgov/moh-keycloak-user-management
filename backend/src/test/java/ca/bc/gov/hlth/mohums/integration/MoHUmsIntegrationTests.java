@@ -131,6 +131,33 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void assignedUserClientRoleMappingNoJwtUnauthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("/users/abcd-efgh-1234-5678/role-mappings/clients/1234-efgh-4567-lmno")
+                .exchange()
+                .expectStatus().isUnauthorized(); //HTTP 401
+    }
+
+    @Test
+    public void availableUserClientRoleMappingNoJwtUnauthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("/users/abcd-efgh-1234-5678/role-mappings/clients/1234-efgh-4567-lmno/available")
+                .exchange()
+                .expectStatus().isUnauthorized(); //HTTP 401
+    }
+
+    @Test
+    public void effectiveUserClientRoleMappingNoJwtUnauthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("/users/abcd-efgh-1234-5678/role-mappings/clients/1234-efgh-4567-lmno/composite")
+                .exchange()
+                .expectStatus().isUnauthorized(); //HTTP 401
+    }
+
+    @Test
     public void groupsNoJwtUnauthorized() throws Exception {
         webTestClient
                 .get()

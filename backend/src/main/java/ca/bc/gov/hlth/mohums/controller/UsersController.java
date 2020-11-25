@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -132,6 +133,7 @@ public class UsersController {
         List<String> authorizedClients = acp.parse(token);
 
         Object authFilteredClient = webClientService.getClient(clientGuid)
+                .filter(c -> Objects.nonNull(((LinkedHashMap) c).get("clientId")))
                 .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
                 .block();
 
