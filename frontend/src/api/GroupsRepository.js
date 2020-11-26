@@ -1,13 +1,13 @@
-import { kcRequest } from "./Repository";
+import { umsRequest } from "./Repository";
 
 const resource = "/groups";
 
 export default {
     get(queryParams) {
         if (queryParams) {
-            return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}${queryParams}`));
+            return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}${queryParams}`));
         } else {
-            return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
+            return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
         }
     },
 }
