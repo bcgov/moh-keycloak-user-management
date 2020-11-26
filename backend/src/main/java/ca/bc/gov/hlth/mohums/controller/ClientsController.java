@@ -20,7 +20,7 @@ public class ClientsController {
     }
 
     @GetMapping("/clients")
-    public Mono<Object> clients(@RequestHeader("Authorization") String token) {
+    public Mono<Object> getClients(@RequestHeader("Authorization") String token) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
         List<String> authorizedClients = acp.parse(token);
         return webClientService.getClients()

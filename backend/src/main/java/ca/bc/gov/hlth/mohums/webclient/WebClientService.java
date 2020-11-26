@@ -20,17 +20,35 @@ public class WebClientService {
         this.kcAuthorizedWebClient = kcAuthorizedWebClient;
     }
 
+    // Clients
     public Flux<Object> getClients() {
-        return kcAuthorizedWebClient
-                .get()
-                .uri(t -> t.path(clientsPath).build())
-                .exchange()
-                .flatMapMany(r -> r.bodyToFlux(Object.class));
+        return getFlux(clientsPath);
+
     }
 
     public Mono<Object> getClient(String clientId) {
         String path = clientsPath + "/" + clientId;
         return get(path, null);
+    }
+
+    // Groups
+    public Mono<Object> getGroups() {
+        String path = "/groups";
+        return get(path, null);
+    }
+
+    // Users
+    public Mono<Object> getUsers(MultiValueMap<String, String> queryParams) {
+        return get(usersPath, queryParams);
+    }
+
+    public Mono<Object> getUser(String userId) {
+        String path = usersPath + "/" + userId;
+        return get(path, null);
+    }
+
+    public Mono<ClientResponse> createUser(Object data) {
+        return post(usersPath, data);
     }
 
     public Mono<Object> getAssignedUserClientRoleMappings(String userId, String clientId) {
@@ -47,8 +65,9 @@ public class WebClientService {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/composite";
         return get(path, null);
     }
-    
-    public Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
+
+    // Private Webclient methods
+    private Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t
@@ -59,8 +78,17 @@ public class WebClientService {
                 .flatMap(r -> r.bodyToMono(Object.class));
     }
 
-    public Mono<ClientResponse> post(String path, Object data) {
-        return kcAuthorizedWebClient.post()
+    private Flux<Object> getFlux(String path) {
+        return kcAuthorizedWebClient
+                .get()
+                .uri(t -> t.path(path).build())
+                .exchange()
+                .flatMapMany(r -> r.bodyToFlux(Object.class));
+    }
+
+    private Mono<ClientResponse> post(String path, Object data) {
+        return kcAuthorizedWebClient
+                .post()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
                 .exchange();

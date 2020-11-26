@@ -23,8 +23,6 @@ import java.util.regex.Pattern;
 @RestController
 public class UsersController {
 
-    private final String usersPath = "/users";
-
     private final WebClientService webClientService;
 
     private final String vanityHostname;
@@ -55,18 +53,17 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
-        return webClientService.get(usersPath, queryParams);
+        return webClientService.getUsers(queryParams);
     }
 
     @GetMapping("/users/{userId}")
     public Mono<Object> getUser(@PathVariable String userId) {
-        String path = usersPath + "/" + userId;
-        return webClientService.get(path, null);
+        return webClientService.getUser(userId);
     }
 
     @PostMapping("/users")
     public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
-        Mono<ClientResponse> post = webClientService.post(usersPath, body);
+        Mono<ClientResponse> post = webClientService.createUser(body);
         return post.flatMap(response -> Mono.just(
                 ResponseEntity.status(response.statusCode())
                         .headers(getHeaders(response.headers().asHttpHeaders()))
