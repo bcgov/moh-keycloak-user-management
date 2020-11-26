@@ -1,10 +1,10 @@
-import { kcRequest } from "./Repository";
+import { kcRequest, umsRequest } from "./Repository";
 
 const resource = "/clients";
 
 export default {
     get() {
-        return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
     },
     
     getRoles(clientId){

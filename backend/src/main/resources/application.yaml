@@ -9,6 +9,7 @@ user-management-client:
     manage-users: manage-users
 config:
   vanity-hostname: localhost
+  allowed-origins: "http://local.umc.com:8080"
 spring:
   security:
     oauth2:
@@ -33,3 +34,5 @@ springdoc:
     path: /docs/swagger-ui.html
   api-docs:
     path: /docs/api-docs
+server:
+  port: 9090

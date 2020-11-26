@@ -1,4 +1,4 @@
-import { kcRequest } from "./Repository";
+import { kcRequest, umsRequest } from "./Repository";
 
 const resource = "/users";
 const clientRoleMappings = "role-mappings/clients";
@@ -8,14 +8,14 @@ export default {
 
     get(queryParams) {
         if (queryParams) {
-            return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}${queryParams}`));
+            return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}${queryParams}`));
         } else {
-            return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
+            return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}`));
         } 
     },
 
     getUser(userId) {
-        return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}`));
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}`));
     },
 
     createUser(content) {

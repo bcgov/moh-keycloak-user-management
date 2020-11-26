@@ -62,7 +62,6 @@
           </td>
         </template>
       </v-data-table>
-      <button @click="getAllEvents">Refresh</button>
     </div>
 </template>
 

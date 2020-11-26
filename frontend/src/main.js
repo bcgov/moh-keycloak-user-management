@@ -5,23 +5,18 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import router from './router'
 import keycloak from './keycloak';
+import app_config from "@/loadconfig";
 import store from './store'
 
 Vue.config.productionTip = false
 Vue.prototype.$keycloak = keycloak;
 
 keycloak.onAuthSuccess = function () {
-    fetch(process.env.BASE_URL + "config.json")
-        .then((response) => {
-            return response.json();
-        })
-        .then((config) => {
-                Vue.prototype.$config = config
-                new Vue({
-                    vuetify,
-                    router,
-                    store,
-                    render: h => h(App)
-                }).$mount('#app');
-        })
+    Vue.prototype.$config = app_config.config;
+    new Vue({
+        vuetify,
+        router,
+        store,
+        render: h => h(App)
+    }).$mount('#app');
 }
