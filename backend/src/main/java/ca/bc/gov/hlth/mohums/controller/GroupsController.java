@@ -15,8 +15,7 @@ public class GroupsController {
     }
 
     @GetMapping("/groups")
-    public Mono<Object> groups() {
-        String groupsPath = "/groups";
-        return webClientService.get(groupsPath, null);
+    public Mono<Object> getGroups() {
+        return webClientService.getGroups();
     }
 }
