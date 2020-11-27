@@ -1,4 +1,4 @@
 {
   "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=localhost:8080",
-  "service_url": "http://local.ums.com:9090"
+  "service_url": "http://localhost:9090"
 }

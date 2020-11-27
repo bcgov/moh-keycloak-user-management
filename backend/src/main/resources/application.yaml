@@ -9,7 +9,7 @@ user-management-client:
     manage-users: manage-users
 config:
   vanity-hostname: localhost
-  allowed-origins: "http://local.umc.com:8080"
+  allowed-origins: "http://localhost:8080"
 spring:
   security:
     oauth2:

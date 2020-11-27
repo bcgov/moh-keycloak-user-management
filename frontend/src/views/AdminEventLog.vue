@@ -51,6 +51,7 @@
           placeholder="Filter Results"
       ></v-text-field>
         <v-data-table
+                id="search-results"
                 :headers="headers"
                 :items="adminEvents"
                 :items-per-page="15"

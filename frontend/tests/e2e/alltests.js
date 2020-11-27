@@ -68,8 +68,8 @@ test('Test search by administrator', async t => {
         .click('#admin-event-log-link')
         .typeText('#admin-id', TEST_CAFE_USER_ID)
         .pressKey('enter')
-        .expect(Selector('html').textContent)
-        .contains('Test Cafe Cafe');
+        .expect(Selector('#search-results').textContent)
+        .contains('Test Cafe');
 });
 
 
