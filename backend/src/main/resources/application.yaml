@@ -36,3 +36,11 @@ springdoc:
     path: /docs/api-docs
 server:
   port: 9090
+# If you need to test SSL locally, use settings like this.
+# The key will need to be installed in your browser truststore.
+#  ssl:
+#    key-store: classpath:localhost.p12
+#    key-store-password: password
+#    key-store-type: pkcs12
+#    key-alias: localhost
+#    key-password: password
