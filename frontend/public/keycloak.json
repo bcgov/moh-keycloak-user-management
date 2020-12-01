@@ -2,7 +2,7 @@
     "realm": "moh_applications",
     "auth-server-url": "https://common-logon-dev.hlth.gov.bc.ca/auth/",
     "ssl-required": "none",
-    "resource": "user-management",
+    "resource": "USER-MANAGEMENT",
     "public-client": true,
     "confidential-port": 0
 }

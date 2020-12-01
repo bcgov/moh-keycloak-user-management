@@ -20,7 +20,7 @@ spring:
       client:
         registration:
           keycloak:
-            client-id: user-management-service
+            client-id: USER-MANAGEMENT-SERVICE
             client-secret: ${UMS_CLIENT_SECRET}
             authorization-grant-type: client_credentials
             scope:
