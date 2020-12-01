@@ -30,7 +30,7 @@ public class AuthorizedClientsParser {
         try {
             JSONObject payload = (JSONObject) jsonParser.parse(decodeBase64(parts[1]));
             JSONObject resourceAccess = (JSONObject) payload.get("resource_access");
-            JSONObject userManagementService = (JSONObject) resourceAccess.get("user-management-service");
+            JSONObject userManagementService = (JSONObject) resourceAccess.get("USER-MANAGEMENT-SERVICE");
             roles = (JSONArray) userManagementService.get("roles");
         } catch (ParseException ex) {
             logger.error(ex.getMessage());
