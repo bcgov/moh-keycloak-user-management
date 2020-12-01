@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class KeycloakClientRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-    private final String apiClientName = "user-management-service";
+    private final String apiClientName = "USER-MANAGEMENT-SERVICE";
 
     public Collection<GrantedAuthority> convert(final Jwt jwt) {
 
