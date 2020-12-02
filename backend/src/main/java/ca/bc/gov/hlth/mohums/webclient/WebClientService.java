@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -26,23 +27,23 @@ public class WebClientService {
 
     }
 
-    public Mono<Object> getClient(String clientId) {
+    public ResponseEntity<Object> getClient(String clientId) {
         String path = clientsPath + "/" + clientId;
         return get(path, null);
     }
 
     // Groups
-    public Mono<Object> getGroups() {
+    public ResponseEntity<Object> getGroups() {
         String path = "/groups";
         return get(path, null);
     }
 
     // Users
-    public Mono<Object> getUsers(MultiValueMap<String, String> queryParams) {
+    public ResponseEntity<Object> getUsers(MultiValueMap<String, String> queryParams) {
         return get(usersPath, queryParams);
     }
 
-    public Mono<Object> getUser(String userId) {
+    public ResponseEntity<Object> getUser(String userId) {
         String path = usersPath + "/" + userId;
         return get(path, null);
     }
@@ -51,31 +52,29 @@ public class WebClientService {
         return post(usersPath, data);
     }
 
-    public Mono<Object> getAssignedUserClientRoleMappings(String userId, String clientId) {
+    public ResponseEntity<Object> getAssignedUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
         return get(path, null);
     }
 
-    public Mono<Object> getAvailableUserClientRoleMappings(String userId, String clientId) {
+    public ResponseEntity<Object> getAvailableUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/available";
         return get(path, null);
     }
 
-    public Mono<Object> getEffectiveUserClientRoleMappings(String userId, String clientId) {
+    public ResponseEntity<Object> getEffectiveUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/composite";
         return get(path, null);
     }
 
-    // Private Webclient methods
-    private Mono<Object> get(String path, MultiValueMap<String, String> queryParams) {
+    private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t
                         .path(path)
                         .queryParams(queryParams)
                         .build())
-                .exchange()
-                .flatMap(r -> r.bodyToMono(Object.class));
+                .exchange().block().toEntity(Object.class).block();
     }
 
     private Flux<Object> getFlux(String path) {

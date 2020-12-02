@@ -1,9 +1,9 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 @RestController
 public class GroupsController {
@@ -15,7 +15,7 @@ public class GroupsController {
     }
 
     @GetMapping("/groups")
-    public Mono<Object> getGroups() {
+    public ResponseEntity<Object> getGroups() {
         return webClientService.getGroups();
     }
 }

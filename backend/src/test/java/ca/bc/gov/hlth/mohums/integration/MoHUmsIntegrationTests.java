@@ -105,7 +105,7 @@ public class MoHUmsIntegrationTests {
                 .uri("/users/abcd-efgh-1234-5678")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isNotFound();
     }
 
     @Test
@@ -119,6 +119,26 @@ public class MoHUmsIntegrationTests {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
         // We expect a 409 (Conflict) because the user already exists.
+    }
+
+    @Test
+    public void assignedUserClientRoleMappingUnauthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isUnauthorized(); //HTTP 401
+    }
+
+    @Test
+    public void assignedUserClientRoleMappingAuthorized() throws Exception {
+        webTestClient
+                .get()
+                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/a425bf07-a2bd-403f-a605-afc2b4898c3f")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk(); //HTTP 200
     }
 
     @Test

@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +32,7 @@ public class UsersController {
     }
 
     @GetMapping("/users")
-    public Mono<Object> getUsers(
+    public ResponseEntity<Object> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<Integer> first,
@@ -57,7 +56,7 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}")
-    public Mono<Object> getUser(@PathVariable String userId) {
+    public ResponseEntity<Object> getUser(@PathVariable String userId) {
         return webClientService.getUser(userId);
     }
 
@@ -71,12 +70,11 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}")
-    public Mono<Object> getAssignedUserClientRoleMapping(
+    public ResponseEntity<Object> getAssignedUserClientRoleMapping(
             @RequestHeader("Authorization") String token,
             @PathVariable String userId,
             @PathVariable String clientGuid) {
 
-        //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return webClientService.getAssignedUserClientRoleMappings(userId, clientGuid);
         } else {
@@ -85,12 +83,11 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/available")
-    public Mono<Object> getAvailableUserClientRoleMapping(
+    public ResponseEntity<Object> getAvailableUserClientRoleMapping(
             @RequestHeader("Authorization") String token,
             @PathVariable String userId,
             @PathVariable String clientGuid) {
 
-        //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return webClientService.getAvailableUserClientRoleMappings(userId, clientGuid);
         } else {
@@ -99,12 +96,11 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/composite")
-    public Mono<Object> getEffectiveUserClientRoleMapping(
+    public ResponseEntity<Object> getEffectiveUserClientRoleMapping(
             @RequestHeader("Authorization") String token,
             @PathVariable String userId,
             @PathVariable String clientGuid) {
 
-        //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return webClientService.getEffectiveUserClientRoleMappings(userId, clientGuid);
         } else {
@@ -138,12 +134,8 @@ public class UsersController {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
         List<String> authorizedClients = acp.parse(token);
 
-        Object authFilteredClient = webClientService.getClient(clientGuid)
-                .filter(c -> Objects.nonNull(((LinkedHashMap) c).get("clientId")))
-                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
-                .block();
-
-        return authFilteredClient != null;
+        LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) webClientService.getClient(clientGuid).getBody();
+        return authorizedClients.contains(client.get("clientId").toLowerCase());
     }
 
 }
