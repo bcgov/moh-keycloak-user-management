@@ -70,6 +70,15 @@ public class UsersController {
                         .body(response.bodyToMono(Object.class))));
     }
 
+    @PutMapping("/users/{userId}")
+    public Mono<ResponseEntity<Object>> updateUser(@PathVariable String userId, @RequestBody Object body) {
+        Mono<ClientResponse> post = webClientService.updateUser(userId, body);
+        return post.flatMap(response -> Mono.just(
+                ResponseEntity.status(response.statusCode())
+                        .headers(response.headers().asHttpHeaders())
+                        .body(response.bodyToMono(Object.class))));
+    }
+
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}")
     public Mono<Object> getAssignedUserClientRoleMapping(
             @RequestHeader("Authorization") String token,

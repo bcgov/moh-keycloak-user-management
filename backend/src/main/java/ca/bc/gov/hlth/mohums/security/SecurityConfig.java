@@ -48,6 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
                 .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(manageUsersRole)
+                .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUsersRole)
                 .mvcMatchers("/*").denyAll()
                 .and()
             .oauth2ResourceServer().jwt()
