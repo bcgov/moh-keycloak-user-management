@@ -122,6 +122,19 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void updateUser() throws Exception {
+        webTestClient
+                .put()
+                .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT);
+        // We expect a 409 (Conflict) because the user already exists.
+    }
+
+    @Test
     public void assignedUserClientRoleMappingUnauthorized() throws Exception {
         webTestClient
                 .get()

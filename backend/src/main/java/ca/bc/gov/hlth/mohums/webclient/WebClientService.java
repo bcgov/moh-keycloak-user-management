@@ -52,6 +52,11 @@ public class WebClientService {
         return post(usersPath, data);
     }
 
+    public Mono<ClientResponse> updateUser(String userId, Object data) {
+        String path = usersPath + "/" + userId;
+        return put(path, data);
+    }
+
     public ResponseEntity<Object> getAssignedUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
         return get(path, null);
@@ -88,6 +93,14 @@ public class WebClientService {
     private Mono<ClientResponse> post(String path, Object data) {
         return kcAuthorizedWebClient
                 .post()
+                .uri(t -> t.path(path).build())
+                .bodyValue(data)
+                .exchange();
+    }
+
+    private Mono<ClientResponse> put(String path, Object data) {
+        return kcAuthorizedWebClient
+                .put()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
                 .exchange();
