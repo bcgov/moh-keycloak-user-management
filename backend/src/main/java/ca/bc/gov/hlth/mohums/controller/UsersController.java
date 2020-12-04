@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -33,7 +31,7 @@ public class UsersController {
     }
 
     @GetMapping("/users")
-    public Mono<Object> getUsers(
+    public ResponseEntity<Object> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<Integer> first,
@@ -57,35 +55,32 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}")
-    public Mono<Object> getUser(@PathVariable String userId) {
+    public ResponseEntity<Object> getUser(@PathVariable String userId) {
         return webClientService.getUser(userId);
     }
 
     @PostMapping("/users")
-    public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
-        Mono<ClientResponse> post = webClientService.createUser(body);
-        return post.flatMap(response -> Mono.just(
-                ResponseEntity.status(response.statusCode())
-                        .headers(getHeaders(response.headers().asHttpHeaders()))
-                        .body(response.bodyToMono(Object.class))));
+    public ResponseEntity<Object> createUser(@RequestBody Object body) {
+        ResponseEntity<Object> post = webClientService.createUser(body);
+        return ResponseEntity.status(post.getStatusCode())
+                .headers(convertLocationHeader(post.getHeaders()))
+                .body(post.getBody());
     }
 
     @PutMapping("/users/{userId}")
-    public Mono<ResponseEntity<Object>> updateUser(@PathVariable String userId, @RequestBody Object body) {
-        Mono<ClientResponse> post = webClientService.updateUser(userId, body);
-        return post.flatMap(response -> Mono.just(
-                ResponseEntity.status(response.statusCode())
-                        .headers(response.headers().asHttpHeaders())
-                        .body(response.bodyToMono(Object.class))));
+    public ResponseEntity<Object> updateUser(@PathVariable String userId, @RequestBody Object body) {
+        ResponseEntity<Object> post = webClientService.updateUser(userId, body);
+        return ResponseEntity.status(post.getStatusCode())
+                .headers(post.getHeaders())
+                .body(post.getBody());
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}")
-    public Mono<Object> getAssignedUserClientRoleMapping(
+    public ResponseEntity<Object> getAssignedUserClientRoleMapping(
             @RequestHeader("Authorization") String token,
             @PathVariable String userId,
             @PathVariable String clientGuid) {
 
-        //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return webClientService.getAssignedUserClientRoleMappings(userId, clientGuid);
         } else {
@@ -94,12 +89,11 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/available")
-    public Mono<Object> getAvailableUserClientRoleMapping(
+    public ResponseEntity<Object> getAvailableUserClientRoleMapping(
             @RequestHeader("Authorization") String token,
             @PathVariable String userId,
             @PathVariable String clientGuid) {
 
-        //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return webClientService.getAvailableUserClientRoleMappings(userId, clientGuid);
         } else {
@@ -108,12 +102,11 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}/composite")
-    public Mono<Object> getEffectiveUserClientRoleMapping(
+    public ResponseEntity<Object> getEffectiveUserClientRoleMapping(
             @RequestHeader("Authorization") String token,
             @PathVariable String userId,
             @PathVariable String clientGuid) {
 
-        //Check if the user has the required role to view information related to this client
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return webClientService.getEffectiveUserClientRoleMappings(userId, clientGuid);
         } else {
@@ -123,36 +116,43 @@ public class UsersController {
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
-    HttpHeaders getHeaders(HttpHeaders response) {
+    /**
+     * Convert Keycloak's Location header to this service's Location header. Only handles Locations
+     * containing the "users" path.
+     *
+     * e.g. https://common-logon.hlth.gov.bc.ca/users/lknlnlkn becomes https://servicename/users/lknlnlkn.
+     * Other headers are left untouched.
+     *
+     * @param headers the headers from Keycloak.
+     * @return headers with a possibly modified Location header.
+     */
+    HttpHeaders convertLocationHeader(HttpHeaders headers) {
+        Objects.requireNonNull(headers);
 
-        // If no Location header found, return empty Headers.
-        HttpHeaders newHeaders = new HttpHeaders();
-        if (response == null || response.getLocation() == null) {
-            return newHeaders;
+        // If no Location header found, return headers unmodified.
+        if (headers.getLocation() == null) {
+            return headers;
         }
 
         // If Location header found, replace Keycloak hostname with service vanity hostname.
-        Matcher matcher = patternGuid.matcher(response.getLocation().toASCIIString());
+        Matcher matcher = patternGuid.matcher(headers.getLocation().toASCIIString());
         if (matcher.matches() && matcher.groupCount() == 1) {
-            newHeaders.setLocation(URI.create("https://" + vanityHostname + "/users/" + matcher.group(1)));
+            headers.setLocation(URI.create("https://" + vanityHostname + "/users/" + matcher.group(1)));
         }
 
-        return newHeaders;
+        return headers;
     }
 
-    /* This method checks the client guid from the request against the users roles
-    * Since the roles match by Client ID and the request uses the guid we need to do a lookup against keycloak to get the
-    * Client ID*/
+    /**
+     * Checks the client GUID from the request against the user's roles. Since the roles match by Client ID
+     * and the request uses the GUID, we need to do a lookup against Keycloak to get the Client ID.
+     */
     boolean isAuthorizedToViewClient(String token, String clientGuid) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
         List<String> authorizedClients = acp.parse(token);
 
-        Object authFilteredClient = webClientService.getClient(clientGuid)
-                .filter(c -> Objects.nonNull(((LinkedHashMap) c).get("clientId")))
-                .filter(c -> authorizedClients.contains(((LinkedHashMap) c).get("clientId").toString().toLowerCase()))
-                .block();
-
-        return authFilteredClient != null;
+        LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) webClientService.getClient(clientGuid).getBody();
+        return authorizedClients.contains(client.get("clientId").toLowerCase());
     }
 
 }
