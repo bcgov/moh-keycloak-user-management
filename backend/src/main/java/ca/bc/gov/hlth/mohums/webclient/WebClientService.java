@@ -22,7 +22,7 @@ public class WebClientService {
 
     // Clients
     public ResponseEntity<List<Object>> getClients() {
-        return getFlux(clientsPath);
+        return getList(clientsPath);
 
     }
 
@@ -81,7 +81,7 @@ public class WebClientService {
                 .exchange().block().toEntity(Object.class).block();
     }
 
-    private ResponseEntity<List<Object>> getFlux(String path) {
+    private ResponseEntity<List<Object>> getList(String path) {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t.path(path).build())
