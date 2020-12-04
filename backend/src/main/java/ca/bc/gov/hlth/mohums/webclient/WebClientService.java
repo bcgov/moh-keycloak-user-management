@@ -4,7 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 @Service
 public class WebClientService {
@@ -20,7 +21,7 @@ public class WebClientService {
     }
 
     // Clients
-    public Flux<Object> getClients() {
+    public ResponseEntity<List<Object>> getClients() {
         return getFlux(clientsPath);
 
     }
@@ -80,12 +81,12 @@ public class WebClientService {
                 .exchange().block().toEntity(Object.class).block();
     }
 
-    private Flux<Object> getFlux(String path) {
+    private ResponseEntity<List<Object>> getFlux(String path) {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t.path(path).build())
                 .exchange()
-                .flatMapMany(r -> r.bodyToFlux(Object.class));
+                .block().toEntityList(Object.class).block();
     }
 
     private ResponseEntity<Object> post(String path, Object data) {
