@@ -61,12 +61,11 @@ public class UsersController {
     }
 
     @PostMapping("/users")
-    public Mono<ResponseEntity<Object>> createUser(@RequestBody Object body) {
-        Mono<ClientResponse> post = webClientService.createUser(body);
-        return post.flatMap(response -> Mono.just(
-                ResponseEntity.status(response.statusCode())
-                        .headers(getHeaders(response.headers().asHttpHeaders()))
-                        .body(response.bodyToMono(Object.class))));
+    public ResponseEntity<Object> createUser(@RequestBody Object body) {
+        ResponseEntity<Object> post = webClientService.createUser(body);
+        return ResponseEntity.status(post.getStatusCode())
+                .headers(getHeaders(post.getHeaders()))
+                .body(post.getBody());
     }
 
     @PutMapping("/users/{userId}")

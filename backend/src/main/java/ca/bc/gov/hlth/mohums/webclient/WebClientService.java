@@ -48,7 +48,7 @@ public class WebClientService {
         return get(path, null);
     }
 
-    public Mono<ClientResponse> createUser(Object data) {
+    public ResponseEntity<Object> createUser(Object data) {
         return post(usersPath, data);
     }
 
@@ -90,12 +90,13 @@ public class WebClientService {
                 .flatMapMany(r -> r.bodyToFlux(Object.class));
     }
 
-    private Mono<ClientResponse> post(String path, Object data) {
+    private ResponseEntity<Object> post(String path, Object data) {
         return kcAuthorizedWebClient
                 .post()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
-                .exchange();
+                .exchange()
+                .block().toEntity(Object.class).block();
     }
 
     private Mono<ClientResponse> put(String path, Object data) {
