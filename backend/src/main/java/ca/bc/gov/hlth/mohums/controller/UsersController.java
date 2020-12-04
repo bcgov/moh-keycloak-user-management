@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -69,12 +67,11 @@ public class UsersController {
     }
 
     @PutMapping("/users/{userId}")
-    public Mono<ResponseEntity<Object>> updateUser(@PathVariable String userId, @RequestBody Object body) {
-        Mono<ClientResponse> post = webClientService.updateUser(userId, body);
-        return post.flatMap(response -> Mono.just(
-                ResponseEntity.status(response.statusCode())
-                        .headers(response.headers().asHttpHeaders())
-                        .body(response.bodyToMono(Object.class))));
+    public ResponseEntity<Object> updateUser(@PathVariable String userId, @RequestBody Object body) {
+        ResponseEntity<Object> post = webClientService.updateUser(userId, body);
+        return ResponseEntity.status(post.getStatusCode())
+                .headers(getHeaders(post.getHeaders()))
+                .body(post.getBody());
     }
 
     @GetMapping("/users/{userId}/role-mappings/clients/{clientGuid}")

@@ -3,10 +3,8 @@ package ca.bc.gov.hlth.mohums.webclient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 public class WebClientService {
@@ -52,7 +50,7 @@ public class WebClientService {
         return post(usersPath, data);
     }
 
-    public Mono<ClientResponse> updateUser(String userId, Object data) {
+    public ResponseEntity<Object> updateUser(String userId, Object data) {
         String path = usersPath + "/" + userId;
         return put(path, data);
     }
@@ -99,11 +97,12 @@ public class WebClientService {
                 .block().toEntity(Object.class).block();
     }
 
-    private Mono<ClientResponse> put(String path, Object data) {
+    private ResponseEntity<Object> put(String path, Object data) {
         return kcAuthorizedWebClient
                 .put()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
-                .exchange();
+                .exchange()
+                .block().toEntity(Object.class).block();
     }
 }
