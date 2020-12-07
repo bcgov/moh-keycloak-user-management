@@ -10,7 +10,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UsersControllerTest {
 
-    private final UsersController u = new UsersController(null, "localhost");
+    private final UsersController u = new UsersController(null, vanityHostname);
+
+    private static final String vanityHostname = "http://localhost";
 
     @Test
     void testNull() {
@@ -41,7 +43,7 @@ class UsersControllerTest {
         httpHeaders.setLocation(URI.create("https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications/users/d862b0ee-1e3f-423b-a200-55f2e8f103d9"));
         HttpHeaders newHeaders = u.convertLocationHeader(httpHeaders);
         assertNotNull(newHeaders);
-        assertEquals("https://localhost/users/d862b0ee-1e3f-423b-a200-55f2e8f103d9", newHeaders.getLocation().toASCIIString());
+        assertEquals(vanityHostname + "/users/d862b0ee-1e3f-423b-a200-55f2e8f103d9", newHeaders.getLocation().toASCIIString());
     }
 
     @Test
