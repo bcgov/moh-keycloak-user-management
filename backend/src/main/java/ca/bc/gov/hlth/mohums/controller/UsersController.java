@@ -11,10 +11,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,24 +120,27 @@ public class UsersController {
      * e.g. https://common-logon.hlth.gov.bc.ca/users/lknlnlkn becomes https://servicename/users/lknlnlkn.
      * Other headers are left untouched.
      *
-     * @param headers the headers from Keycloak.
+     * @param inHeaders the headers from Keycloak.
      * @return headers with a possibly modified Location header.
      */
-    HttpHeaders convertLocationHeader(HttpHeaders headers) {
-        Objects.requireNonNull(headers);
+    HttpHeaders convertLocationHeader(HttpHeaders inHeaders) {
+        Objects.requireNonNull(inHeaders);
 
-        // If no Location header found, return headers unmodified.
-        if (headers.getLocation() == null) {
-            return headers;
+        // The inHeaders are read-only, so they must be copied to be modified.
+        HttpHeaders outHeaders = HttpHeaders.writableHttpHeaders(inHeaders);
+
+        // If no Location header, return headers unmodified.
+        if (inHeaders.getLocation() == null) {
+            return outHeaders;
         }
 
-        // If Location header found, replace Keycloak hostname with service vanity hostname.
-        Matcher matcher = patternGuid.matcher(headers.getLocation().toASCIIString());
+        // If Location header present, replace Keycloak hostname with service vanity hostname.
+        Matcher matcher = patternGuid.matcher(inHeaders.getLocation().toASCIIString());
         if (matcher.matches() && matcher.groupCount() == 1) {
-            headers.setLocation(URI.create("https://" + vanityHostname + "/users/" + matcher.group(1)));
+            outHeaders.setLocation(URI.create(vanityHostname + "/users/" + matcher.group(1)));
         }
 
-        return headers;
+        return outHeaders;
     }
 
     /**

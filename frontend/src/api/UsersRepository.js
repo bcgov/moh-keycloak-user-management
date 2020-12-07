@@ -19,7 +19,7 @@ export default {
     },
 
     createUser(content) {
-        return kcRequest().then(axiosInstance => axiosInstance.post(`${resource}`, content));
+        return umsRequest().then(axiosInstance => axiosInstance.post(`${resource}`, content));
     },
 
     updateUser(userId, content) {

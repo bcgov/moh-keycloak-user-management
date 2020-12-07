@@ -8,7 +8,7 @@ user-management-client:
     view-users: view-users
     manage-users: manage-users
 config:
-  vanity-hostname: localhost
+  vanity-hostname: "http://localhost:9090"
   allowed-origins: "http://localhost:8080"
 spring:
   security:
@@ -44,3 +44,8 @@ server:
 #    key-store-type: pkcs12
 #    key-alias: localhost
 #    key-password: password
+#logging:
+#  level:
+#    KC_WEB_CLIENT: DEBUG
+#    org.apache.coyote.http11.Http11InputBuffer: DEBUG
+#    root: DEBUG
