@@ -131,7 +131,28 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT);
-        // We expect a 409 (Conflict) because the user already exists.
+    }
+
+    @Test
+    public void addUserClientRole() {
+        //FMDB Client
+        //123-tschiavo user
+        webTestClient
+                .post()
+                .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("[\n" +
+                        "    {\n" +
+                        "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n" +
+                        "        \"name\": \"PSDADMIN\",\n" +
+                        "        \"composite\": false,\n" +
+                        "        \"clientRole\": true,\n" +
+                        "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n" +
+                        "    }\n" +
+                        "]")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
     }
 
     @Test
