@@ -71,6 +71,11 @@ public class WebClientService {
         return get(path, null);
     }
 
+    public ResponseEntity<Object> addUserClientRole(String userId, String clientId, Object data) {
+        String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
+        return post(path, data);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()

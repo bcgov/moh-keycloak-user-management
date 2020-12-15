@@ -111,6 +111,19 @@ public class UsersController {
         }
     }
 
+    @PostMapping("/users/{userId}/role-mappings/clients/{clientGuid}")
+    public ResponseEntity<Object> addUserClientRole(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String userId,
+            @PathVariable String clientGuid,
+            @RequestBody Object body) {
+        if (isAuthorizedToViewClient(token, clientGuid)) {
+            return webClientService.addUserClientRole(userId, clientGuid, body);
+        } else {
+            throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
+        }
+    }
+
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
     /**
@@ -152,7 +165,13 @@ public class UsersController {
         List<String> authorizedClients = acp.parse(token);
 
         LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) webClientService.getClient(clientGuid).getBody();
-        return authorizedClients.contains(client.get("clientId").toLowerCase());
+        // TODO If the client doesn't exist return a 401 (should this be a 404?)
+        if (client.get("clientId") != null) {
+            return authorizedClients.contains(client.get("clientId").toLowerCase());
+        } else {
+            return false;
+        }
+
     }
 
 }
