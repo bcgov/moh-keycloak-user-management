@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -76,6 +77,11 @@ public class WebClientService {
         return post(path, data);
     }
 
+    public ResponseEntity<Object> deleteUserClientRole(String userId, String clientId, Object data) {
+        String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
+        return delete(path, data);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
@@ -106,6 +112,23 @@ public class WebClientService {
     private ResponseEntity<Object> put(String path, Object data) {
         return kcAuthorizedWebClient
                 .put()
+                .uri(t -> t.path(path).build())
+                .bodyValue(data)
+                .exchange()
+                .block().toEntity(Object.class).block();
+    }
+
+    private ResponseEntity<Object> delete(String path) {
+        return kcAuthorizedWebClient
+                .delete()
+                .uri(t -> t.path(path).build())
+                .exchange()
+                .block().toEntity(Object.class).block();
+    }
+
+    private ResponseEntity<Object> delete(String path, Object data) {
+        return kcAuthorizedWebClient
+                .method(HttpMethod.DELETE)
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
                 .exchange()

@@ -50,6 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
                 .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(manageUsersRole)
                 .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUsersRole)
+                .mvcMatchers(HttpMethod.DELETE, "/users/**").hasRole(manageUsersRole)
                 .mvcMatchers("/*").denyAll()
                 .and()
             .oauth2ResourceServer().jwt()
@@ -63,7 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.addAllowedOrigin(allowedOrigins);
         configuration.addAllowedHeader("*");
         configuration.setExposedHeaders(Collections.singletonList("Location"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE", "PUT"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
