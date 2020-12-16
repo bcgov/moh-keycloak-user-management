@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -139,6 +140,28 @@ public class MoHUmsIntegrationTests {
         //123-tschiavo user
         webTestClient
                 .post()
+                .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("[\n" +
+                        "    {\n" +
+                        "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n" +
+                        "        \"name\": \"PSDADMIN\",\n" +
+                        "        \"composite\": false,\n" +
+                        "        \"clientRole\": true,\n" +
+                        "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n" +
+                        "    }\n" +
+                        "]")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+    }
+
+    @Test
+    public void deleteUserClientRole() {
+        //FMDB Client
+        //123-tschiavo user
+        webTestClient
+                .method(HttpMethod.DELETE)
                 .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n" +
