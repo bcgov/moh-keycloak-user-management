@@ -48,7 +48,7 @@ export default {
     deleteUserClientRoles(userId, clientId, content) {
         //Keycloak expects the roles that will be removed in the body of the request which Axios doesn't do by default
         const deleteContent = { data: content }
-        return kcRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${clientRoleMappings}/${clientId}/`, deleteContent));
+        return umsRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${clientRoleMappings}/${clientId}/`, deleteContent));
     },
 
     /* User Groups */
