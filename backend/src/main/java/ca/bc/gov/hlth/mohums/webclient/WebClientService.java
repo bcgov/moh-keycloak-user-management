@@ -81,7 +81,7 @@ public class WebClientService {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
         return delete(path, data);
     }
-    
+
     public ResponseEntity<Object> getUserGroups(String userId) {
         String path = usersPath + "/" + userId + groupsPath;
         return get(path, null);
