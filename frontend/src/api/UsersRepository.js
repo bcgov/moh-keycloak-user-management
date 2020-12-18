@@ -53,7 +53,7 @@ export default {
 
     /* User Groups */
     getUserGroups(userId) {
-      return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}/${groups}`));
+      return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}/${groups}`));
     },
     addGroupToUser(userId, groupId) {
         return kcRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}/${groups}/${groupId}`))

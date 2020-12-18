@@ -137,6 +137,11 @@ public class UsersController {
         }
     }
 
+    @GetMapping("/users/{userId}/groups")
+    public ResponseEntity<Object> getUserGroups(@PathVariable String userId) {
+            return webClientService.getUserGroups(userId);
+    }
+
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
     /**
