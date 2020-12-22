@@ -6,13 +6,13 @@ The "User Management Console" is custom user management console for Keycloak. Ke
 
 # Prerequisites
 
-This application requires a Keycloak server and the User Management Service. It uses the Keycloak server for OIDC authentication, and it uses the User Management Service API for user management. Keycloak installation and configuration instructions are not in scope for this README. Installation instructions for the User Management Service are at [/backend/README.md](../backend/README.md).
+This application requires a Keycloak server and the User Management Service. It uses the Keycloak server for OIDC authentication, and it uses the User Management Service for user management. Installation instructions for the User Management Service are at [/backend/README.md](../backend). Keycloak installation and configuration instructions are not in scope for this README.
 
-(The User Management Service implements the same API as the Keycloak Administration REST API, so it is possible to configure the User Management Console to use Keycloak without deploying the User Management Service. This is only noted for posterity and is not supported or tested.)
+(The User Management Service implements the same API as the Keycloak Administration REST API, so it's possible to configure the User Management Console to use Keycloak without deploying the User Management Service. This is only noted for posterity and is not supported or tested.)
 
 # Configuration
 
-Specify Keycloak details using the configuration file at [public/keycloak.json](public/keycloak.json). Specify User Management Service Details at [public/config.json](public/config.json). The included configuration files are valid for the MoH's development environment.
+Specify Keycloak details using the configuration file at [public/keycloak.json](public/keycloak.json). Specify User Management Service details at [public/config.json](public/config.json). The included configuration files are valid for the MoH's development environment.
 
 
 ## Project setup

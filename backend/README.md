@@ -1,6 +1,6 @@
 # User Management Service
 
-The "User Management Service" is the API backend for the [User Management Console](../frontend/README.md). It's also a service proxy for the [Keycloak Administration REST API](https://www.keycloak.org/docs-api/9.0/rest-api/index.html).
+The "User Management Service" is the API backend for the [User Management Console](../frontend). It's also a service proxy for the [Keycloak Administration REST API](https://www.keycloak.org/docs-api/9.0/rest-api/index.html).
 
 It provides the following design benefits over using the Keycloak REST API directly:
 * Ability to implement custom fine-grained access control.
