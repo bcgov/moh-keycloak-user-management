@@ -1,3 +1,5 @@
-The User Management application consists of the User Management Console frontend (Vue.js) and User Management Service backend (Spring Boot) and depends on a Keycloak server. Local set-up instructions for each component are in [frontend README](frontend/README.md) and [backend README](backend/README.md).
+# MOH User Management
 
-The MoH Jenkins server handles automated deployment of the application.
+The User Management application allows administrators to administer users stored in Keycloak. It consists of the [User Management Console frontend](frontend) (Vue.js) and [User Management Service backend](backend) (Spring Boot), and it depends on a Keycloak server. Detailed set-up instructions for each component are included in the README files in the subdirectories.
+
+![architecture diagram](userManagementArch.png)
