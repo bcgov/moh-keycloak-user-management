@@ -9,7 +9,9 @@ user-management-client:
     manage-users: manage-users
     manage-user-groups: manage-user-groups
 config:
+  # vanity-hostname: Sets the HTTP "Location" header for the service.
   vanity-hostname: "http://localhost:${server.port}"
+  # CORS header, should be the User Management Console:
   allowed-origins: "http://localhost:8080"
 spring:
   security:

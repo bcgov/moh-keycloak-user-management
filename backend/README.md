@@ -1,29 +1,45 @@
-# Keycloak User Management Service
-The Keycloak User Management Service functions as an API service layer for the Keycloak User Management application. 
+# User Management Service
 
-The Keycloak APIs do not offer the level of fine-grained security needed to restrict users' access, allowing them to modify just their assigned Client ID's configuration information. To mitigate this potential risk, we propose creating Custom Service API that can restrict access to the underlying Keycloak APIs.
-In some cases the Keycloak API’s are also limited in their ability to provide fine grained searching and filtering of data.
+The "User Management Service" is the API backend for the [User Management Console](../frontend). It's also a service proxy for the [Keycloak Administration REST API](https://www.keycloak.org/docs-api/9.0/rest-api/index.html).
 
-The Service API is meant to extend capabilities beyond what’s offered directly by Keycloak. 
+It provides the following design benefits over using the Keycloak REST API directly:
+* Ability to implement custom fine-grained access control.
+* Doesn't expose the Keycloak REST API which could allow more access than intended.
+* Ability to extended or enhance the Keycloak REST API for future use cases.
 
-# Configuration and local setup
-This application uses Spring Boot and requires JDK 11 and Maven to run.
+(Note that Keycloak does have a "technology preview" feature called [Fine Grain Admin Permissions](https://www.keycloak.org/docs/latest/server_admin/#_fine_grain_permissions). We evaluated this feature before implementing this application.)
+
+# Prerequisites
+
+Tested with:
+* Java 11
+* Maven 3.6.1
+* Keycloak 9.0.2
+
+# Configuration
+
+For local development, specify Keycloak details using the configuration file at [src/main/resources/application.yaml](src/main/resources/application.yaml). For deploys to other environments, we suggest [external properties](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-files).
+
+# Run
 
 To start the application run:
 ```
 ./mvnw spring-boot:run
 ```
 
-To create an executable jar run:
+To create an executable JAR run:
 ```
 mvn clean package
+```
+
+To run the JAR:
+```
 java -jar target/<jar-file-name>.jar
 ```
 
-# Authentication and Authorization
-TODO
+# Integration tests
 
-# API Functionality
-Keycloak 'realm-management' functionality currently included exposed by the API Service: 
-view-clients, 
-view-groups
+The tests depend on the MoH Development Keycloak server. You can run the tests with:
+```
+mvn test
+```
