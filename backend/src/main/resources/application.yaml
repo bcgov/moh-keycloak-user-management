@@ -7,6 +7,7 @@ user-management-client:
     view-groups: view-groups
     view-users: view-users
     manage-users: manage-users
+    manage-user-groups: manage-user-groups
 config:
   vanity-hostname: "http://localhost:${server.port}"
   allowed-origins: "http://localhost:8080"
