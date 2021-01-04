@@ -58,7 +58,7 @@ export default {
       let userGroupResponses = await Promise.all([UsersRepository.getUserGroups(this.userId), GroupsRepository.get()])
           .catch(error => {
             this.$store.commit("alert/setAlert", {
-              message: "Error updating loading user groups: " + error,
+              message: "Error loading user groups: " + error,
               type: "error"
             });
           });

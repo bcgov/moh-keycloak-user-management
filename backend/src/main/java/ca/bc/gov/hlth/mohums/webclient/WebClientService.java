@@ -13,6 +13,7 @@ public class WebClientService {
 
     private final String clientsPath = "/clients";
     private final String usersPath = "/users";
+    private final String groupsPath = "/groups";
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
 
     private final WebClient kcAuthorizedWebClient;
@@ -34,8 +35,7 @@ public class WebClientService {
 
     // Groups
     public ResponseEntity<Object> getGroups() {
-        String path = "/groups";
-        return get(path, null);
+        return get(groupsPath, null);
     }
 
     // Users
@@ -80,6 +80,11 @@ public class WebClientService {
     public ResponseEntity<Object> deleteUserClientRole(String userId, String clientId, Object data) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
         return delete(path, data);
+    }
+
+    public ResponseEntity<Object> getUserGroups(String userId) {
+        String path = usersPath + "/" + userId + groupsPath;
+        return get(path, null);
     }
 
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
