@@ -148,7 +148,7 @@ public class UsersController {
         return webClientService.addUserGroups(userId, groupId);
     }
 
-    @PutMapping("/users/{userId}/groups/{groupId}")
+    @DeleteMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
                                                 @PathVariable String groupId) {
         return webClientService.removeUserGroups(userId, groupId);
