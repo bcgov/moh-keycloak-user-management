@@ -29,9 +29,13 @@
             :id="'role-' + index"
             v-model="selectedRoles"
             :value="role"
-            :label="role.name"
             :key="role.name"
-          ></v-checkbox>
+          >
+            <div slot="label" class="tooltip">
+              {{role.name}}
+              <span v-show="role.description" class="tooltiptext"> {{ role.description }} </span>
+            </div>
+          </v-checkbox>
         </v-col>
         <v-col class="col-4">
           <label>
@@ -46,15 +50,23 @@
               </span>
             </v-tooltip>
           </label>
-          <v-checkbox
-            hide-details="auto"
-            v-for="role in effectiveClientRoles"
-            v-model="effectiveClientRoles"
-            disabled="disabled"
-            :value="role"
-            :label="role.name"
-            :key="role.name"
-          ></v-checkbox>
+
+          <span class="tooltip">
+              <v-checkbox
+                  hide-details="auto"
+                  disabled
+                  readonly
+                  v-for="role in effectiveClientRoles"
+                  v-model="effectiveClientRoles"
+                  :value="role"
+                  :key="role.name"
+              >
+                <div slot="label" class="tooltip">
+                  {{role.name}}
+                  <span v-show="role.description" class="tooltiptext"> {{ role.description }} </span>
+                </div>
+              </v-checkbox>
+          </span>
         </v-col>
       </v-row>
       <div class="my-6" v-if="selectedClientId">
@@ -183,6 +195,49 @@ export default {
   }
 };
 </script>
+
+<style>
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  font-weight: 400;
+  font-size: 14px;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  top: -25%;
+  left: 50%;
+  margin-left: -80px;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 00%;
+  margin-left: -10px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #555 transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.v-label:hover .tooltip .tooltiptext {
+  visibility: visible;
+  opacity: 0.7;
+}
+</style>
 
 
     
