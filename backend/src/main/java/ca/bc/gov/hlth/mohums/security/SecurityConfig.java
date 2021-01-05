@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
                 .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
-                .mvcMatchers(HttpMethod.GET,"/users/{userId}/groups").access(String.format("hasRole('%s') and hasRole('%s')", viewGroupsRole, viewUsersRole))
+                .mvcMatchers(HttpMethod.GET,"/users/{userId}/groups").access(String.format("hasRole('%s') and hasRole('%s')", viewUsersRole, viewGroupsRole))
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
                 .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(manageUsersRole)
                 .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUsersRole, manageUserGroupsRole))
