@@ -1,4 +1,4 @@
-import { kcRequest, umsRequest } from "./Repository";
+import { umsRequest } from "./Repository";
 
 const resource = "/users";
 const clientRoleMappings = "role-mappings/clients";
