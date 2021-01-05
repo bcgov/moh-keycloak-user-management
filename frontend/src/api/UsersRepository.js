@@ -59,7 +59,7 @@ export default {
         return umsRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}/${groups}/${groupId}`))
     },
     removeGroupFromUser(userId, groupId) {
-        return kcRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${groups}/${groupId}`))
+        return umsRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${groups}/${groupId}`))
     },
 
     /**

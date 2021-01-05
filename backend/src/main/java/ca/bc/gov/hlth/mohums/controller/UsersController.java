@@ -148,6 +148,12 @@ public class UsersController {
         return webClientService.addUserGroups(userId, groupId);
     }
 
+    @PutMapping("/users/{userId}/groups/{groupId}")
+    public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
+                                                @PathVariable String groupId) {
+        return webClientService.removeUserGroups(userId, groupId);
+    }
+
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
     /**
