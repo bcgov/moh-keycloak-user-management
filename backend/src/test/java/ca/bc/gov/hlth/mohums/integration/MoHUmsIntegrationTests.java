@@ -190,6 +190,17 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void addUserGroups() throws Exception {
+        webTestClient
+                .put()
+                // 123-tschiavo user
+                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+    }
+
+    @Test
     public void assignedUserClientRoleMappingUnauthorized() throws Exception {
         webTestClient
                 .get()

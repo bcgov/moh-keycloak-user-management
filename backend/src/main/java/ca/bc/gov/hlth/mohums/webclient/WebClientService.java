@@ -87,6 +87,11 @@ public class WebClientService {
         return get(path, null);
     }
 
+    public ResponseEntity<Object> addUserGroups(String userId, String groupId) {
+        String path = usersPath + "/" + userId + groupsPath + "/" + groupId;
+        return put(path);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
@@ -119,6 +124,14 @@ public class WebClientService {
                 .put()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
+                .exchange()
+                .block().toEntity(Object.class).block();
+    }
+
+    private ResponseEntity<Object> put(String path) {
+        return kcAuthorizedWebClient
+                .put()
+                .uri(t -> t.path(path).build())
                 .exchange()
                 .block().toEntity(Object.class).block();
     }

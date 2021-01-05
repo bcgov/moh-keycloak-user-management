@@ -45,8 +45,8 @@ export default {
   },
   methods: {
     checkIfAdmin: function() {
-      if (this.$keycloak.tokenParsed.resource_access['user-management'] &&
-          this.$keycloak.tokenParsed.resource_access['user-management'].roles.includes('user-management-admin')) {
+      if (this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT'] &&
+          this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT'].roles.includes('user-management-admin')) {
         this.adminUser = true;
       }
     },
