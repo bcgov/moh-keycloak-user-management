@@ -36,7 +36,7 @@
                     :value="clientRoles[roleArrayPosition(col, item)]"
                     :key="clientRoles[roleArrayPosition(col, item)].name"
                 >
-                  <span slot="label" class="tooltip" :id="roleArrayPosition(col,item)">
+                  <span slot="label" class="tooltip" :id="'role-' + roleArrayPosition(col,item)">
                     {{clientRoles[roleArrayPosition(col, item)].name}}
                     <span v-show="clientRoles[roleArrayPosition(col, item)].description" class="tooltiptext"> {{ clientRoles[roleArrayPosition(col, item)].description }} </span>
                   </span>
@@ -145,8 +145,6 @@ export default {
       this.clientRoles.push(...clientRolesResponses[2].data);
       this.selectedRoles.push(...clientRolesResponses[2].data);
       this.effectiveClientRoles.push(...clientRolesResponses[0].data);
-
-
 
       this.clientRoles.sort(function(a, b) {
         return a.name.localeCompare(b.name);
@@ -265,7 +263,7 @@ export default {
 /* Show the tooltip text when you mouse over the tooltip container */
 .v-label:hover .tooltip .tooltiptext {
   visibility: visible;
-  opacity: 0.9;
+  opacity: 1;
 }
 </style>
 
