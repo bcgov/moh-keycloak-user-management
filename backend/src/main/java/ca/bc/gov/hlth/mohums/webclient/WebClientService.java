@@ -92,6 +92,11 @@ public class WebClientService {
         return put(path);
     }
 
+    public ResponseEntity<Object> removeUserGroups(String userId, String groupId) {
+        String path = usersPath + "/" + userId + groupsPath + "/" + groupId;
+        return delete(path);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()

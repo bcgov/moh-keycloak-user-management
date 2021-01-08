@@ -55,6 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(manageUsersRole)
                 .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUsersRole, manageUserGroupsRole))
                 .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUsersRole)
+                .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUsersRole, manageUserGroupsRole))
                 .mvcMatchers(HttpMethod.DELETE, "/users/**").hasRole(manageUsersRole)
                 .mvcMatchers("/*").denyAll()
                 .and()
