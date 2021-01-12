@@ -22,39 +22,63 @@
     <div v-if="selectedClientId">
       <v-row no-gutters>
         <v-col class="col-4">
-          <label>Roles</label>
-          <v-checkbox
-            hide-details="auto"
-            v-for="(role, index) in clientRoles"
-            :id="'role-' + index"
-            v-model="selectedRoles"
-            :value="role"
-            :label="role.name"
-            :key="role.name"
-          ></v-checkbox>
-        </v-col>
-        <v-col class="col-4">
-          <label>
-            Effective Roles
-            <v-tooltip right>
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on" small>mdi-help-circle</v-icon>
-              </template>
-              <span>
-                Effective roles represent all roles assigned to a user for this client.
-                <br />This may include roles provided by group membership which cannot be directly removed.
+          <v-row no-gutters>
+            <v-col class="col-12">
+              <label>Roles</label>
+            </v-col>
+            <v-col class="col-6" v-for="col in numberOfClientRoleColumns" :key="col">
+              <span v-for="item in itemsInColumn" :key="item">
+                <v-checkbox
+                    v-if="item*col <= clientRoles.length"
+                    class="roles-checkbox"
+                    hide-details="auto"
+                    v-model="selectedRoles"
+                    :value="clientRoles[roleArrayPosition(col, item)]"
+                    :key="clientRoles[roleArrayPosition(col, item)].name"
+                >
+                  <span slot="label" class="tooltip" :id="'role-' + roleArrayPosition(col,item)">
+                    {{clientRoles[roleArrayPosition(col, item)].name}}
+                    <span v-show="clientRoles[roleArrayPosition(col, item)].description" class="tooltiptext"> {{ clientRoles[roleArrayPosition(col, item)].description }} </span>
+                  </span>
+                </v-checkbox>
               </span>
-            </v-tooltip>
-          </label>
-          <v-checkbox
-            hide-details="auto"
-            v-for="role in effectiveClientRoles"
-            v-model="effectiveClientRoles"
-            disabled="disabled"
-            :value="role"
-            :label="role.name"
-            :key="role.name"
-          ></v-checkbox>
+            </v-col>
+          </v-row>
+        </v-col>
+        <v-col class="col-4" no-gutters>
+          <v-row no-gutters>
+            <v-col class="col-12">
+              <label>
+                Effective Roles
+                <v-tooltip right>
+                  <template v-slot:activator="{ on }">
+                    <v-icon v-on="on" small>mdi-help-circle</v-icon>
+                  </template>
+                  <span>
+                    Effective roles represent all roles assigned to a user for this client.
+                    <br />This may include roles provided by group membership which cannot be directly removed.
+                  </span>
+                </v-tooltip>
+              </label>
+            </v-col>
+            <v-col class="col-6">
+              <v-checkbox
+                  class="roles-checkbox"
+                  hide-details="auto"
+                  disabled
+                  readonly
+                  v-for="role in effectiveClientRoles"
+                  v-model="effectiveClientRoles"
+                  :value="role"
+                  :key="role.name"
+              >
+                <span slot="label" class="tooltip">
+                  {{role.name}}
+                  <span v-show="role.description" class="tooltiptext"> {{ role.description }} </span>
+                </span>
+              </v-checkbox>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
       <div class="my-6" v-if="selectedClientId">
@@ -85,7 +109,18 @@ export default {
     await this.getClients();
 
   },
+  computed: {
+    itemsInColumn() {
+      return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
+    },
+    numberOfClientRoleColumns() {
+      return (this.clientRoles.length > 10) ? 2 : 1
+    }
+  },
   methods: {
+    roleArrayPosition: function(col, item) {
+      return (col - 1) * (this.itemsInColumn) + item - 1;
+    },
     getClients: function() {
       return ClientsRepository.get()
         .then(response => {
@@ -105,6 +140,7 @@ export default {
         this.getUserAvailableClientRoles(),
         this.getUserActiveClientRoles()
       ]);
+      // TODO roles that are in effective but not active should not be included in clientRoles
       this.clientRoles.push(...clientRolesResponses[1].data);
       this.clientRoles.push(...clientRolesResponses[2].data);
       this.selectedRoles.push(...clientRolesResponses[2].data);
@@ -183,6 +219,53 @@ export default {
   }
 };
 </script>
+
+<style>
+.roles-checkbox {
+  margin: 0px 0px 12px 0px;
+  padding: 8px 0px 0px 0px;
+}
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  font-weight: 400;
+  font-size: 14px;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  top: -25%;
+  margin-left: 8px;
+  width: 200px;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 0%;
+  margin-left: -10px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #555 transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.v-label:hover .tooltip .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
 
 
     

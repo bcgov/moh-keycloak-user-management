@@ -19,7 +19,10 @@ export default {
     name: "TheHeader",
     methods: {
     logout: function () {
-      this.$keycloak.logout({redirectUri: this.$config.siteminder_logout});
+      if(confirm("Please confirm you want to sign out. " +
+          "\nThis will also end all other active Keycloak or SiteMinder sessions you have open.")) {
+        this.$keycloak.logout({redirectUri: this.$config.siteminder_logout});
+      }
     }
   }
 }

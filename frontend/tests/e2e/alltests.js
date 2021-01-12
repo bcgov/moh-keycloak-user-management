@@ -50,13 +50,13 @@ test('Test update user', async t => {
 });
 
 test('Test update user role', async t => {
-    const client = 'realm-management'
+    const client = 'FMDB'
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
         .click(Selector('td').withText(TEST_CAFE_USER_ID))
         .typeText('#select-client', client, { replace: true })
-        .click(Selector('.v-list-item').withText('realm-management'))
+        .click(Selector('.v-list-item').withText('FMDB'))
         .click('#role-0')
         .click('#save-user-roles')
         .expect(Selector('#primary-alert').textContent)
