@@ -20,6 +20,8 @@ Tested with:
 
 For local development, specify Keycloak details using the configuration file at [src/main/resources/application.yaml](src/main/resources/application.yaml). For deploys to other environments, we suggest [external properties](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-files).
 
+The configuration file expects an externally defined property (environment variable or JVM system property) named `UMS_CLIENT_SECRET`. Its value should match the `Secret` attribute of the Client's Credentials defined in Keycloak.
+
 # Run
 
 To start the application run:
