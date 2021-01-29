@@ -71,7 +71,8 @@ public class FilteredResponseEntities {
         
         if (sourceStatusCode == OK_STATUS_CODE) {
             if (CollectionUtils.isEmpty(entities)) {
-                // REVIEW - Is the frontend expecting a 404 HTTP status when no results are found?
+                // REVIEW - Is the frontend expecting a 404 (NOT_FOUND) or a 204 (NO_CONTENT)
+                // HTTP status code when no results are found?
                 responseEntity = ResponseEntity.notFound().build();
             }
             else {
