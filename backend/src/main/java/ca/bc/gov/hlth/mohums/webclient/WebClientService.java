@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class WebClientService {
-
+    
     private final String clientsPath = "/clients";
     private final String usersPath = "/users";
     private final String groupsPath = "/groups";
@@ -39,6 +39,10 @@ public class WebClientService {
     }
 
     // Users
+    public ResponseEntity<List<Object>> getAllUsers() {
+        return getList(usersPath);
+    }
+
     public ResponseEntity<Object> getUsers(MultiValueMap<String, String> queryParams) {
         return get(usersPath, queryParams);
     }
