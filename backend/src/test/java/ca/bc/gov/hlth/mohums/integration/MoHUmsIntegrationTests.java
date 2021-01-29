@@ -133,6 +133,58 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void searchByEmailAndOrganization() throws Exception {
+        // Given a test user with Org. ID present...
+        webTestClient
+                .post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"enabled\":true,\"username\":\"testWithOrgId\",\"firstName\":\"Test\",\"lastName\":\"WithOrgId\",\"email\":\"test@domain.com\",\"emailVerified\":\"\",\"attributes\":{\"org_details\":[\"{\\\"id\\\":\\\"00001763\\\"}\"]}}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().value(status -> Assertions.assertThat(status).isIn(
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
+
+        // ... and another test user with the same e-mail but no Org. ID, ...
+        webTestClient
+                .post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"enabled\":true,\"username\":\"testWithoutOrgId\",\"firstName\":\"Test\",\"lastName\":\"WithoutOrgId\",\"email\":\"test@domain.com\",\"emailVerified\":\"\",\"attributes\":{}}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().value(status -> Assertions.assertThat(status).isIn(
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
+
+        // ... a search by that e-mail address and filtering by Org. ID...
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("email", "test@domain.com")
+                        .queryParam("org", "00001763")
+                        .build())
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        // ... should return at least one filtered user
+        Assertions.assertThat(filteredUsers).isNotEmpty()
+                // with username = "testWithoutOrgId"
+                .anySatisfy(filteredUser -> Assertions.assertThat(filteredUser)
+                        .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
+    }
+
+    @Test
     public void searchByNonExistingOrganization() throws Exception {
         webTestClient
                 .get()
