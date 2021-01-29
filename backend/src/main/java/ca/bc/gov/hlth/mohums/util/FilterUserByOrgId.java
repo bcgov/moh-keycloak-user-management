@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
@@ -27,10 +28,13 @@ public final class FilterUserByOrgId implements Predicate<Object> {
 
     private final String orgId;
     private final JSONParser jsonParser;
-    
+    private final Expression expression;
+
     public FilterUserByOrgId(final String id) {
         this.orgId = id;
         this.jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
+        this.expression = new SpelExpressionParser()
+                .parseExpression("#this['attributes']['org_details']");
     }
     
     Logger getLogger() {
@@ -39,15 +43,13 @@ public final class FilterUserByOrgId implements Predicate<Object> {
     
     @Override
     public boolean test(final Object userEntity) {
-        final Expression expression = new SpelExpressionParser()
-                .parseExpression("#this['attributes']['org_details']");
         final EvaluationContext context = new StandardEvaluationContext(userEntity);
 
         Collection<?> orgDetails = Collections.emptyList();
 
         try {
             orgDetails = expression.getValue(context, Collection.class);
-        } catch (final RuntimeException e) {
+        } catch (final ExpressionException e) {
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("Unable to filter \"{}\" by Org. ID {}: {}.",
                         abbreviateEntity(userEntity), orgId, e.toString());
