@@ -42,30 +42,30 @@ public class UsersController {
             @RequestParam Optional<String> username,
             @RequestParam Optional<String> org
     ) {
-        final ResponseEntity<Object> users;
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+
+        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
+        email.ifPresent(emailValue -> queryParams.add("email", emailValue));
+        first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
+        firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
+        lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
+        max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
+        search.ifPresent(searchValue -> queryParams.add("search", searchValue));
+        username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
+
+        final ResponseEntity<Object> users = webClientService.getUsers(queryParams);
+        final ResponseEntity<Object> filteredUsers;
 
         if (org.isPresent()) {
             final Predicate<Object> byOrganizationId = org.map(FilterUserByOrgId::new).get();
-            final ResponseEntity<List<Object>> allUsers = webClientService.getAllUsers();
             
-            users = FilteredResponseEntities.of(allUsers).filter(byOrganizationId).toResponseEntity();
+            filteredUsers = FilteredResponseEntities.of(users).filter(byOrganizationId).toResponseEntity();
         }
         else {
-            MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-
-            briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
-            email.ifPresent(emailValue -> queryParams.add("email", emailValue));
-            first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
-            firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
-            lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
-            max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
-            search.ifPresent(searchValue -> queryParams.add("search", searchValue));
-            username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
-
-            users = webClientService.getUsers(queryParams);
+            filteredUsers = users;
         }
 
-        return users;
+        return filteredUsers;
     }
 
     @GetMapping("/users/{userId}")
