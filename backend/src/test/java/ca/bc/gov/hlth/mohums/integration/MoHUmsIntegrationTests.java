@@ -23,6 +23,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import org.assertj.core.api.Assertions;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -91,12 +93,55 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void usersAuthorized() throws Exception {
-        webTestClient
+        final List<Object> allUsers = getAllUsers();
+        
+        Assertions.assertThat(allUsers).isNotEmpty();
+    }
+
+    private List<Object> getAllUsers() {
+        return webTestClient
                 .get()
                 .uri("/users")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    @Test
+    public void searchByOrganization() throws Exception {
+        final List<Object> allUsers = getAllUsers();
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("org", "00001763")
+                        .build())
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers).containsAll(filteredUsers);
+    }
+
+    @Test
+    public void searchByNonExistingOrganization() throws Exception {
+        webTestClient // .mutate().responseTimeout(Duration.ofMinutes(10L)).build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("org", "non_existing_org_id")
+                        .build())
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     @Test
