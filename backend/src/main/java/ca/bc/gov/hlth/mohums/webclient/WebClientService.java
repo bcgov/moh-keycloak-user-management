@@ -39,10 +39,6 @@ public class WebClientService {
     }
 
     // Users
-    public ResponseEntity<List<Object>> getAllUsers() {
-        return getList(usersPath);
-    }
-
     public ResponseEntity<Object> getUsers(MultiValueMap<String, String> queryParams) {
         return get(usersPath, queryParams);
     }
