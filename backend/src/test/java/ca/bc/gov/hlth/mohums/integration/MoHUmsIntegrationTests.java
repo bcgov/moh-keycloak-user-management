@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 
@@ -70,7 +71,7 @@ public class MoHUmsIntegrationTests {
 
         return access_token;
     }
-
+    
     @Test
     public void groupsAuthorized() throws Exception {
         webTestClient
@@ -133,7 +134,7 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void searchByNonExistingOrganization() throws Exception {
-        webTestClient // .mutate().responseTimeout(Duration.ofMinutes(10L)).build()
+        webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users")
@@ -349,4 +350,9 @@ public class MoHUmsIntegrationTests {
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
     }
+
+    WebTestClient getClientForDebug() {
+        return webTestClient.mutate().responseTimeout(Duration.ofMinutes(10L)).build();
+    }
+
 }
