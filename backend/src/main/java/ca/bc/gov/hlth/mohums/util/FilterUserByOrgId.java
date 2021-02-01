@@ -17,9 +17,6 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.CollectionUtils;
 
-/**
- *
- */
 public final class FilterUserByOrgId implements Predicate<Object> {
 
     private static final int ABBREVIATED_USER_ENTITY_LENGTH = 64;
