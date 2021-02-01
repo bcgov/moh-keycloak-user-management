@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 
@@ -162,7 +161,7 @@ public class MoHUmsIntegrationTests {
                         // CONFLICT is returned when the user already exists.
                         HttpStatus.CONFLICT.value()));
 
-        // ... a search by that e-mail address and filtering by Org. ID...
+        // ... when a search is made on that e-mail address AND filtering by Org. ID, ...
         final List<Object> filteredUsers = webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -177,7 +176,7 @@ public class MoHUmsIntegrationTests {
                 .returnResult()
                 .getResponseBody();
 
-        // ... should return at least one filtered user
+        // ... then the results should have at least one filtered user
         Assertions.assertThat(filteredUsers).isNotEmpty()
                 // with username = "testWithoutOrgId"
                 .anySatisfy(filteredUser -> Assertions.assertThat(filteredUser)
@@ -194,7 +193,8 @@ public class MoHUmsIntegrationTests {
                         .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isOk()
+                .expectBodyList(Object.class).hasSize(0);
     }
 
     @Test
@@ -401,10 +401,6 @@ public class MoHUmsIntegrationTests {
                 .uri("/clients")
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
-    }
-
-    WebTestClient getClientForDebug() {
-        return webTestClient.mutate().responseTimeout(Duration.ofMinutes(10L)).build();
     }
 
 }
