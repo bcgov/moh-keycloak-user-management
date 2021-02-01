@@ -33,6 +33,11 @@ public final class FilterUserByOrgId implements Predicate<Object> {
     }
     
     @Override
+    public String toString() {
+        return String.format("%s(%s)", getClass().getSimpleName(), orgId);
+    }
+    
+    @Override
     public boolean test(Object userEntity) {
         EvaluationContext context = new StandardEvaluationContext(userEntity);
         Collection<?> orgDetails = Collections.emptyList();
@@ -51,7 +56,7 @@ public final class FilterUserByOrgId implements Predicate<Object> {
         return !CollectionUtils.isEmpty(orgDetails) && orgDetails
                 .stream()
                 .map(FilterUserByOrgId::extractOrgId)
-                .anyMatch(this.orgId::equalsIgnoreCase);
+                .anyMatch(id -> StringUtils.equalsIgnoreCase(orgId, id));
     }
     
     static String extractOrgId(Object orgDetails) {
@@ -69,11 +74,6 @@ public final class FilterUserByOrgId implements Predicate<Object> {
         }
 
         return id;
-    }
-    
-    @Override
-    public String toString() {
-        return String.format("%s(%s)", getClass().getSimpleName(), this.orgId);
     }
 
     private static String abbreviateEntity(Object userEntity) {
