@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 public class FilterUserByOrgIdTest {
     
-    private final static String ORG_ID = "orgId";
+    private static final String ORG_ID = "orgId";
 
     private final Predicate<Object> filter = new FilterUserByOrgId(ORG_ID);
 
