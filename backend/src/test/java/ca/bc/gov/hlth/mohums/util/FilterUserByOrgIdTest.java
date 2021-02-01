@@ -21,8 +21,8 @@ public class FilterUserByOrgIdTest {
 
     @Test
     public void testToStringUsingId() {
-        Assertions.assertThat(new FilterUserByOrgId("test"))
-                .hasToString("FilterUserByOrgId(test)");
+        Assertions.assertThat(filter)
+                .hasToString("FilterUserByOrgId(" + ORG_ID + ")");
     }
     
     @Test
@@ -94,8 +94,8 @@ public class FilterUserByOrgIdTest {
 
     @Test
     public void givenId_WhenExtractOrgId_ThenReturnsEmpty() {
-        Assertions.assertThat(FilterUserByOrgId.extractOrgId("{\"id\":\"OrgID.\"}"))
-                .isEqualTo("OrgID.");
+        Assertions.assertThat(FilterUserByOrgId.extractOrgId("{\"id\":\"OrgID\"}"))
+                .isEqualTo("OrgID");
     }
     
 }
