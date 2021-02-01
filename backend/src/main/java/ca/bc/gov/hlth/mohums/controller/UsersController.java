@@ -3,7 +3,6 @@ package ca.bc.gov.hlth.mohums.controller;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.util.FilteredResponseEntities;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -14,9 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 @RestController
 public class UsersController {
@@ -31,7 +31,7 @@ public class UsersController {
     }
     
     @GetMapping("/users")
-    public ResponseEntity<Object> getUsers(
+    public ResponseEntity<List<Object>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<Integer> first,
@@ -53,19 +53,16 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
-        final ResponseEntity<Object> users = webClientService.getUsers(queryParams);
-        final ResponseEntity<Object> filteredUsers;
+        ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
+        List<Object> users = searchResults.getBody();
 
-        if (org.isPresent()) {
-            final Predicate<Object> byOrganizationId = org.map(FilterUserByOrgId::new).get();
+        if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
+            List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             
-            filteredUsers = FilteredResponseEntities.of(users).filter(byOrganizationId).toResponseEntity();
-        }
-        else {
-            filteredUsers = users;
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
 
-        return filteredUsers;
+        return searchResults;
     }
 
     @GetMapping("/users/{userId}")
