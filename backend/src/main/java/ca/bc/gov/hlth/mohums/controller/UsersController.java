@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.controller;
 
+import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
@@ -14,6 +15,8 @@ import java.net.URI;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 @RestController
 public class UsersController {
@@ -26,9 +29,9 @@ public class UsersController {
         this.webClientService = webClientService;
         this.vanityHostname = vanityHostname;
     }
-
+    
     @GetMapping("/users")
-    public ResponseEntity<Object> getUsers(
+    public ResponseEntity<List<Object>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<Integer> first,
@@ -36,9 +39,11 @@ public class UsersController {
             @RequestParam Optional<String> lastName,
             @RequestParam Optional<Integer> max,
             @RequestParam Optional<String> search,
-            @RequestParam Optional<String> username
+            @RequestParam Optional<String> username,
+            @RequestParam Optional<String> org
     ) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+
         briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
         email.ifPresent(emailValue -> queryParams.add("email", emailValue));
         first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
@@ -48,7 +53,16 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
-        return webClientService.getUsers(queryParams);
+        ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
+        List<Object> users = searchResults.getBody();
+
+        if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
+            List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
+            
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
+        }
+
+        return searchResults;
     }
 
     @GetMapping("/users/{userId}")

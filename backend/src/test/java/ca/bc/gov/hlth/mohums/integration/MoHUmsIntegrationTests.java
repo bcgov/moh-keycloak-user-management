@@ -23,6 +23,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import org.assertj.core.api.Assertions;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -68,7 +70,7 @@ public class MoHUmsIntegrationTests {
 
         return access_token;
     }
-
+    
     @Test
     public void groupsAuthorized() throws Exception {
         webTestClient
@@ -91,12 +93,108 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void usersAuthorized() throws Exception {
-        webTestClient
+        final List<Object> allUsers = getAllUsers();
+        
+        Assertions.assertThat(allUsers).isNotEmpty();
+    }
+
+    private List<Object> getAllUsers() {
+        return webTestClient
                 .get()
                 .uri("/users")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    @Test
+    public void searchByOrganization() throws Exception {
+        final List<Object> allUsers = getAllUsers();
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("org", "00001763")
+                        .build())
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers).containsAll(filteredUsers);
+    }
+
+    @Test
+    public void searchByEmailAndOrganization() throws Exception {
+        // Given a test user with Org. ID present...
+        webTestClient
+                .post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"enabled\":true,\"username\":\"testWithOrgId\",\"firstName\":\"Test\",\"lastName\":\"WithOrgId\",\"email\":\"test@domain.com\",\"emailVerified\":\"\",\"attributes\":{\"org_details\":[\"{\\\"id\\\":\\\"00001763\\\"}\"]}}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().value(status -> Assertions.assertThat(status).isIn(
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
+
+        // ... and another test user with the same e-mail but no Org. ID, ...
+        webTestClient
+                .post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"enabled\":true,\"username\":\"testWithoutOrgId\",\"firstName\":\"Test\",\"lastName\":\"WithoutOrgId\",\"email\":\"test@domain.com\",\"emailVerified\":\"\",\"attributes\":{}}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().value(status -> Assertions.assertThat(status).isIn(
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
+
+        // ... when a search is made on that e-mail address AND filtering by Org. ID, ...
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("email", "test@domain.com")
+                        .queryParam("org", "00001763")
+                        .build())
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        // ... then the results should have at least one filtered user
+        Assertions.assertThat(filteredUsers).isNotEmpty()
+                // with username = "testWithoutOrgId"
+                .anySatisfy(filteredUser -> Assertions.assertThat(filteredUser)
+                        .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
+    }
+
+    @Test
+    public void searchByNonExistingOrganization() throws Exception {
+        webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("org", "non_existing_org_id")
+                        .build())
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class).hasSize(0);
     }
 
     @Test
@@ -304,4 +402,5 @@ public class MoHUmsIntegrationTests {
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
     }
+
 }

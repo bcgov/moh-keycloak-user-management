@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class WebClientService {
-
+    
     private final String clientsPath = "/clients";
     private final String usersPath = "/users";
     private final String groupsPath = "/groups";
@@ -39,8 +39,8 @@ public class WebClientService {
     }
 
     // Users
-    public ResponseEntity<Object> getUsers(MultiValueMap<String, String> queryParams) {
-        return get(usersPath, queryParams);
+    public ResponseEntity<List<Object>> getUsers(MultiValueMap<String, String> queryParams) {
+        return getList(usersPath, queryParams);
     }
 
     public ResponseEntity<Object> getUser(String userId) {
@@ -105,6 +105,17 @@ public class WebClientService {
                         .queryParams(queryParams)
                         .build())
                 .exchange().block().toEntity(Object.class).block();
+    }
+
+    private ResponseEntity<List<Object>> getList(String path, MultiValueMap<String, String> queryParams) {
+        return kcAuthorizedWebClient
+                .get()
+                .uri(t -> t
+                        .path(path)
+                        .queryParams(queryParams)
+                        .build())
+                .exchange()
+                .block().toEntityList(Object.class).block();
     }
 
     private ResponseEntity<List<Object>> getList(String path) {
