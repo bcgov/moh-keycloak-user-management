@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Basic Search -->
     <v-row no-gutters v-if="!this.advancedSearchSelected">
       <v-col class="col-6">
         <label for="user-search">
@@ -26,7 +27,7 @@
         />
       </v-col>
       <v-col class="col-4">
-        <v-btn id="search-button" class="secondary" medium @click.native="searchUser">Search Users</v-btn>
+        <v-btn id="search-button" class="secondary" medium @click.native="searchUser(userSearchInput)">Search Users</v-btn>
       </v-col>
       <v-col class="col-2">
         <v-btn id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
@@ -110,7 +111,7 @@
         />
       </v-col>
       <v-col class="col-4" style="margin-bottom: 30px">
-        <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUserAdvanced">Search Users</v-btn>
+        <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
         <a id="basicSearchLink" style="margin-left: 10px" v-on:click="advancedSearchSelected=false">
          Return to Basic Search
         </a>
@@ -164,6 +165,17 @@ export default {
       advancedSearchSelected: false
     };
   },
+  computed: {
+    advancedSearchParams() {
+      let params = '';
+      params = this.addQueryParameter(params, "lastName", this.lastNameInput)
+      params = this.addQueryParameter(params, "firstName", this.firstNameInput)
+      params = this.addQueryParameter(params, "username", this.usernameInput)
+      params = this.addQueryParameter(params, "email", this.emailInput)
+      params = this.addQueryParameter(params, "org", this.organizationInput)
+      return params;
+    }
+  },
   methods: {
     selectUser: function(user) {
       this.$store.commit("alert/dismissAlert");
@@ -173,12 +185,11 @@ export default {
       this.$store.commit("alert/dismissAlert");
       this.$router.push({ name: "UserCreate" });
     },
-    searchUser: function() {
+    searchUser: function(queryParameters) {
       this.userSearchLoadingStatus = true;
 
       UsersRepository.get(
-        "?briefRepresentation=true&first=0&max=300&search=" +
-          this.userSearchInput
+        "?briefRepresentation=false&first=0&max=300&search=" + queryParameters
       )
         .then(response => {
           this.searchResults = response.data;
@@ -191,29 +202,6 @@ export default {
           window.scrollTo(0, 0);
         })
         .finally(() => (this.userSearchLoadingStatus = false));
-    },
-    searchUserAdvanced: function() {
-      let params = '';
-      params = this.addQueryParameter(params, "lastName", this.lastNameInput)
-      params = this.addQueryParameter(params, "firstName", this.firstNameInput)
-      params = this.addQueryParameter(params, "username", this.usernameInput)
-      params = this.addQueryParameter(params, "email", this.emailInput)
-      params = this.addQueryParameter(params, "org", this.organizationInput)
-
-      UsersRepository.get(
-          "?briefRepresentation=true&first=0&max=300" + params
-      )
-          .then(response => {
-            this.searchResults = response.data;
-          })
-          .catch(error => {
-            this.$store.commit("alert/setAlert", {
-              message: "User search failed: " + error,
-              type: "error"
-            });
-            window.scrollTo(0, 0);
-          })
-          .finally(() => (this.userSearchLoadingStatus = false));
     },
     addQueryParameter: function(parameters, parameter, value) {
       if (value) {
