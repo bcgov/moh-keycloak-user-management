@@ -1,5 +1,3 @@
-import { Selector } from 'testcafe';
-import AlertPage from "../pages/AlertPage";
 import { itsbAccessTeamUser } from "../roles/roles"
 import AdvancedSearchForm from "../pages/AdvancedSearchForm";
 
