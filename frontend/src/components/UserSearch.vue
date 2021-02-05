@@ -27,7 +27,7 @@
         />
       </v-col>
       <v-col class="col-4">
-        <v-btn id="search-button" class="secondary" medium @click.native="searchUser(userSearchInput)">Search Users</v-btn>
+          <v-btn id="search-button" class="secondary" medium @click.native="searchUser('&search='+userSearchInput)">Search Users</v-btn>
       </v-col>
       <v-col class="col-2">
         <v-btn id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
@@ -189,7 +189,7 @@ export default {
       this.userSearchLoadingStatus = true;
 
       UsersRepository.get(
-        "?briefRepresentation=false&first=0&max=300&search=" + queryParameters
+        "?briefRepresentation=false&first=0&max=300" + queryParameters
       )
         .then(response => {
           this.searchResults = response.data;
