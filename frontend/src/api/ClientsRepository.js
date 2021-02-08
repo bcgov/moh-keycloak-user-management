@@ -11,6 +11,7 @@ export default {
         return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles`));
     },
     
+    // REVIEW - Do we need this API in UMS, or should it use the KC API?
     getUsersInRole(clientId, roleName) {
         return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles/${roleName}/users`))
     },
