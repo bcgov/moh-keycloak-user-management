@@ -14,6 +14,7 @@ This application requires a Keycloak server and the User Management Service. It 
 
 Specify Keycloak details using the configuration file at [public/keycloak.json](public/keycloak.json). Specify User Management Service details at [public/config.json](public/config.json). The included configuration files are valid for the MoH's development environment.
 
+Please note that opening the frontend application in browsers like Chrome might make the web page refresh every five seconds. In this case, add `checkLoginIframe: false` to the `initOptions` object defined in [src/keycloak/index.js](src/keycloak/index.js).
 
 ## Project setup
 
@@ -51,7 +52,7 @@ testcafe chrome tests/e2e/alltests.js -t "Test update user"
 # alltests.js contains a test named "Test update user"
 ```
 
-The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. 
+The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. You might also need to add another environment variable named `NODE_ENV` with the value `Development` in case some of the tests fail.
 
 Note that these instructions only apply to the MoH's Keycloak server which has an LDAP identify provider configured. To use a different Keycloak server you would need to update the "login" portion of the tests to use your identity provider.
 
