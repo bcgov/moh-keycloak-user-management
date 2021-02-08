@@ -96,16 +96,19 @@
             v-model="organizationInput"
             :items="organizations"
             item-value="id"
-            dense
             outlined
+            dense
         ></v-autocomplete>
       </v-col>
       <v-col class="col-6">
         <label for="adv-search-role">
           Role
         </label>
-        <v-text-field
+        <v-autocomplete
             id="adv-search-role"
+            v-model="roleInput"
+            :items="clientRoles"
+            item-value="id"
             outlined
             dense
         />
@@ -138,7 +141,30 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
+import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
+
+// REVIEW - Is this the best approach to define custom objects using Vue?
+//   Should the custom object be defined in a more Vue-compliant way?
+class ClientRole {
+
+  constructor(role, clients) {
+    this.id = role.id;
+    this.name = role.name;
+    this.description = role.description;
+    this.clientId = role.containerId;
+    this.clientName = clients.find(client => this.clientId === client.id).name;
+  }
+
+  toString() {
+    let s = `${this.clientName} : ${this.name}`;
+    if (typeof (this.description) !== 'undefined') {
+      s += ` - ${this.description}`;
+    }
+    return s;
+  }
+
+}
 
 export default {
   name: "UserSearch",
@@ -153,6 +179,8 @@ export default {
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
+      clients: [],
+      clientRoles: [],
       footerProps: { "items-per-page-options": [15] },
       userSearchInput: "",
       lastNameInput: "",
@@ -160,10 +188,16 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
+      roleInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false
     };
+  },
+  async created() {
+    // TODO error handling
+    // REVIEW - Should this be pushed to the "$store" once it is loaded?
+    await this.getClientsAndRoles();
   },
   computed: {
     advancedSearchParams() {
@@ -187,12 +221,25 @@ export default {
     },
     searchUser: function(queryParameters) {
       this.userSearchLoadingStatus = true;
+      let roleId = this.roleInput.trim();
 
       UsersRepository.get(
         "?briefRepresentation=false&first=0&max=300" + queryParameters
       )
         .then(response => {
-          this.searchResults = response.data;
+          let results = response.data;
+          if (this.advancedSearchSelected && roleId !== "") {
+            // REVIEW - Should this search be cached somwhow?
+            this.getUserIdsInRole(roleId)
+              .then(roleSearchResults =>
+                this.searchResults = results.filter(
+                  user => roleSearchResults.includes(user.id)
+                )
+              );
+          }
+          else {
+            this.searchResults = results;
+          }
         })
         .catch(error => {
           this.$store.commit("alert/setAlert", {
@@ -208,6 +255,45 @@ export default {
         parameters += "&" + parameter + "=" + value;
       }
       return parameters;
+    },
+    getClientsAndRoles: function() {
+      return ClientsRepository.get()
+        .then(response => {
+          this.clients = response.data;
+          this.getClientRoles();
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    },
+    getClientRoles: function() {
+      let getRolesRequests = this.clients
+        .map(client => ClientsRepository.getRoles(client.id));
+      Promise.all(getRolesRequests)
+        .then(roles => this.setClientRoles(roles));
+    },
+    setClientRoles: function(roles) {
+      let allRoles = roles
+        .flatMap(roles => roles.data)
+        .map(role => new ClientRole(role, this.clients));
+      allRoles.sort((a,b) => a.toString().localeCompare(b.toString()));
+      this.clientRoles.push(...allRoles);
+    },
+    getUserIdsInRole : function(roleId) {
+      let clientRole = this.clientRoles.find(
+        clientRole => clientRole.id === roleId
+      );
+      return ClientsRepository.getUsersInRole(clientRole.clientId, clientRole.name)
+        .then(response => {
+          return response.data.map(user => user.id);
+        })
+        .catch(error => {
+          this.$store.commit("alert/setAlert", {
+            message: "Role search failed: " + error,
+            type: "error"
+          });
+          window.scrollTo(0, 0);
+        })
     }
   }
 };
