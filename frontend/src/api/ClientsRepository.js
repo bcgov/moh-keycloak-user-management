@@ -10,6 +10,10 @@ export default {
     getRoles(clientId){
         return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles`));
     },
+    
+    getUsersInRole(clientId, roleName) {
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles/${roleName}/users`))
+    },
 
     /**
      * Adds client names to the events array using the clientId to lookup the client name.
