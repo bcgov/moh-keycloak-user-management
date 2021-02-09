@@ -1,12 +1,24 @@
 <!--suppress XmlInvalidId -->
 <template>
-  <div id="user-info" v-show="user.username">
-    <h1>Update - {{ user.username }}</h1>
-    <user-details :userId="this.$route.params.userid" ref="userDetails">
-      <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
-    </user-details>
-    <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
-    <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
+  <div>
+
+    <v-skeleton-loader
+        :loading="loading"
+        v-show="!user.username"
+        ref="skeleton"
+        :boilerplate="boilerplate"
+        tile="true"
+        type="article, button"
+    >
+    </v-skeleton-loader>
+    <div id="user-info" v-show="user.username">
+      <h1>Update - {{ user.username }}</h1>
+      <user-details :userId="this.$route.params.userid" ref="userDetails">
+        <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
+      </user-details>
+      <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
+      <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
+    </div>
   </div>
 </template>
 
@@ -23,6 +35,13 @@ export default {
     UserUpdateGroups,
     UserDetails,
     UserUpdateRoles
+  },
+  data() {
+    return {
+      loading: true,
+      boilerplate: false,
+      type: 'list-item-avatar-three-line',
+    }
   },
   methods: {
     updateUser: function() {
