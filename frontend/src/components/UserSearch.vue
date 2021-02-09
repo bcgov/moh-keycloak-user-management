@@ -158,7 +158,7 @@ class ClientRole {
 
   toString() {
     let s = `${this.clientName} : ${this.name}`;
-    if (typeof (this.description) !== 'undefined') {
+    if (this.description) {
       s += ` - ${this.description}`;
     }
     return s;
@@ -197,7 +197,7 @@ export default {
   async created() {
     // TODO error handling
     // REVIEW - Should this be pushed to the "$store" once it is loaded?
-    await this.getClientsAndRoles();
+    await this.loadClientsAndRoles();
   },
   computed: {
     advancedSearchParams() {
@@ -229,8 +229,7 @@ export default {
         .then(response => {
           let results = response.data;
           if (this.advancedSearchSelected && roleId !== "") {
-            // REVIEW - Should this search be cached somwhow?
-            this.getUserIdsInRole(roleId)
+            this.findUserIdsInRole(roleId)
               .then(roleSearchResults =>
                 this.searchResults = results.filter(
                   user => roleSearchResults.includes(user.id)
@@ -242,11 +241,7 @@ export default {
           }
         })
         .catch(error => {
-          this.$store.commit("alert/setAlert", {
-            message: "User search failed: " + error,
-            type: "error"
-          });
-          window.scrollTo(0, 0);
+          this.handleError("User search failed", error);
         })
         .finally(() => (this.userSearchLoadingStatus = false));
     },
@@ -256,30 +251,27 @@ export default {
       }
       return parameters;
     },
-    getClientsAndRoles: function() {
+    loadClientsAndRoles: function() {
       return ClientsRepository.get()
         .then(response => {
           this.clients = response.data;
-          this.getClientRoles();
+          let rolesRequests = this.clients.map(
+            client => ClientsRepository.getRoles(client.id)
+          );
+          Promise.all(rolesRequests)
+            .then(responses => {
+              let clientRole = responses
+                .flatMap(response => response.data)
+                .map(role => new ClientRole(role, this.clients))
+                .sort((a, b) => a.toString().localeCompare(b.toString()));
+              this.clientRoles.push(...clientRole);
+            });
         })
-        .catch(e => {
-          console.log(e);
+        .catch(error => {
+          this.handleError("Client search failed", error);
         });
     },
-    getClientRoles: function() {
-      let getRolesRequests = this.clients
-        .map(client => ClientsRepository.getRoles(client.id));
-      Promise.all(getRolesRequests)
-        .then(roles => this.setClientRoles(roles));
-    },
-    setClientRoles: function(roles) {
-      let allRoles = roles
-        .flatMap(roles => roles.data)
-        .map(role => new ClientRole(role, this.clients));
-      allRoles.sort((a,b) => a.toString().localeCompare(b.toString()));
-      this.clientRoles.push(...allRoles);
-    },
-    getUserIdsInRole : function(roleId) {
+    findUserIdsInRole: function(roleId) {
       let clientRole = this.clientRoles.find(
         clientRole => clientRole.id === roleId
       );
@@ -288,12 +280,15 @@ export default {
           return response.data.map(user => user.id);
         })
         .catch(error => {
-          this.$store.commit("alert/setAlert", {
-            message: "Role search failed: " + error,
-            type: "error"
-          });
-          window.scrollTo(0, 0);
+          this.handleError("Role search failed", error);
         })
+    },
+    handleError(message, error) {
+      this.$store.commit("alert/setAlert", {
+        message: message + ": " + error,
+        type: "error"
+      });
+      window.scrollTo(0, 0);
     }
   }
 };
