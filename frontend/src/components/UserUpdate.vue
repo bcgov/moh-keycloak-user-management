@@ -2,11 +2,9 @@
 <template>
   <div>
     <v-skeleton-loader
-        :loading="loading"
-        v-show="!user.username"
         ref="skeleton"
-        :boilerplate="boilerplate"
         tile="true"
+        v-show="!user.username"
         type="article, button, article"
     >
     </v-skeleton-loader>
@@ -34,12 +32,6 @@ export default {
     UserUpdateGroups,
     UserDetails,
     UserUpdateRoles
-  },
-  data() {
-    return {
-      loading: true,
-      boilerplate: false,
-    }
   },
   methods: {
     updateUser: function() {
@@ -78,3 +70,8 @@ export default {
   }
 };
 </script>
+<style>
+.v-skeleton-loader__button {
+  margin-left: 16px;
+}
+</style>
