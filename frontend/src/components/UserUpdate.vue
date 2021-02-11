@@ -1,14 +1,13 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div>
-
     <v-skeleton-loader
         :loading="loading"
         v-show="!user.username"
         ref="skeleton"
         :boilerplate="boilerplate"
         tile="true"
-        type="article, button"
+        type="article, button, article"
     >
     </v-skeleton-loader>
     <div id="user-info" v-show="user.username">
@@ -40,7 +39,6 @@ export default {
     return {
       loading: true,
       boilerplate: false,
-      type: 'list-item-avatar-three-line',
     }
   },
   methods: {
