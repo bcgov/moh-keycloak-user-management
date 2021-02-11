@@ -1,12 +1,21 @@
 <!--suppress XmlInvalidId -->
 <template>
-  <div id="user-info" v-show="user.username">
-    <h1>Update - {{ user.username }}</h1>
-    <user-details :userId="this.$route.params.userid" ref="userDetails">
-      <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
-    </user-details>
-    <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
-    <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
+  <div>
+    <v-skeleton-loader
+        ref="skeleton"
+        tile="true"
+        v-show="!user.username"
+        type="article, button, article"
+    >
+    </v-skeleton-loader>
+    <div id="user-info" v-show="user.username">
+      <h1>Update - {{ user.username }}</h1>
+      <user-details :userId="this.$route.params.userid" ref="userDetails">
+        <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
+      </user-details>
+      <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
+      <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
+    </div>
   </div>
 </template>
 
@@ -61,3 +70,8 @@ export default {
   }
 };
 </script>
+<style>
+.v-skeleton-loader__button {
+  margin-left: 16px;
+}
+</style>
