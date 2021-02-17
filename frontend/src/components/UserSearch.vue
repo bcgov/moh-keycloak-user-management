@@ -180,7 +180,7 @@ export default {
       ],
       organizations: organizations,
       clients: [],
-      clientRoles: [],
+      clientRoles: [ "" ],
       footerProps: { "items-per-page-options": [15] },
       userSearchInput: "",
       lastNameInput: "",
