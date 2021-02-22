@@ -54,3 +54,40 @@ test('Test adv search no results', async t => {
         .expect(AdvancedSearchForm.getNoResultsCount())
         .eql(1);
 });
+
+test('Test adv search by Role', async t => {
+    await t
+        .click(AdvancedSearchForm.advSearchLink)
+        .typeText(AdvancedSearchForm.roleInput, 'MOHUSER')
+        .pressKey('enter')
+        .click(AdvancedSearchForm.advSearchButton)
+        .expect(AdvancedSearchForm.getResultsCount())
+        .gt(1);
+});
+
+test('Test adv search by Email and Role', async t => {
+    await t
+        .click(AdvancedSearchForm.advSearchLink)
+        .typeText(AdvancedSearchForm.emailInput, 'gmail')
+        .typeText(AdvancedSearchForm.roleInput, 'MOHUSER')
+        .pressKey('enter')
+        .click(AdvancedSearchForm.advSearchButton)
+        .expect(AdvancedSearchForm.getResultsCount())
+        .eql(1);
+});
+
+test('Test adv search by Email and Role, then Basic Search', async t => {
+    await t
+        .click(AdvancedSearchForm.advSearchLink)
+        .typeText(AdvancedSearchForm.emailInput, 'gmail')
+        .typeText(AdvancedSearchForm.roleInput, 'MOHUSER')
+        .pressKey('enter')
+        .click(AdvancedSearchForm.advSearchButton)
+        .expect(AdvancedSearchForm.getResultsCount())
+        .eql(1)
+        .click('#basicSearchLink')
+        .typeText('#user-search', 'gmail')
+        .click('#search-button')
+        .expect(AdvancedSearchForm.getResultsCount())
+        .gt(1);
+});

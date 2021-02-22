@@ -96,16 +96,19 @@
             v-model="organizationInput"
             :items="organizations"
             item-value="id"
-            dense
             outlined
+            dense
         ></v-autocomplete>
       </v-col>
       <v-col class="col-6">
         <label for="adv-search-role">
           Role
         </label>
-        <v-text-field
+        <v-autocomplete
             id="adv-search-role"
+            v-model="roleInput"
+            :items="clientRoles"
+            item-value="id"
             outlined
             dense
         />
@@ -138,7 +141,28 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
+import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
+
+class ClientRole {
+
+  constructor(role, clients) {
+    this.id = role.id;
+    this.name = role.name;
+    this.description = role.description;
+    this.clientId = role.containerId;
+    this.clientName = clients.find(client => this.clientId === client.id).name;
+  }
+
+  toString() {
+    let s = `${this.clientName} : ${this.name}`;
+    if (this.description) {
+      s += ` - ${this.description}`;
+    }
+    return s;
+  }
+
+}
 
 export default {
   name: "UserSearch",
@@ -153,6 +177,8 @@ export default {
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
+      clients: [],
+      clientRoles: [ "" ],
       footerProps: { "items-per-page-options": [15] },
       userSearchInput: "",
       lastNameInput: "",
@@ -160,19 +186,23 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
+      roleInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false
     };
   },
+  async created() {
+    await this.loadClientsAndRoles();
+  },
   computed: {
     advancedSearchParams() {
       let params = '';
-      params = this.addQueryParameter(params, "lastName", this.lastNameInput)
-      params = this.addQueryParameter(params, "firstName", this.firstNameInput)
-      params = this.addQueryParameter(params, "username", this.usernameInput)
-      params = this.addQueryParameter(params, "email", this.emailInput)
-      params = this.addQueryParameter(params, "org", this.organizationInput)
+      params = this.addQueryParameter(params, "lastName", this.lastNameInput);
+      params = this.addQueryParameter(params, "firstName", this.firstNameInput);
+      params = this.addQueryParameter(params, "username", this.usernameInput);
+      params = this.addQueryParameter(params, "email", this.emailInput);
+      params = this.addQueryParameter(params, "org", this.organizationInput);
       return params;
     }
   },
@@ -187,19 +217,27 @@ export default {
     },
     searchUser: function(queryParameters) {
       this.userSearchLoadingStatus = true;
+      let roleId = this.roleInput.trim();
 
       UsersRepository.get(
         "?briefRepresentation=false&first=0&max=300" + queryParameters
       )
         .then(response => {
-          this.searchResults = response.data;
+          let results = response.data;
+          if (this.advancedSearchSelected && roleId !== "") {
+            this.findUserIdsInRole(roleId)
+              .then(roleSearchResults =>
+                this.searchResults = results.filter(
+                  user => roleSearchResults.includes(user.id)
+                )
+              );
+          }
+          else {
+            this.searchResults = results;
+          }
         })
         .catch(error => {
-          this.$store.commit("alert/setAlert", {
-            message: "User search failed: " + error,
-            type: "error"
-          });
-          window.scrollTo(0, 0);
+          this.handleError("User search failed", error);
         })
         .finally(() => (this.userSearchLoadingStatus = false));
     },
@@ -208,6 +246,45 @@ export default {
         parameters += "&" + parameter + "=" + value;
       }
       return parameters;
+    },
+    loadClientsAndRoles: function() {
+      return ClientsRepository.get()
+        .then(response => {
+          this.clients = response.data;
+          let rolesRequests = this.clients.map(
+            client => ClientsRepository.getRoles(client.id)
+          );
+          Promise.all(rolesRequests)
+            .then(responses => {
+              let clientRole = responses
+                .flatMap(response => response.data)
+                .map(role => new ClientRole(role, this.clients))
+                .sort((a, b) => a.toString().localeCompare(b.toString()));
+              this.clientRoles.push(...clientRole);
+            });
+        })
+        .catch(error => {
+          this.handleError("Client search failed", error);
+        });
+    },
+    findUserIdsInRole: function(roleId) {
+      let clientRole = this.clientRoles.find(
+        clientRole => clientRole.id === roleId
+      );
+      return ClientsRepository.getUsersInRole(clientRole.clientId, clientRole.name)
+        .then(response => {
+          return response.data.map(user => user.id);
+        })
+        .catch(error => {
+          this.handleError("Role search failed", error);
+        });
+    },
+    handleError(message, error) {
+      this.$store.commit("alert/setAlert", {
+        message: message + ": " + error,
+        type: "error"
+      });
+      window.scrollTo(0, 0);
     }
   }
 };

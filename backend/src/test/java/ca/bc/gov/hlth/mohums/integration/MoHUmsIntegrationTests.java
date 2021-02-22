@@ -1,8 +1,16 @@
 package ca.bc.gov.hlth.mohums.integration;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -17,14 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.List;
-import org.assertj.core.api.Assertions;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -70,7 +70,7 @@ public class MoHUmsIntegrationTests {
 
         return access_token;
     }
-    
+
     @Test
     public void groupsAuthorized() throws Exception {
         webTestClient
@@ -83,43 +83,89 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void clientsAuthorized() throws Exception {
-        webTestClient
-                .get()
-                .uri("/clients")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk();
+        List<Object> clients = getAll("clients");
+
+        Assertions.assertThat(clients).isNotEmpty();
     }
 
     @Test
-    public void usersAuthorized() throws Exception {
-        final List<Object> allUsers = getAllUsers();
-        
-        Assertions.assertThat(allUsers).isNotEmpty();
-    }
-
-    private List<Object> getAllUsers() {
-        return webTestClient
+    public void getClientRoles() throws Exception {
+        Map<String, ?> client = (Map<String, ?>) getAll("clients").get(0);
+        List<Object> clientRoles = webTestClient
                 .get()
-                .uri("/users")
+                .uri("/clients/" + client.get("id") + "/roles")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Object.class)
                 .returnResult()
                 .getResponseBody();
+
+        Assertions.assertThat(clientRoles).isNotEmpty()
+                .allSatisfy(this::verifyClientRole);
+    }
+
+    private void verifyClientRole(Object clientRole) {
+        Assertions.assertThat(clientRole)
+                .hasNoNullFieldsOrProperties()
+                .hasFieldOrPropertyWithValue("clientRole", Boolean.TRUE);
+    }
+
+    @Test
+    public void getUsersInRole() throws Exception {
+        Map<String, ?> client = (Map<String, ?>) getAll("clients").get(0);
+        Map<String, ?> clientRole = (Map<String, ?>) webTestClient
+                .get()
+                .uri("/clients/" + client.get("id") + "/roles")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody().get(0);
+
+        List<Object> usersInRole = webTestClient
+                .get()
+                .uri("/clients/"
+                        + client.get("id")
+                        + "/roles/"
+                        + clientRole.get("name")
+                        + "/users")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(usersInRole).isNotEmpty()
+                .allSatisfy(this::verifyUser);
+    }
+
+    private void verifyUser(Object user) {
+        Assertions.assertThat(user)
+                .hasNoNullFieldsOrProperties()
+                .extracting("username").asString().isNotEmpty();
+    }
+
+    @Test
+    public void usersAuthorized() throws Exception {
+        List<Object> allUsers = getAll("users");
+
+        Assertions.assertThat(allUsers).isNotEmpty()
+                .allSatisfy(this::verifyUser);
     }
 
     @Test
     public void searchByOrganization() throws Exception {
-        final List<Object> allUsers = getAllUsers();
+        final List<Object> allUsers = getAll("users");
 
         final List<Object> filteredUsers = webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/users")
-                        .queryParam("org", "00001763")
-                        .build())
+                .path("/users")
+                .queryParam("org", "00001763")
+                .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -142,10 +188,10 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().value(status -> Assertions.assertThat(status).isIn(
-                        // CREATED is returned when the user does not already exist.
-                        HttpStatus.CREATED.value(),
-                        // CONFLICT is returned when the user already exists.
-                        HttpStatus.CONFLICT.value()));
+                // CREATED is returned when the user does not already exist.
+                HttpStatus.CREATED.value(),
+                // CONFLICT is returned when the user already exists.
+                HttpStatus.CONFLICT.value()));
 
         // ... and another test user with the same e-mail but no Org. ID, ...
         webTestClient
@@ -156,19 +202,19 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().value(status -> Assertions.assertThat(status).isIn(
-                        // CREATED is returned when the user does not already exist.
-                        HttpStatus.CREATED.value(),
-                        // CONFLICT is returned when the user already exists.
-                        HttpStatus.CONFLICT.value()));
+                // CREATED is returned when the user does not already exist.
+                HttpStatus.CREATED.value(),
+                // CONFLICT is returned when the user already exists.
+                HttpStatus.CONFLICT.value()));
 
         // ... when a search is made on that e-mail address AND filtering by Org. ID, ...
         final List<Object> filteredUsers = webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/users")
-                        .queryParam("email", "test@domain.com")
-                        .queryParam("org", "00001763")
-                        .build())
+                .path("/users")
+                .queryParam("email", "test@domain.com")
+                .queryParam("org", "00001763")
+                .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -180,7 +226,7 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(filteredUsers).isNotEmpty()
                 // with username = "testWithoutOrgId"
                 .anySatisfy(filteredUser -> Assertions.assertThat(filteredUser)
-                        .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
+                .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
     }
 
     @Test
@@ -188,9 +234,9 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/users")
-                        .queryParam("org", "non_existing_org_id")
-                        .build())
+                .path("/users")
+                .queryParam("org", "non_existing_org_id")
+                .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -240,15 +286,15 @@ public class MoHUmsIntegrationTests {
                 .post()
                 .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("[\n" +
-                        "    {\n" +
-                        "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n" +
-                        "        \"name\": \"PSDADMIN\",\n" +
-                        "        \"composite\": false,\n" +
-                        "        \"clientRole\": true,\n" +
-                        "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n" +
-                        "    }\n" +
-                        "]")
+                .bodyValue("[\n"
+                        + "    {\n"
+                        + "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n"
+                        + "        \"name\": \"PSDADMIN\",\n"
+                        + "        \"composite\": false,\n"
+                        + "        \"clientRole\": true,\n"
+                        + "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n"
+                        + "    }\n"
+                        + "]")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
@@ -262,15 +308,15 @@ public class MoHUmsIntegrationTests {
                 .method(HttpMethod.DELETE)
                 .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("[\n" +
-                        "    {\n" +
-                        "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n" +
-                        "        \"name\": \"PSDADMIN\",\n" +
-                        "        \"composite\": false,\n" +
-                        "        \"clientRole\": true,\n" +
-                        "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n" +
-                        "    }\n" +
-                        "]")
+                .bodyValue("[\n"
+                        + "    {\n"
+                        + "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n"
+                        + "        \"name\": \"PSDADMIN\",\n"
+                        + "        \"composite\": false,\n"
+                        + "        \"clientRole\": true,\n"
+                        + "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n"
+                        + "    }\n"
+                        + "]")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
@@ -401,6 +447,18 @@ public class MoHUmsIntegrationTests {
                 .uri("/clients")
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
+    }
+
+    private List<Object> getAll(String resource) {
+        return webTestClient
+                .get()
+                .uri("/" + resource)
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
     }
 
 }

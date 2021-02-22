@@ -1,16 +1,15 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import java.util.List;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-
 @Service
 public class WebClientService {
-    
+
     private final String clientsPath = "/clients";
     private final String usersPath = "/users";
     private final String groupsPath = "/groups";
@@ -31,6 +30,16 @@ public class WebClientService {
     public ResponseEntity<Object> getClient(String clientId) {
         String path = clientsPath + "/" + clientId;
         return get(path, null);
+    }
+
+    public ResponseEntity<List<Object>> getClientRoles(String clientId) {
+        String path = String.format("%s/%s/roles", clientsPath, clientId);
+        return getList(path, null);
+    }
+
+    public ResponseEntity<List<Object>> getUsersInRole(String clientId, String roleName) {
+        String path = String.format("%s/%s/roles/%s/users", clientsPath, clientId, roleName);
+        return getList(path, null);
     }
 
     // Groups
@@ -101,9 +110,9 @@ public class WebClientService {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t
-                        .path(path)
-                        .queryParams(queryParams)
-                        .build())
+                .path(path)
+                .queryParams(queryParams)
+                .build())
                 .exchange().block().toEntity(Object.class).block();
     }
 
@@ -111,9 +120,9 @@ public class WebClientService {
         return kcAuthorizedWebClient
                 .get()
                 .uri(t -> t
-                        .path(path)
-                        .queryParams(queryParams)
-                        .build())
+                .path(path)
+                .queryParams(queryParams)
+                .build())
                 .exchange()
                 .block().toEntityList(Object.class).block();
     }

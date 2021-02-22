@@ -9,7 +9,7 @@ class AdvancedSearchForm {
         this.usernameInput = Selector('#adv-search-username');
         this.emailInput = Selector('#adv-search-email');
         this.organizationInput = Selector('#org-details');
-        this.rolesInput = Selector('#adv-search-role');
+        this.roleInput = Selector('#adv-search-role');
         this.advSearchButton = Selector('#adv-search-button');
     }
 

@@ -1,4 +1,4 @@
-import { kcRequest, umsRequest } from "./Repository";
+import { umsRequest } from "./Repository";
 
 const resource = "/clients";
 
@@ -8,7 +8,11 @@ export default {
     },
     
     getRoles(clientId){
-        return kcRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles`));
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles`));
+    },
+    
+    getUsersInRole(clientId, roleName) {
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles/${roleName}/users`))
     },
 
     /**
