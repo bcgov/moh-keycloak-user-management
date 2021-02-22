@@ -144,8 +144,6 @@ import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
 
-// REVIEW - Is this the best approach to define custom objects using Vue?
-//   Should the custom object be defined in a more Vue-compliant way?
 class ClientRole {
 
   constructor(role, clients) {
@@ -195,18 +193,16 @@ export default {
     };
   },
   async created() {
-    // TODO error handling
-    // REVIEW - Should this be pushed to the "$store" once it is loaded?
     await this.loadClientsAndRoles();
   },
   computed: {
     advancedSearchParams() {
       let params = '';
-      params = this.addQueryParameter(params, "lastName", this.lastNameInput)
-      params = this.addQueryParameter(params, "firstName", this.firstNameInput)
-      params = this.addQueryParameter(params, "username", this.usernameInput)
-      params = this.addQueryParameter(params, "email", this.emailInput)
-      params = this.addQueryParameter(params, "org", this.organizationInput)
+      params = this.addQueryParameter(params, "lastName", this.lastNameInput);
+      params = this.addQueryParameter(params, "firstName", this.firstNameInput);
+      params = this.addQueryParameter(params, "username", this.usernameInput);
+      params = this.addQueryParameter(params, "email", this.emailInput);
+      params = this.addQueryParameter(params, "org", this.organizationInput);
       return params;
     }
   },
@@ -281,7 +277,7 @@ export default {
         })
         .catch(error => {
           this.handleError("Role search failed", error);
-        })
+        });
     },
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
