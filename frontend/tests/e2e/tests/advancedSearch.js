@@ -58,8 +58,9 @@ test('Test adv search no results', async t => {
 test('Test adv search by Role', async t => {
     await t
         .click(AdvancedSearchForm.advSearchLink)
-        .typeText(AdvancedSearchForm.roleInput, 'MOHUSER')
+        .typeText(AdvancedSearchForm.selectClient, 'FMDB')
         .pressKey('enter')
+        .click(AdvancedSearchForm.getRoleCheckbox('MOHUSER'))
         .click(AdvancedSearchForm.advSearchButton)
         .expect(AdvancedSearchForm.getResultsCount())
         .gt(1);
@@ -69,8 +70,9 @@ test('Test adv search by Email and Role', async t => {
     await t
         .click(AdvancedSearchForm.advSearchLink)
         .typeText(AdvancedSearchForm.emailInput, 'gmail')
-        .typeText(AdvancedSearchForm.roleInput, 'MOHUSER')
+        .typeText(AdvancedSearchForm.selectClient, 'FMDB')
         .pressKey('enter')
+        .click(AdvancedSearchForm.getRoleCheckbox('MOHUSER'))
         .click(AdvancedSearchForm.advSearchButton)
         .expect(AdvancedSearchForm.getResultsCount())
         .eql(1);
@@ -80,8 +82,9 @@ test('Test adv search by Email and Role, then Basic Search', async t => {
     await t
         .click(AdvancedSearchForm.advSearchLink)
         .typeText(AdvancedSearchForm.emailInput, 'gmail')
-        .typeText(AdvancedSearchForm.roleInput, 'MOHUSER')
+        .typeText(AdvancedSearchForm.selectClient, 'FMDB')
         .pressKey('enter')
+        .click(AdvancedSearchForm.getRoleCheckbox('MOHUSER'))
         .click(AdvancedSearchForm.advSearchButton)
         .expect(AdvancedSearchForm.getResultsCount())
         .eql(1)
