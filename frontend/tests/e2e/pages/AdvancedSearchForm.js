@@ -9,8 +9,15 @@ class AdvancedSearchForm {
         this.usernameInput = Selector('#adv-search-username');
         this.emailInput = Selector('#adv-search-email');
         this.organizationInput = Selector('#org-details');
-        this.roleInput = Selector('#adv-search-role');
+        this.selectClient = Selector('#select-client');
         this.advSearchButton = Selector('#adv-search-button');
+    }
+    
+    getRoleCheckbox(roleName) {
+      return Selector('label')
+        .withText(roleName)
+        .parent()
+        .find('input[type=checkbox]');
     }
 
     getNoResultsCount() {
