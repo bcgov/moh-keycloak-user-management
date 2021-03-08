@@ -132,7 +132,19 @@
           :loading="userSearchLoadingStatus"
           loading-text="Searching for users"
           v-on:click:row="selectUser"
-        ></v-data-table>
+        >
+          <template v-if="searchResults.length > 0" v-slot:footer>
+            <v-toolbar flat>
+              <v-spacer/>
+              <download-csv
+                  :data="searchResults"
+                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email']"
+              >
+                <v-btn id="csv-button" class="secondary" small>Download results</v-btn>
+              </download-csv>
+            </v-toolbar>
+          </template>
+        </v-data-table>
       </v-col>
     </v-row>
 
