@@ -11,8 +11,8 @@ export default {
         return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles`));
     },
     
-    getUsersInRole(clientId, roleName) {
-        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles/${roleName}/users`))
+    getUsersInRole(clientId, roleName, maxResults) {
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${clientId}/roles/${roleName}/users?first=0&max=${maxResults}`))
     },
 
     /**
