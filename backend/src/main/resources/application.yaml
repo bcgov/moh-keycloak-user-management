@@ -47,8 +47,9 @@ server:
 #    key-store-type: pkcs12
 #    key-alias: localhost
 #    key-password: password
-#logging:
-#  level:
+logging:
+  level:
 #    KC_WEB_CLIENT: DEBUG
+    LOAD_TEST: DEBUG
 #    org.apache.coyote.http11.Http11InputBuffer: DEBUG
 #    root: DEBUG
