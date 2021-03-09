@@ -246,7 +246,7 @@ export default {
         && this.selectedRoles.length > 0;
       
       UsersRepository.get(
-        "?briefRepresentation=false&first=0&max=300" + queryParameters
+        "?briefRepresentation=false&first=0&max=10000" + queryParameters
       )
         .then(response => {
           let results = response.data;
@@ -310,7 +310,7 @@ export default {
     filterUsersByRole: function(searchResults) {
       let roleRequests = this.selectedRoles.map(
         clientRole => ClientsRepository
-          .getUsersInRole(clientRole.clientId, clientRole.name)
+          .getUsersInRole(clientRole.clientId, clientRole.name, 10000)
           .catch(error => {
             this.handleError(`Search failed for role ${clientRole.name}`, error);
           })
