@@ -64,7 +64,7 @@ test('Test adv search by Role', async t => {
         .click(AdvancedSearchForm.getRoleCheckbox('MOHUSER'))
         .click(AdvancedSearchForm.advSearchButton)
         .expect(AdvancedSearchForm.getResultsCount())
-        .gt(1);
+        .gt(0);
 });
 
 test('Test adv search by Email and Role', async t => {
