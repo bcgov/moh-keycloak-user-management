@@ -1,3 +1,5 @@
 {
+  "max_search": 10000,
+  "max_results": 1000,
   "siteminder_logout": "https://logon7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://common-logon.hlth.gov.bc.ca/webapp"
 }
