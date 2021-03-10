@@ -181,6 +181,7 @@
 import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
+import app_config from '@/loadconfig';
 
 export default {
   name: "UserSearch",
@@ -229,6 +230,9 @@ export default {
     },
     numberOfClientRoleColumns() {
       return (this.clientRoles.length > 10) ? 2 : 1
+    },
+    maxResults() {
+      return app_config.config.max_results ? app_config.config.max_results : 100;
     }
   },
   methods: {
@@ -241,22 +245,25 @@ export default {
       this.$router.push({ name: "UserCreate" });
     },
     searchUser: function(queryParameters) {
+      const maxSearch = app_config.config.max_search
+                          ? app_config.config.max_search
+                          : (this.maxResults * 10);
       this.userSearchLoadingStatus = true;
       let isSearchByRole = this.advancedSearchSelected
         && this.selectedRoles.length > 0;
       
       UsersRepository.get(
-        "?briefRepresentation=false&first=0&max=10000" + queryParameters
+        `?briefRepresentation=false&first=0&max=${maxSearch}` + queryParameters
       )
         .then(response => {
           let results = response.data;
           if (isSearchByRole) {
-            this.filterUsersByRole(results)
-              .then(filteredResults => this.searchResults = filteredResults)
+            this.filterUsersByRole(results, maxSearch)
+              .then(filteredResults => this.setSearchResults(filteredResults))
               .finally(() => (this.userSearchLoadingStatus = false));
           }
           else {
-            this.searchResults = results;
+            this.setSearchResults(results);
           }
         })
         .catch(error => {
@@ -307,10 +314,10 @@ export default {
           .find(client => this.clientId === client.id).name;
       return role;
     },
-    filterUsersByRole: function(searchResults) {
+    filterUsersByRole: function(searchResults, maxSearch) {
       let roleRequests = this.selectedRoles.map(
         clientRole => ClientsRepository
-          .getUsersInRole(clientRole.clientId, clientRole.name, 10000)
+          .getUsersInRole(clientRole.clientId, clientRole.name, maxSearch)
           .catch(error => {
             this.handleError(`Search failed for role ${clientRole.name}`, error);
           })
@@ -322,6 +329,21 @@ export default {
         .then(userIds => searchResults.filter(
           user => userIds.includes(user.id)
         ));
+    },
+    setSearchResults(results) {
+      const maxRes = this.maxResults;
+      if (results.length > maxRes) {
+        this.searchResults = results.slice(0, maxRes);
+        this.$store.commit("alert/setAlert", {
+          message: "Your search returned more than the maximum number of results ("
+                  + maxRes + "). Please consider refining the search criteria.",
+          type: "warning"
+        });
+        window.scrollTo(0, 0);
+      }
+      else {
+        this.searchResults = results;
+      }
     },
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
