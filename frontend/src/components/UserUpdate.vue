@@ -3,7 +3,6 @@
   <div>
     <v-skeleton-loader
         ref="skeleton"
-        tile="true"
         v-show="!user.username"
         type="article, button, article"
     >
