@@ -244,36 +244,29 @@ export default {
       this.$store.commit("alert/dismissAlert");
       this.$router.push({ name: "UserCreate" });
     },
-    searchUser: function(queryParameters) {
+    searchUser: async function(queryParameters) {
+      this.$store.commit("alert/dismissAlert");
       const maxSearch = app_config.config.max_search
                           ? app_config.config.max_search
                           : (this.maxResults * 10);
       this.userSearchLoadingStatus = true;
       let isSearchByRole = this.advancedSearchSelected
         && this.selectedRoles.length > 0;
-      
-      UsersRepository.get(
-        `?briefRepresentation=false&first=0&max=${maxSearch}` + queryParameters
-      )
-        .then(response => {
-          let results = response.data;
-          if (isSearchByRole) {
-            this.filterUsersByRole(results, maxSearch)
-              .then(filteredResults => this.setSearchResults(filteredResults))
-              .finally(() => (this.userSearchLoadingStatus = false));
-          }
-          else {
-            this.setSearchResults(results);
-          }
-        })
-        .catch(error => {
-          this.handleError("User search failed", error);
-        })
-        .finally(() => {
-          if (!isSearchByRole) {
-            this.userSearchLoadingStatus = false;
-          }
-        });
+      try {
+        let results = (await UsersRepository.get(
+          `?briefRepresentation=false&first=0&max=${maxSearch}` + queryParameters
+        )).data;
+        if (isSearchByRole) {
+          results = await this.filterUsersByRole(results, maxSearch);
+        }
+        this.setSearchResults(results);
+      }
+      catch(error) {
+        this.handleError("User search failed", error);
+      }
+      finally {
+        this.userSearchLoadingStatus = false;
+      }
     },
     addQueryParameter: function(parameters, parameter, value) {
       if (value) {
