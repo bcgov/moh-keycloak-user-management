@@ -100,19 +100,57 @@
             dense
         ></v-autocomplete>
       </v-col>
-      <v-col class="col-6">
-        <label for="adv-search-role">
-          Role
-        </label>
-        <v-autocomplete
-            id="adv-search-role"
-            v-model="roleInput"
-            :items="clientRoles"
-            item-value="id"
-            outlined
-            dense
-        />
-      </v-col>
+    </v-row>
+    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
+      <h2>User Roles</h2>
+
+      <v-row no-gutters>
+        <v-col class="col-5 col">
+          <label for="select-client">Application</label>
+          <v-autocomplete
+              id="select-client"
+              outlined
+              dense
+              :items="clients"
+              item-text="clientId"
+              item-value="id"
+              placeholder="Select an Application"
+              v-model="selectedClientId"
+              @change="loadUserClientRoles()"
+            ></v-autocomplete>
+        </v-col>
+      </v-row>
+
+      <div v-if="selectedClientId">
+        <v-row no-gutters>
+          <v-col class="col-4">
+            <v-row no-gutters>
+              <v-col class="col-12">
+                <label>Roles</label>
+              </v-col>
+              <v-col class="col-6" v-for="col in numberOfClientRoleColumns" :key="col">
+                <span v-for="item in itemsInColumn" :key="item">
+                  <v-checkbox
+                      v-if="item*col <= clientRoles.length"
+                      class="roles-checkbox"
+                      hide-details="auto"
+                      v-model="selectedRoles"
+                      :value="clientRoles[roleArrayPosition(col, item)]"
+                      :key="clientRoles[roleArrayPosition(col, item)].name"
+                      >
+                    <span slot="label" class="tooltip" :id="'role-' + roleArrayPosition(col,item)">
+                      {{clientRoles[roleArrayPosition(col, item)].name}}
+                      <span v-show="clientRoles[roleArrayPosition(col, item)].description" class="tooltiptext"> {{ clientRoles[roleArrayPosition(col, item)].description }} </span>
+                    </span>
+                  </v-checkbox>
+                </span>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </div>
+    </v-card>
+    <v-row class="right-gutters" v-if="this.advancedSearchSelected">
       <v-col class="col-4" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
         <a id="basicSearchLink" style="margin-left: 10px" v-on:click="advancedSearchSelected=false">
@@ -155,26 +193,7 @@
 import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
-
-class ClientRole {
-
-  constructor(role, clients) {
-    this.id = role.id;
-    this.name = role.name;
-    this.description = role.description;
-    this.clientId = role.containerId;
-    this.clientName = clients.find(client => this.clientId === client.id).name;
-  }
-
-  toString() {
-    let s = `${this.clientName} : ${this.name}`;
-    if (this.description) {
-      s += ` - ${this.description}`;
-    }
-    return s;
-  }
-
-}
+import app_config from '@/loadconfig';
 
 export default {
   name: "UserSearch",
@@ -189,8 +208,10 @@ export default {
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
-      clients: [],
-      clientRoles: [ "" ],
+      clients: [ "" ],
+      selectedClientId: null,
+      clientRoles: [],
+      selectedRoles: [],
       footerProps: { "items-per-page-options": [15] },
       userSearchInput: "",
       lastNameInput: "",
@@ -198,14 +219,13 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
-      roleInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false
     };
   },
   async created() {
-    await this.loadClientsAndRoles();
+    await this.loadClients();
   },
   computed: {
     advancedSearchParams() {
@@ -216,6 +236,15 @@ export default {
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);
       return params;
+    },
+    itemsInColumn() {
+      return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
+    },
+    numberOfClientRoleColumns() {
+      return (this.clientRoles.length > 10) ? 2 : 1
+    },
+    maxResults() {
+      return app_config.config.max_results ? app_config.config.max_results : 100;
     }
   },
   methods: {
@@ -227,31 +256,29 @@ export default {
       this.$store.commit("alert/dismissAlert");
       this.$router.push({ name: "UserCreate" });
     },
-    searchUser: function(queryParameters) {
+    searchUser: async function(queryParameters) {
+      this.$store.commit("alert/dismissAlert");
+      const maxSearch = app_config.config.max_search
+                          ? app_config.config.max_search
+                          : (this.maxResults * 10);
       this.userSearchLoadingStatus = true;
-      let roleId = this.roleInput.trim();
-
-      UsersRepository.get(
-        "?briefRepresentation=false&first=0&max=300" + queryParameters
-      )
-        .then(response => {
-          let results = response.data;
-          if (this.advancedSearchSelected && roleId !== "") {
-            this.findUserIdsInRole(roleId)
-              .then(roleSearchResults =>
-                this.searchResults = results.filter(
-                  user => roleSearchResults.includes(user.id)
-                )
-              );
-          }
-          else {
-            this.searchResults = results;
-          }
-        })
-        .catch(error => {
-          this.handleError("User search failed", error);
-        })
-        .finally(() => (this.userSearchLoadingStatus = false));
+      let isSearchByRole = this.advancedSearchSelected
+        && this.selectedRoles.length > 0;
+      try {
+        let results = (await UsersRepository.get(
+          `?briefRepresentation=false&first=0&max=${maxSearch}` + queryParameters
+        )).data;
+        if (isSearchByRole) {
+          results = await this.filterUsersByRole(results, maxSearch);
+        }
+        this.setSearchResults(results);
+      }
+      catch(error) {
+        this.handleError("User search failed", error);
+      }
+      finally {
+        this.userSearchLoadingStatus = false;
+      }
     },
     addQueryParameter: function(parameters, parameter, value) {
       if (value) {
@@ -259,37 +286,69 @@ export default {
       }
       return parameters;
     },
-    loadClientsAndRoles: function() {
+    roleArrayPosition: function(col, item) {
+      return (col - 1) * (this.itemsInColumn) + item - 1;
+    },
+    loadClients: function() {
       return ClientsRepository.get()
         .then(response => {
-          this.clients = response.data;
-          let rolesRequests = this.clients.map(
-            client => ClientsRepository.getRoles(client.id)
-          );
-          Promise.all(rolesRequests)
-            .then(responses => {
-              let clientRole = responses
-                .flatMap(response => response.data)
-                .map(role => new ClientRole(role, this.clients))
-                .sort((a, b) => a.toString().localeCompare(b.toString()));
-              this.clientRoles.push(...clientRole);
-            });
+          this.clients.push(...response.data);
         })
         .catch(error => {
           this.handleError("Client search failed", error);
         });
     },
-    findUserIdsInRole: function(roleId) {
-      let clientRole = this.clientRoles.find(
-        clientRole => clientRole.id === roleId
+    loadUserClientRoles: async function() {
+      this.clientRoles = [];
+      this.selectedRoles = [];
+      if (this.selectedClientId) {
+        let loadedRoles = await ClientsRepository.getRoles(this.selectedClientId)
+          .then(response => response.data
+            .map(role => this.appendClientInfo(role))
+            .sort((a, b) => a.name.localeCompare(b.name))
+          )
+          .catch(error => {
+            this.handleError("Client Role search failed", error);
+          });
+        this.clientRoles.push(...loadedRoles);
+      }
+    },
+    appendClientInfo: function(role) {
+      role.clientId = role.containerId;
+      role.clientName = this.clients
+          .find(client => this.clientId === client.id).name;
+      return role;
+    },
+    filterUsersByRole: function(searchResults, maxSearch) {
+      let roleRequests = this.selectedRoles.map(
+        clientRole => ClientsRepository
+          .getUsersInRole(clientRole.clientId, clientRole.name, maxSearch)
+          .catch(error => {
+            this.handleError(`Search failed for role ${clientRole.name}`, error);
+          })
       );
-      return ClientsRepository.getUsersInRole(clientRole.clientId, clientRole.name)
-        .then(response => {
-          return response.data.map(user => user.id);
-        })
-        .catch(error => {
-          this.handleError("Role search failed", error);
+      return Promise.all(roleRequests)
+        .then(responses => responses.flatMap(
+          response => response.data.map(user => user.id)
+        ))
+        .then(userIds => searchResults.filter(
+          user => userIds.includes(user.id)
+        ));
+    },
+    setSearchResults(results) {
+      const maxRes = this.maxResults;
+      if (results.length > maxRes) {
+        this.searchResults = results.slice(0, maxRes);
+        this.$store.commit("alert/setAlert", {
+          message: "Your search returned more than the maximum number of results ("
+                  + maxRes + "). Please consider refining the search criteria.",
+          type: "warning"
         });
+        window.scrollTo(0, 0);
+      }
+      else {
+        this.searchResults = results;
+      }
     },
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {

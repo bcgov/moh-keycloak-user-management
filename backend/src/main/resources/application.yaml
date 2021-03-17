@@ -50,5 +50,6 @@ server:
 #logging:
 #  level:
 #    KC_WEB_CLIENT: DEBUG
+#    LOAD_TEST: DEBUG
 #    org.apache.coyote.http11.Http11InputBuffer: DEBUG
 #    root: DEBUG

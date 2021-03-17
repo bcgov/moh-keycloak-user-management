@@ -162,10 +162,14 @@ public class MoHUmsIntegrationTests {
 
         final List<Object> filteredUsers = webTestClient
                 .get()
-                .uri(uriBuilder -> uriBuilder
-                .path("/users")
-                .queryParam("org", "00001763")
-                .build())
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("org", "00001763")
+                                .queryParam("first", "0")
+                                .queryParam("max", "10000")
+                                .build()
+                )
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -452,7 +456,13 @@ public class MoHUmsIntegrationTests {
     private List<Object> getAll(String resource) {
         return webTestClient
                 .get()
-                .uri("/" + resource)
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/" + resource)
+                                .queryParam("first", 0)
+                                .queryParam("max", 10_000)
+                                .build()
+                )
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()

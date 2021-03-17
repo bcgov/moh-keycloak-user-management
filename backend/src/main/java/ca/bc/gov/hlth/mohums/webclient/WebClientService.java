@@ -37,9 +37,10 @@ public class WebClientService {
         return getList(path, null);
     }
 
-    public ResponseEntity<List<Object>> getUsersInRole(String clientId, String roleName) {
+    public ResponseEntity<List<Object>> getUsersInRole(String clientId, String roleName,
+            MultiValueMap<String, String> queryParams) {
         String path = String.format("%s/%s/roles/%s/users", clientsPath, clientId, roleName);
-        return getList(path, null);
+        return getList(path, queryParams);
     }
 
     // Groups

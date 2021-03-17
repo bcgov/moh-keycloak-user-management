@@ -4,11 +4,15 @@ import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,9 +46,18 @@ public class ClientsController {
     @GetMapping("/clients/{clientId}/roles/{roleName}/users")
     public ResponseEntity<List<Object>> getUsersInRole(
             @PathVariable String clientId,
-            @PathVariable String roleName
+            @PathVariable String roleName,
+            @RequestParam Optional<Boolean> briefRepresentation,
+            @RequestParam Optional<Integer> first,
+            @RequestParam Optional<Integer> max
     ) {
-        return webClientService.getUsersInRole(clientId, roleName);
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+
+        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
+        first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
+        max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
+
+        return webClientService.getUsersInRole(clientId, roleName, queryParams);
     }
 
 }
