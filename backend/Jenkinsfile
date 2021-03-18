@@ -2,6 +2,9 @@ def dev_environments = "${env.DEV_ENVS}".split(",")
 def test_environments = "${env.TEST_ENVS}".split(",")
 pipeline {
     agent any
+    tools {
+        maven 'Maven'
+    }
     parameters {
         string(defaultValue: 'master', description: 'Branch or tag to build. Tags must be specified as "refs/tags/<tagName>".', name: 'BUILD_BRANCH')
         booleanParam(defaultValue: false, description: 'Check box to deploy build.', name: 'DEPLOY')
