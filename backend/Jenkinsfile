@@ -17,6 +17,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: "${params.BUILD_BRANCH}"]], userRemoteConfigs: [[url: 'https://github.com/bcgov/moh-keycloak-user-management']]])
+                dir('config') {
+                    checkout([$class: 'SubversionSCM', additionalCredentials: [], excludedCommitMessages: '', excludedRegions: '', excludedRevprop: '', excludedUsers: '', filterChangelog: false, ignoreDirPropChanges: false, includedRegions: '', locations: [[cancelProcessOnExternalsFail: true, credentialsId: 'dasharpe-cred', depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: 'https://subversion.hlth.gov.bc.ca/svn/ApplicationConfiguration/KeycloakUserManagementService']], quietOperation: true, workspaceUpdater: [$class: 'UpdateUpdater']])
+                }
             }
         }
         stage('Build') {
@@ -35,6 +38,8 @@ pipeline {
                     script {
                         if (params.ENVIRONMENT == 'DEV') {
                             sshServer = dev_environments
+                            config = '../config/DEV/application.yaml'
+                            cert = '../config/DEV/fireblade.p12'
                         } else if (params.ENVIRONMENT == 'TEST') {
                             sshServer = test_environments
                         }
@@ -47,7 +52,8 @@ pipeline {
                             remote.allowAnyHosts = true
                             remote.pty = true
                             sshPut remote: remote, from: 'target/moh-ums-0.0.2-SNAPSHOT.jar', into: 'moh-ums-0.0.2-SNAPSHOT.jar'
-                            sshPut remote: remote, from: "src/main/resources/application.yaml", into: 'application.yaml'
+                            sshPut remote: remote, from: config, into: 'application.yaml'
+                            sshPut remote: remote, from: cert, into: 'fireblade.p12'
                             sshPut remote: remote, from: 'run.sh', into: 'run.sh'
                             sshCommand remote: remote, command: 'chmod u+x run.sh; ./run.sh'
                         }
