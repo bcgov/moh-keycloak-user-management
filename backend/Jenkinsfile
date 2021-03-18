@@ -3,6 +3,7 @@ def test_environments = "${env.TEST_ENVS}".split(",")
 pipeline {
     agent any
     tools {
+        jdk "JDK 11"
         maven 'Maven'
     }
     parameters {
