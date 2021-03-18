@@ -49,7 +49,7 @@ pipeline {
                             sshPut remote: remote, from: 'target/moh-ums-0.0.2-SNAPSHOT.jar', into: 'moh-ums-0.0.2-SNAPSHOT.jar'
                             sshPut remote: remote, from: "src/main/resources/application.yaml", into: 'application.yaml'
                             sshPut remote: remote, from: 'run.sh', into: 'run.sh'
-                            sshCommand remote: remote, command: 'chmod u+x script.sh; ./run.sh'
+                            sshCommand remote: remote, command: 'chmod u+x run.sh; ./run.sh'
                         }
                     }
                 }
