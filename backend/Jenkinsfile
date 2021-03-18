@@ -1,0 +1,55 @@
+def dev_environments = "${env.DEV_ENVS}".split(",")
+def test_environments = "${env.TEST_ENVS}".split(",")
+pipeline {
+    agent any
+    parameters {
+        string(defaultValue: 'master', description: 'Branch or tag to build. Tags must be specified as "refs/tags/<tagName>".', name: 'BUILD_BRANCH')
+        booleanParam(defaultValue: false, description: 'Check box to deploy build.', name: 'DEPLOY')
+        choice(choices: ['DEV', 'TEST'], description: 'Deploy to this environment.', name: 'ENVIRONMENT')
+        string(name: 'USERNAME')
+        password(name: 'PASSWORD')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: "${params.BUILD_BRANCH}"]], userRemoteConfigs: [[url: 'https://github.com/bcgov/moh-keycloak-user-management']]])
+            }
+        }
+        stage('Build') {
+            steps {
+                dir("backend") {
+                    sh 'mvn -Dmaven.test.skip=true package'
+                }
+            }
+        }
+        stage('Deploy') {
+            when {
+                expression { params.DEPLOY == true }
+            }
+            steps {
+                dir("backend") {
+                    script {
+                        if (params.ENVIRONMENT == 'DEV') {
+                            sshServer = dev_environments
+                        } else if (params.ENVIRONMENT == 'TEST') {
+                            sshServer = test_environments
+                        }
+                        for (int i = 0; i < sshServer.size(); ++i) {
+                            def remote = [:]
+                            remote.name = sshServer[i]
+                            remote.host = sshServer[i]
+                            remote.user = params.USERNAME
+                            remote.password = params.PASSWORD
+                            remote.allowAnyHosts = true
+                            remote.pty = true
+                            sshPut remote: remote, from: 'target/moh-ums-0.0.2-SNAPSHOT.jar', into: 'moh-ums-0.0.2-SNAPSHOT.jar'
+                            sshPut remote: remote, from: "src/main/resources/application.yaml", into: 'application.yaml'
+                            sshPut remote: remote, from: 'script.sh', into: 'script.sh'
+                            sshCommand remote: remote, command: 'chmod u+x script.sh; ./script.sh'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
