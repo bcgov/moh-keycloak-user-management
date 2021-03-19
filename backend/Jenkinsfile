@@ -51,7 +51,7 @@ pipeline {
                             remote.password = params.PASSWORD
                             remote.allowAnyHosts = true
                             remote.pty = true
-                            sshCommand remote: remote, command: "pkill -u $params.USERNAME java; rm moh-ums-0.0.2-SNAPSHOT.jar application.yaml fireblade.p12 run.sh"
+                            sshCommand remote: remote, command: "pkill -u $params.USERNAME java; rm -f moh-ums-0.0.2-SNAPSHOT.jar application.yaml fireblade.p12 run.sh"
                             sshPut remote: remote, from: 'target/moh-ums-0.0.2-SNAPSHOT.jar', into: 'moh-ums-0.0.2-SNAPSHOT.jar'
                             sshPut remote: remote, from: config, into: 'application.yaml'
                             sshPut remote: remote, from: cert, into: 'fireblade.p12'
