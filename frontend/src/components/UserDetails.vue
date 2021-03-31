@@ -11,10 +11,18 @@
               <template v-slot:activator="{ on }">
                 <v-icon id="user-name-tooltip-icon" v-on="on" small>mdi-help-circle</v-icon>
               </template>
-              <span>Username should be the exact user id
-                  followed directly by @idir, @bceid, or @phsa
-                  in alignment with the digital id type
-                  (e.g. userjane@idir)</span>
+              <span>Username should include the corresponding prefix or suffix in alignment with the id type.
+                <ul>
+                  <li>IDIR: username<strong>@idir</strong></li>
+                  <li>Business BCeID: username<strong>@business_bceid</strong></li>
+                  <li>Fraser Health:  <strong>sfhr\</strong>username</li>
+                  <li>Interior Health: <strong>iha\</strong>username</li>
+                  <li>Northern Health: <strong>nirhb\</strong>username</li>
+                  <li>Provincial Health: <strong>phsabc\</strong>username</li>
+                  <li>Vancouver Coastal Health:<strong>vch\</strong>username or <strong>vrhb\</strong>username</li>
+                  <li>Vancouver Island Health <strong>viha\</strong>username</li>
+                </ul>
+              </span>
             </v-tooltip>
             <v-text-field
               dense

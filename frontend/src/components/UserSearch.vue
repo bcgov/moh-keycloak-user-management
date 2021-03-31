@@ -37,7 +37,10 @@
     <!-- Advanced Search -->
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
       <v-col class="col-6">
-        <h1>Advanced User Search</h1>
+        <h1 id="adv-search-header">Advanced User Search</h1>
+        <a id="basic-search-link" style="margin-left: 10px" v-on:click="advancedSearchSelected=false">
+          Return to Basic Search
+        </a>
       </v-col>
       <v-col class="col-6">
         <v-btn id="adv-create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
@@ -153,9 +156,6 @@
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
       <v-col class="col-4" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
-        <a id="basicSearchLink" style="margin-left: 10px" v-on:click="advancedSearchSelected=false">
-         Return to Basic Search
-        </a>
       </v-col>
     </v-row>
 
@@ -366,6 +366,14 @@ export default {
   margin-top: 25px;
   margin-left: 20px;
 }
+#adv-search-header {
+  display: inline-block;
+}
+#basic-search-link {
+  float: right;
+  display: inline-block;
+  margin-top: 10px;
+}
 #create-user-button {
   float: right;
   margin-top: 25px;
@@ -375,5 +383,8 @@ export default {
 }
 .right-gutters .col {
   padding: 0 24px 0 0;
+}
+.row.right-gutters {
+  margin: 0;
 }
 </style>
