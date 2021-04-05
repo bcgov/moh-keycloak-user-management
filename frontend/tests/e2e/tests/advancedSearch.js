@@ -89,7 +89,7 @@ test('Test adv search by Email and Role, then Basic Search', async t => {
         .click(AdvancedSearchForm.advSearchButton)
         .expect(AdvancedSearchForm.getResultsCount())
         .eql(1)
-        .click('#basicSearchLink')
+        .click('#basic-search-link')
         .typeText('#user-search', 'gmail')
         .click('#search-button')
         .expect(AdvancedSearchForm.getResultsCount())
