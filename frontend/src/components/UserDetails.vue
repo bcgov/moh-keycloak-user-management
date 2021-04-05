@@ -15,12 +15,12 @@
                 <ul>
                   <li>IDIR: username<strong>@idir</strong></li>
                   <li>Business BCeID: username<strong>@business_bceid</strong></li>
-                  <li>Fraser Health:  <strong>sfhr\</strong>username</li>
+                  <li>Fraser Health: <strong>sfhr\</strong>username</li>
                   <li>Interior Health: <strong>iha\</strong>username</li>
                   <li>Northern Health: <strong>nirhb\</strong>username</li>
                   <li>Provincial Health: <strong>phsabc\</strong>username</li>
-                  <li>Vancouver Coastal Health:<strong>vch\</strong>username or <strong>vrhb\</strong>username</li>
-                  <li>Vancouver Island Health <strong>viha\</strong>username</li>
+                  <li>Vancouver Coastal Health: <strong>vch\</strong>username or <strong>vrhb\</strong>username</li>
+                  <li>Vancouver Island Health: <strong>viha\</strong>username</li>
                 </ul>
               </span>
             </v-tooltip>
