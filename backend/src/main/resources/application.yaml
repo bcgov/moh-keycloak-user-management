@@ -6,6 +6,7 @@ user-management-client:
     view-clients: view-clients
     view-groups: view-groups
     view-users: view-users
+    view-events: view-events
     manage-users: manage-users
     manage-user-groups: manage-user-groups
 config:

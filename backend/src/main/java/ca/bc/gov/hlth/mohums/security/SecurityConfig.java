@@ -29,6 +29,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.view-users}")
     private String viewUsersRole;
 
+    @Value("${user-management-client.roles.view-events}")
+    private String viewEventsRole;
+
     @Value("${user-management-client.roles.manage-users}")
     private String manageUsersRole;
 
@@ -48,6 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors(Customizer.withDefaults())
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
+                .mvcMatchers(HttpMethod.GET,"/events/**").hasRole(viewEventsRole)
                 .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
                 .mvcMatchers(HttpMethod.GET,"/users/{userId}/groups").access(String.format("hasRole('%s') and hasRole('%s')", viewUsersRole, viewGroupsRole))
