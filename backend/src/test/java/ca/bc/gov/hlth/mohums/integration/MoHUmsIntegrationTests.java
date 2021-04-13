@@ -1,12 +1,5 @@
 package ca.bc.gov.hlth.mohums.integration;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.List;
-import java.util.Map;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -25,6 +18,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -357,6 +358,50 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+    }
+
+    @Test
+    public void getEvents_smokeTest() throws Exception {
+        webTestClient
+                .get()
+                .uri("events")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    public void getEvents_hasResults() throws Exception {
+        List<Object> responseBody = webTestClient
+                .get()
+                .uri("events")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult().getResponseBody();
+
+        Assertions.assertThat(responseBody).isNotEmpty();
+        Assertions.assertThat(responseBody).first()
+                .extracting("realmId").asString()
+                .isEqualTo("moh_applications");
+    }
+
+    @Test
+    public void getEvents_queryLogin_hasOnlyLoginEvents() throws Exception {
+        List<Object> responseBody = webTestClient
+                .get()
+                .uri("events?type=LOGIN")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult().getResponseBody();
+        Assertions.assertThat(responseBody).isNotEmpty();
+        Assertions.assertThat(responseBody)
+                .extracting("type")
+                .containsOnly("LOGIN");
+
     }
 
     @Test

@@ -1,11 +1,12 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
-import java.util.List;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
 
 @Service
 public class WebClientService {
@@ -107,6 +108,11 @@ public class WebClientService {
         return delete(path);
     }
 
+    // Events
+    public ResponseEntity<Object> getEvents(MultiValueMap<String, String> allParams) {
+        return get("/events", allParams);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()
@@ -178,4 +184,5 @@ public class WebClientService {
                 .exchange()
                 .block().toEntity(Object.class).block();
     }
+
 }
