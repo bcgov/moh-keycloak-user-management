@@ -113,6 +113,10 @@ public class WebClientService {
         return get("/events", allParams);
     }
 
+    public ResponseEntity<Object> getAdminEvents(MultiValueMap<String, String> allParams) {
+        return get("/admin-events", allParams);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
         return kcAuthorizedWebClient
                 .get()

@@ -405,6 +405,50 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void getAdminEvents_smokeTest() throws Exception {
+        webTestClient
+                .get()
+                .uri("admin-events")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    public void getAdminEvents_hasResults() throws Exception {
+        List<Object> responseBody = webTestClient
+                .get()
+                .uri("admin-events")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult().getResponseBody();
+
+        Assertions.assertThat(responseBody).isNotEmpty();
+        Assertions.assertThat(responseBody).first()
+                .extracting("realmId").asString()
+                .isEqualTo("moh_applications");
+    }
+
+    @Test
+    public void getAdminEvents_queryLogin_hasOnlyLoginEvents() throws Exception {
+        List<Object> responseBody = webTestClient
+                .get()
+                .uri("admin-events?resourceTypes=USER&resourceTypes=CLIENT_ROLE_MAPPING")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult().getResponseBody();
+        Assertions.assertThat(responseBody).isNotEmpty();
+        Assertions.assertThat(responseBody)
+                .extracting("resourceType")
+                .containsOnly("USER", "CLIENT_ROLE_MAPPING");
+
+    }
+
+    @Test
     public void assignedUserClientRoleMappingUnauthorized() throws Exception {
         webTestClient
                 .get()
