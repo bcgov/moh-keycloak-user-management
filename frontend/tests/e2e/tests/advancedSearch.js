@@ -95,19 +95,3 @@ test('Test adv search by Email and Role, then Basic Search', async t => {
         .expect(AdvancedSearchForm.getResultsCount())
         .gt(1);
 });
-
-// Run MoHUmsPrepareLoadTests.createDesiredUserCount() before this test
-// and make sure that desiredUserCount is set to a more than the value
-// of "max_results" defined in /public/config.json.
-test('Test adv search by Big Role', async t => {
-    await t
-        .click(AdvancedSearchForm.advSearchLink)
-        .typeText(AdvancedSearchForm.selectClient, 'LOADTEST')
-        .pressKey('enter')
-        .click(AdvancedSearchForm.getRoleCheckbox('LOAD_TEST'))
-        .click(AdvancedSearchForm.advSearchButton)
-        .expect(AdvancedSearchForm.getResultsCount())
-        .gt(10)
-        .expect(AlertPage.alertBannerText.textContent).contains(
-          "Your search returned more than the maximum number of results");
-});
