@@ -20,4 +20,9 @@ public class EventsController {
     public ResponseEntity<Object> getEvents(@RequestParam MultiValueMap<String, String> allParams) {
         return webClientService.getEvents(allParams);
     }
+
+    @GetMapping("/admin-events")
+    public ResponseEntity<Object> getAdminEvents(@RequestParam MultiValueMap<String, String> allParams) {
+        return webClientService.getAdminEvents(allParams);
+    }
 }

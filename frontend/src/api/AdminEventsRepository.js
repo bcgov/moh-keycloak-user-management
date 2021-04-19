@@ -1,4 +1,4 @@
-import { kcRequest } from "./Repository";
+import { umsRequest } from "./Repository";
 
 const resource = "/admin-events" +
     "?operationTypes=UPDATE" +
@@ -12,6 +12,6 @@ export default {
 
     getEvents(queryParams) {
         const resourcePath = queryParams ? `${resource}&${queryParams}` : resource;
-        return kcRequest().then(axiosInstance => axiosInstance.get(resourcePath));
+        return umsRequest().then(axiosInstance => axiosInstance.get(resourcePath));
     }
 }
