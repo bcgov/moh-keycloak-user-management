@@ -23,7 +23,7 @@
           dense
           v-model="userSearchInput"
           placeholder="Username, email, name, or ID"
-          @keyup.native.enter="searchUser"
+          @keyup.enter="searchUser('&search='+userSearchInput)"
         />
       </v-col>
       <v-col class="col-4">
@@ -171,6 +171,13 @@
           loading-text="Searching for users"
           v-on:click:row="selectUser"
         >
+          <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
+          <template #item.username="{ item }">
+            <a target="_blank" :href="`#/users/${item.id}`" v-on:click="openNewTab">
+              {{ item.username }}
+            </a>
+            <v-icon small>mdi-open-in-new</v-icon>
+          </template>
           <template v-if="searchResults.length > 0" v-slot:footer>
             <v-toolbar flat>
               <v-spacer/>
@@ -221,7 +228,8 @@ export default {
       organizationInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
-      advancedSearchSelected: false
+      advancedSearchSelected: false,
+      newTab: false
     };
   },
   async created() {
@@ -248,7 +256,14 @@ export default {
     }
   },
   methods: {
+    openNewTab: function() {
+      this.newTab = true;
+    },
     selectUser: function(user) {
+      if (this.newTab) {
+        this.newTab = false;
+        return;
+      }
       this.$store.commit("alert/dismissAlert");
       this.$router.push({ name: "UserUpdate", params: { userid: user.id } });
     },
