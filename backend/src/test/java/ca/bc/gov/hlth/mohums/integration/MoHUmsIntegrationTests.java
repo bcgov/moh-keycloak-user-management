@@ -24,6 +24,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -248,6 +250,80 @@ public class MoHUmsIntegrationTests {
                 .expectBodyList(Object.class).hasSize(0);
     }
 
+    @Test
+    public void searchByLastLogDateAndOrg() throws Exception {
+        final List<Object> allUsers = getAll("users");
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("org", "00001763")
+                                .queryParam("first", "0")
+                                .queryParam("max", "10000")
+                                .queryParam("lastLog", "2020-12-31")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers).containsAll(filteredUsers);
+    }
+    
+    @Test
+    public void searchEventsByLastLogDate() throws Exception {
+//        final Object nbEvents = 
+                
+          WebTestClient.ResponseSpec response = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/events/count")
+                                .queryParam("type", "LOGIN")
+                                .queryParam("client", "HEM")
+//                                .queryParam("dateTo", "2021-04-15")
+                                .queryParam("dateFrom", "2020-04-31")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk();
+//                .expectBody()
+//                .returnResult()
+//                .getResponseBody();
+
+        final List<Object> eventsByLastLogDate = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/events")
+                                .queryParam("type", "LOGIN")
+                                .queryParam("client", "HEM")
+                                .queryParam("first", "0")
+                                .queryParam("max", "100")
+//                                .queryParam("dateTo", "2021-04-15")
+                                .queryParam("dateFrom", "2020-04-31")
+//                                .queryParam("time", lastLogTime)
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(eventsByLastLogDate).isNotEmpty();
+//        Assertions.assertThat(allEvents).containsAll(eventsByLastLogDate);
+    }
+    
+    
     @Test
     public void lookupUserAuthorized() throws Exception {
         webTestClient
