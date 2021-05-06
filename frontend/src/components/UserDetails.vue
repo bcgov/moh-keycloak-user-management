@@ -159,7 +159,7 @@ export default {
     // format to match standard naming or capitalization
     formatIdentityProvider: function(idp) {
       let formattedIdentityProviders = {
-        'phsa': 'PHSA',
+        'phsa': 'Health Authority',
         'moh_idp': 'MoH LDAP',
         'idir': 'IDIR',
         'bceid': 'BCeID',
