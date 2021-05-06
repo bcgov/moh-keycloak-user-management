@@ -23,7 +23,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
-/nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
@@ -49,3 +48,4 @@ target/
 
 /frontend/nbproject/private/
 frontend/dist/*
+frontend/nbproject/*

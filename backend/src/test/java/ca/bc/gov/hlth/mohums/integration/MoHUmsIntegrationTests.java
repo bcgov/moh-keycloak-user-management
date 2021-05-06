@@ -285,6 +285,36 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
     }
     
+    
+        @Test
+    public void searchUsersByNameAndLastLogDate() throws Exception {
+        final List<Object> allUsers = getAll("users");
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("first", "0")
+                                .queryParam("max", "2000")
+                                .queryParam("firstName", "Muriel")
+                                .queryParam("lastLogFrom", "2021-04-06")
+                                .queryParam("lastLogTo", "2021-04-10")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(allUsers).isNotEmpty();
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers).containsAll(filteredUsers);
+        Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
+    }
+    
     @Test
     public void searchEventsByLastLogDate() throws Exception {
 

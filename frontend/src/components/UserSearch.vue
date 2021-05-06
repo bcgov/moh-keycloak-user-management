@@ -106,11 +106,11 @@
     </v-row>
     
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
-      <h2>Last LOGIN Date</h2>
+      <h2>Activity Log</h2>
       <v-row>
       <v-col class="col-6">
         <label for="adv-search-org">
-          Date (from)
+          Active after (From)
         </label>
 <!--        <v-date-picker
             id="last-log-date"
@@ -154,7 +154,7 @@
       
        <v-col class="col-6">
         <label for="adv-search-org">
-          Date (to)
+          Active before (To)
         </label>
 <!--        <v-date-picker
             id="last-log-date"
@@ -194,9 +194,46 @@
             ></v-date-picker>
         </v-menu>
       </v-col>
-          
     </v-row>
     </v-card>
+    
+<!--    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
+      <h2>Last Log Date</h2>
+      <v-row>
+       <v-col class="col-6">
+        <label for="adv-search-org">
+          Last Log After 
+        </label>
+        <v-menu
+            v-model="menuDateTo"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="auto">
+            <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                    v-model="lastLogDateToInput"
+                    id="last-log-date-to"
+                    v-bind="attrs"
+                    v-on="on"   
+                    hint="YYYY-MM-DD format"
+                    prepend-inner-icon="mdi-calendar"        
+                    outlined
+                    dense
+                ></v-text-field>
+            </template>
+            <v-date-picker
+                v-model="lastLogDateToInput"
+                @input="menuDate = false"
+                max="maxDateInput"
+                scrollable
+                elevation="10"
+            ></v-date-picker>
+        </v-menu>
+      </v-col>
+    </v-row>
+    </v-card>-->
     
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
       <h2>User Roles</h2>
@@ -307,7 +344,6 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
-        { text: "Last Logged In", value: "enabled", class: "table-header" },
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
@@ -322,8 +358,8 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
-      lastLogDateFromInput: new Date().toISOString().substr(0, 10),
-      lastLogDateToInput: new Date().toISOString().substr(0, 10),
+      lastLogDateFromInput: "",
+      lastLogDateToInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false,

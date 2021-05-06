@@ -65,6 +65,8 @@ public class UsersController {
         if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             users = filteredUsers;
+            
+            logger.error("size for filteredUsers: " + filteredUsers.size());
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
         
@@ -95,19 +97,22 @@ public class UsersController {
 
             // filter user list
             List<Object> filteredUsersByLastLog = new ArrayList<>();
+            
+            logger.error("size for users: " + users.size());
             for (Object user : users) {
                 String userId = ((LinkedHashMap) user).get("id").toString();
                 if(!userId.isEmpty()){
                 for (Object event : allEvents) {
-                      if (userId.equals(((LinkedHashMap) event).get("userId").toString())){
+                    Object userIdFromEvent = ((LinkedHashMap) event).get("userId");
+                      if (userIdFromEvent!= null && userId.equals(userIdFromEvent.toString())){
                             filteredUsersByLastLog.add(user);
-                            logger.error("userID Matching" + userId);
+                            logger.error("userID Matching: " + userId);
                             break;
                       }
                     }
                 }
             }
-            logger.error("final size for filteredUsersByLastLog" + filteredUsersByLastLog.size());
+            logger.error("final size for filteredUsersByLastLog: " + filteredUsersByLastLog.size());
             
 //          List<Object> filteredUsersByLastLog = users.stream().filter(new FilterUserByLastLogEvent(allEvents)).collect(Collectors.toList());
            
