@@ -46,3 +46,6 @@ target/
 .settings
 .springBeans
 .sts4-cache
+
+/frontend/nbproject/private/
+frontend/dist/*

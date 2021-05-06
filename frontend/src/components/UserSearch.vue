@@ -104,6 +104,100 @@
         ></v-autocomplete>
       </v-col>
     </v-row>
+    
+    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
+      <h2>Last LOGIN Date</h2>
+      <v-row>
+      <v-col class="col-6">
+        <label for="adv-search-org">
+          Date (from)
+        </label>
+<!--        <v-date-picker
+            id="last-log-date"
+            v-model="lastLogDate"
+            item-value="id"
+            max="2021-04-20"
+            outlined
+            dense
+        ></v-date-picker>-->
+      
+        <v-menu
+            v-model="menuDateFrom"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="auto"
+        >
+            <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                    v-model="lastLogDateFromInput"
+                    id="last-log-date-from"
+                    v-bind="attrs"
+                    v-on="on"   
+                    hint="YYYY-MM-DD format"
+                    prepend-inner-icon="mdi-calendar"        
+                    outlined
+                    dense
+                ></v-text-field>
+            </template>
+            <v-date-picker
+                v-model="lastLogDateFromInput"
+                @input="menuDate = false"
+                max="maxDateInput"
+                scrollable
+                elevation="10"
+            ></v-date-picker>
+        </v-menu>
+      </v-col>
+       
+      
+       <v-col class="col-6">
+        <label for="adv-search-org">
+          Date (to)
+        </label>
+<!--        <v-date-picker
+            id="last-log-date"
+            v-model="lastLogDate"
+            item-value="id"
+            max="2021-04-20"
+            outlined
+            dense
+        ></v-date-picker>-->
+      
+        <v-menu
+            v-model="menuDateTo"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="auto"
+        >
+            <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                    v-model="lastLogDateToInput"
+                    id="last-log-date-to"
+                    v-bind="attrs"
+                    v-on="on"   
+                    hint="YYYY-MM-DD format"
+                    prepend-inner-icon="mdi-calendar"        
+                    outlined
+                    dense
+                ></v-text-field>
+            </template>
+            <v-date-picker
+                v-model="lastLogDateToInput"
+                @input="menuDate = false"
+                max="maxDateInput"
+                scrollable
+                elevation="10"
+            ></v-date-picker>
+        </v-menu>
+      </v-col>
+          
+    </v-row>
+    </v-card>
+    
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
       <h2>User Roles</h2>
 
@@ -153,6 +247,7 @@
         </v-row>
       </div>
     </v-card>
+      
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
       <v-col class="col-4" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
@@ -212,6 +307,7 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
+        { text: "Last Logged In", value: "enabled", class: "table-header" },
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
@@ -226,6 +322,8 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
+      lastLogDateFromInput: new Date().toISOString().substr(0, 10),
+      lastLogDateToInput: new Date().toISOString().substr(0, 10),
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false,
@@ -242,7 +340,9 @@ export default {
       params = this.addQueryParameter(params, "firstName", this.firstNameInput);
       params = this.addQueryParameter(params, "username", this.usernameInput);
       params = this.addQueryParameter(params, "email", this.emailInput);
-      params = this.addQueryParameter(params, "org", this.organizationInput);
+      params = this.addQueryParameter(params, "org", this.organizationInput);      
+      params = this.addQueryParameter(params, "lastLogFrom", this.lastLogDateFromInput);
+      params = this.addQueryParameter(params, "lastLogTo", this.lastLogDateToInput);
       return params;
     },
     itemsInColumn() {
@@ -253,6 +353,9 @@ export default {
     },
     maxResults() {
       return app_config.config.max_results ? app_config.config.max_results : 100;
+    },
+    maxDateInput() {
+      return new Date().toISOString().substr(0, 10).toString();
     }
   },
   methods: {
