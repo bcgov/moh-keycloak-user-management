@@ -78,6 +78,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- The jasypt-maven-plugin can be used to encrypt secrets on the command line. -->
             <plugin>
                 <groupId>com.github.ulisesbocchio</groupId>
                 <artifactId>jasypt-maven-plugin</artifactId>
