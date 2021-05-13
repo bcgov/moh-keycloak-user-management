@@ -1,6 +1,6 @@
 {
   "max_search": 10000,
   "max_results": 1000,
-  "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://user-management-test.hlth.gov.bc.ca/webapp",
+  "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://user-management-test.hlth.gov.bc.ca",
   "service_url": "https://user-management-dev.api.hlth.gov.bc.ca/"
 }
