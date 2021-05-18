@@ -8,8 +8,6 @@ const getDefaultState = () => {
         attributes: {
             phone: '',
             org_details: '',
-            lockout_reason: '',
-            revoked: '',
             access_team_notes: ''
         },
         federatedIdentities: []
@@ -31,8 +29,6 @@ const mutations = {
         if (user.attributes) {
             state.attributes.phone = user.attributes.phone
             state.attributes.org_details = user.attributes.org_details
-            state.attributes.lockout_reason = user.attributes.lockout_reason
-            state.attributes.revoked = user.attributes.revoked
             state.attributes.access_team_notes = user.attributes.access_team_notes
         }
         state.federatedIdentities = user.federatedIdentities;
@@ -57,12 +53,6 @@ const mutations = {
     },
     setOrgDetails(state, org_details) {
         state.attributes.org_details = org_details
-    },
-    setLockoutReason(state, lockout_reason) {
-        state.attributes.lockout_reason = lockout_reason
-    },
-    setRevoked(state, revoked) {
-        state.attributes.revoked = revoked
     },
     setAccessTeamNotes(state, access_team_notes) {
         state.attributes.access_team_notes = access_team_notes
