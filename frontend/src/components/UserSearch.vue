@@ -122,7 +122,7 @@
         ></v-date-picker>-->
       
         <v-menu
-            v-model="menuDateFrom"
+            v-model="menuActivityFrom"
             :close-on-content-click="false"
             :nudge-right="40"
             transition="scale-transition"
@@ -131,8 +131,8 @@
         >
             <template v-slot:activator="{ on, attrs }">
                 <v-text-field
-                    v-model="lastLogDateFromInput"
-                    id="last-log-date-from"
+                    v-model="activeFromInput"
+                    id="active-from"
                     v-bind="attrs"
                     v-on="on"   
                     hint="YYYY-MM-DD format"
@@ -142,7 +142,7 @@
                 ></v-text-field>
             </template>
             <v-date-picker
-                v-model="lastLogDateFromInput"
+                v-model="activeFromInput"
                 @input="menuDate = false"
                 max="maxDateInput"
                 scrollable
@@ -166,7 +166,7 @@
         ></v-date-picker>-->
       
         <v-menu
-            v-model="menuDateTo"
+            v-model="menuActivityTo"
             :close-on-content-click="false"
             :nudge-right="40"
             transition="scale-transition"
@@ -175,8 +175,8 @@
         >
             <template v-slot:activator="{ on, attrs }">
                 <v-text-field
-                    v-model="lastLogDateToInput"
-                    id="last-log-date-to"
+                    v-model="activeToInput"
+                    id="active-to"
                     v-bind="attrs"
                     v-on="on"   
                     hint="YYYY-MM-DD format"
@@ -186,7 +186,7 @@
                 ></v-text-field>
             </template>
             <v-date-picker
-                v-model="lastLogDateToInput"
+                v-model="activeToInput"
                 @input="menuDate = false"
                 max="maxDateInput"
                 scrollable
@@ -197,15 +197,15 @@
     </v-row>
     </v-card>
     
-<!--    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
+    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
       <h2>Last Log Date</h2>
       <v-row>
        <v-col class="col-6">
         <label for="adv-search-org">
-          Last Log After 
+          Last Log Date Before 
         </label>
         <v-menu
-            v-model="menuDateTo"
+            v-model="menuDateBefore"
             :close-on-content-click="false"
             :nudge-right="40"
             transition="scale-transition"
@@ -213,8 +213,8 @@
             min-width="auto">
             <template v-slot:activator="{ on, attrs }">
                 <v-text-field
-                    v-model="lastLogDateToInput"
-                    id="last-log-date-to"
+                    v-model="lastLogDateBeforeInput"
+                    id="last-log-date-before"
                     v-bind="attrs"
                     v-on="on"   
                     hint="YYYY-MM-DD format"
@@ -224,7 +224,39 @@
                 ></v-text-field>
             </template>
             <v-date-picker
-                v-model="lastLogDateToInput"
+                v-model="lastLogDateBeforeInput"
+                @input="menuDate = false"
+                max="maxDateInput"
+                scrollable
+                elevation="10"
+            ></v-date-picker>
+        </v-menu>
+      </v-col>
+          <v-col class="col-6">
+        <label for="adv-search-org">
+          Last Log Date After 
+        </label>
+        <v-menu
+            v-model="menuDateAfter"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="auto">
+            <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                    v-model="lastLogDateAfterInput"
+                    id="last-log-date-after"
+                    v-bind="attrs"
+                    v-on="on"   
+                    hint="YYYY-MM-DD format"
+                    prepend-inner-icon="mdi-calendar"        
+                    outlined
+                    dense
+                ></v-text-field>
+            </template>
+            <v-date-picker
+                v-model="lastLogDateAfterInput"
                 @input="menuDate = false"
                 max="maxDateInput"
                 scrollable
@@ -233,7 +265,7 @@
         </v-menu>
       </v-col>
     </v-row>
-    </v-card>-->
+    </v-card>
     
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
       <h2>User Roles</h2>
@@ -334,6 +366,9 @@ import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
 import app_config from '@/loadconfig';
 
+//const options = {dateStyle: 'short', timeStyle: 'short'};
+//const formatDate = new Intl.DateTimeFormat(undefined, options).format;
+    
 export default {
   name: "UserSearch",
   data() {
@@ -344,6 +379,7 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
+        { text: "Last Log Date", value: "lastlogDate", class: "table-header" },
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
@@ -358,8 +394,10 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
-      lastLogDateFromInput: "",
-      lastLogDateToInput: "",
+      activeFromInput: "",
+      activeToInput: "",
+      lastLogDateAfterInput: "",
+      lastLogDateBeforeInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false,
@@ -377,8 +415,10 @@ export default {
       params = this.addQueryParameter(params, "username", this.usernameInput);
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);      
-      params = this.addQueryParameter(params, "lastLogFrom", this.lastLogDateFromInput);
-      params = this.addQueryParameter(params, "lastLogTo", this.lastLogDateToInput);
+      params = this.addQueryParameter(params, "activeFrom", this.activeFromInput);
+      params = this.addQueryParameter(params, "activeTo", this.activeToInput);
+      params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDateAfterInput);
+      params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDateBeforeInput);
       return params;
     },
     itemsInColumn() {

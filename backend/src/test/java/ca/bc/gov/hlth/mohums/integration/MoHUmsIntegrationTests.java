@@ -258,7 +258,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void searchUsersByLastLogDate() throws Exception {
+    public void searchUsersByActivityDate() throws Exception {
         final List<Object> allUsers = getAll("users");
 
         final List<Object> filteredUsers = webTestClient
@@ -268,8 +268,10 @@ public class MoHUmsIntegrationTests {
                                 .path("/users")
                                 .queryParam("first", "0")
                                 .queryParam("max", "2000")
-                                .queryParam("lastLogFrom", "2021-04-01")
-                                .queryParam("lastLogTo", "2021-04-06")
+//                                .queryParam("activeFrom", "2021-05-11")
+//                                .queryParam("activeTo", "2021-05-17")
+                                .queryParam("activeFrom", "2021-04-16")
+                                .queryParam("activeTo", "2021-04-30")
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -287,7 +289,7 @@ public class MoHUmsIntegrationTests {
     
     
         @Test
-    public void searchUsersByNameAndLastLogDate() throws Exception {
+    public void searchUsersByNameAndActivityDate() throws Exception {
         final List<Object> allUsers = getAll("users");
 
         final List<Object> filteredUsers = webTestClient
@@ -298,8 +300,9 @@ public class MoHUmsIntegrationTests {
                                 .queryParam("first", "0")
                                 .queryParam("max", "2000")
                                 .queryParam("firstName", "Muriel")
-                                .queryParam("lastLogFrom", "2021-04-06")
-                                .queryParam("lastLogTo", "2021-04-10")
+//                                .queryParam("firstName", "Trevor")
+                                .queryParam("activeFrom", "2021-04-16")
+                                .queryParam("activeTo", "2021-04-30")
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -316,7 +319,64 @@ public class MoHUmsIntegrationTests {
     }
     
     @Test
-    public void searchEventsByLastLogDate() throws Exception {
+    public void searchUsersByLastLogBefore() throws Exception {
+        final List<Object> allUsers = getAll("users");
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("first", "0")
+                                .queryParam("max", "2000")
+//                                .queryParam("lastLogAfter", "2021-04-16")
+                                .queryParam("lastLogBefore", "2021-04-30")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(allUsers).isNotEmpty();
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
+    }
+    
+    
+        @Test
+    public void searchUsersByNameAndLastLogAfter() throws Exception {
+        final List<Object> allUsers = getAll("users");
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("first", "0")
+                                .queryParam("max", "2000")
+                                .queryParam("firstName", "Camille")
+//                                .queryParam("firstName", "Trevor")
+                                .queryParam("lastLogAfter", "2021-05-18")
+//                                .queryParam("lastLogBefore", "2021-05-21")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(allUsers).isNotEmpty();
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
+    }
+    
+    @Test
+    public void searchEventsByDate() throws Exception {
 
         final List<Object> eventsByLastLogDateFullMonth = webTestClient
                 .get()

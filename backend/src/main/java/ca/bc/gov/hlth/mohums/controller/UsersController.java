@@ -12,7 +12,17 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,8 +55,10 @@ public class UsersController {
             @RequestParam Optional<String> search,
             @RequestParam Optional<String> username,
             @RequestParam Optional<String> org,
-            @RequestParam Optional<String> lastLogFrom,
-            @RequestParam Optional<String> lastLogTo
+            @RequestParam Optional<String> activeFrom,
+            @RequestParam Optional<String> activeTo,
+            @RequestParam Optional<String> lastLogAfter,
+            @RequestParam Optional<String> lastLogBefore
     ) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -60,67 +72,160 @@ public class UsersController {
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
         ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
+        
         List<Object> users = searchResults.getBody();
-
+        logger.info("size for users - 1st search: " + users.size());
+        
         if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             users = filteredUsers;
             
-            logger.error("size for filteredUsers: " + filteredUsers.size());
+            logger.debug("size for filteredUsers by org: " + filteredUsers.size());
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
         
-        // if LastLog param are present then run the Admin search
-        if ((lastLogFrom.isPresent() || lastLogTo.isPresent()) && !CollectionUtils.isEmpty(users)) {
+        // if activeTo or ActiveFro param are present then run the Events search
+        Integer valueIteration=100;
+        if ((activeFrom.isPresent() || activeTo.isPresent()) && !CollectionUtils.isEmpty(users)) {
             
-            Integer valueIteration=100;
             // Type=LOGIN and dateTo and dateFrom. 
-            MultiValueMap<String, String> queryEventParams = buildQueryEventParam("0", valueIteration.toString(), lastLogFrom, lastLogTo);
+            MultiValueMap<String, String> queryEventForActiveParams = buildQueryEventActiveParam("0", valueIteration.toString(), activeFrom, activeTo);
             
-            List<Object> allEvents= new ArrayList <> ();
-            List<Object> events = (ArrayList) webClientService.getEvents(queryEventParams).getBody();
+            List<Object> allEventsActiveSearch= new ArrayList <> ();
+            List<Object> eventsForActiveSearch = (ArrayList) webClientService.getEvents(queryEventForActiveParams).getBody();
             
             Integer start = 0;
-            while(!events.isEmpty()){
+            while(!eventsForActiveSearch.isEmpty()){
             
-                allEvents.addAll(events);
+                allEventsActiveSearch.addAll(eventsForActiveSearch);
                 
-                if(events.size() == valueIteration){
+                if(eventsForActiveSearch.size() == valueIteration){
                     start = start+valueIteration;
-                    queryEventParams = buildQueryEventParam(start.toString(), valueIteration.toString() , lastLogFrom, lastLogTo);
-                    events = (ArrayList) webClientService.getEvents(queryEventParams).getBody();
+                    queryEventForActiveParams = buildQueryEventActiveParam(start.toString(), valueIteration.toString() , activeFrom, activeTo);
+                    eventsForActiveSearch = (ArrayList) webClientService.getEvents(queryEventForActiveParams).getBody();
                 } else {
                     break;
                 }
             }
-           logger.error("final size for AllEvents: " + allEvents.size());
+           logger.info("final size for allEventsActiveSearch: " + allEventsActiveSearch.size());
 
             // filter user list
-            List<Object> filteredUsersByLastLog = new ArrayList<>();
+            List<Object> filteredUsersByActivity = new ArrayList<>();
             
-            logger.error("size for users: " + users.size());
+            logger.debug("size for users: " + users.size());
             for (Object user : users) {
                 String userId = ((LinkedHashMap) user).get("id").toString();
                 if(!userId.isEmpty()){
-                for (Object event : allEvents) {
+                for (Object event : allEventsActiveSearch) {
                     Object userIdFromEvent = ((LinkedHashMap) event).get("userId");
                       if (userIdFromEvent!= null && userId.equals(userIdFromEvent.toString())){
-                            filteredUsersByLastLog.add(user);
-                            logger.error("userID Matching: " + userId);
+                            filteredUsersByActivity.add(user);
+//                            logger.debug("userID Matching: " + userId);
                             break;
                       }
                     }
                 }
             }
-            logger.error("final size for filteredUsersByLastLog: " + filteredUsersByLastLog.size());
+            logger.info("final size for filteredUsersByActivity: " + filteredUsersByActivity.size());
             
-//          List<Object> filteredUsersByLastLog = users.stream().filter(new FilterUserByLastLogEvent(allEvents)).collect(Collectors.toList());
-           
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByActivity);
+        }
+        
+        // if LastLog param are present then run the Events search to find lastLogDate for each user
+        else if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
+            
+            // 1st option: for every user, query all their events => NO, could 1000s of users
+            // or 2nd option: get all events for last year and filter by date and users
+        
+            // Type=LOGIN and dateFrom=one year from now
+            LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
+//            ZonedDateTime oneYearAgo = ZonedDateTime.now().minus(1, ChronoUnit.YEARS);
+            Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam("0", valueIteration.toString(), oneYearAgoParam, Optional.empty());
+            
+            List<Object> allEventsLastLog= new ArrayList <> ();
+            List<Object> eventsLastLog = (ArrayList) webClientService.getEvents(queryEventLastLogParams).getBody();
+            
+            Integer start = 0;
+            while((eventsLastLog != null && !eventsLastLog.isEmpty())){
+            
+                allEventsLastLog.addAll(eventsLastLog);
+                
+                if(eventsLastLog.size() == valueIteration){
+                    start = start+valueIteration;
+                    queryEventLastLogParams = buildQueryEventActiveParam(start.toString(), valueIteration.toString() , lastLogAfter, lastLogBefore);
+                    eventsLastLog = (ArrayList) webClientService.getEvents(queryEventLastLogParams).getBody();
+                } else {
+                    break;
+                }
+            }
+            logger.info("final size for AllEventsLastLog: " + allEventsLastLog.size());
+
+            // filter user list
+            List<Object> filteredUsersByLastLog = new ArrayList<>();
+            
+            logger.debug("size of users before filteing by last Log Date: " + users.size());
+            for (Object user : users) {
+                String userId = ((LinkedHashMap) user).get("id").toString();
+                if(!userId.isEmpty()){
+                    
+                    // Filter only the events for the current user (TODO better way to do this will be to build a mapof Event per users)
+                    Predicate<Object> byUserId = (event -> {
+                        Object userIdFromEvent = ((LinkedHashMap) event).get("userId");
+                        return userIdFromEvent!= null && userIdFromEvent.equals(userId);
+                            });
+   
+                    var eventsByUserID = allEventsLastLog.stream().filter(byUserId)
+                                    .collect(Collectors.toList());
+                
+                    logger.info("number of events By UserID: " + eventsByUserID.size());
+                    
+                    // sort list of events by time, descending
+                    Comparator compareEventTime = new Comparator<Object> () {
+                            @Override
+                            public int compare(Object event1, Object event2) {
+                                Long time1 = (Long)(((LinkedHashMap) event1).get("time"));
+                                Long time2 = (Long)(((LinkedHashMap) event2).get("time"));
+                                Instant a = Instant.ofEpochMilli(time1);
+                                Instant b = Instant.ofEpochMilli(time2);
+                                return b.compareTo(a);
+                    }};
+                    Collections.sort(eventsByUserID, compareEventTime);
+                  
+                    // Verify if Last Log date match the criteria
+                    // add lastLogDate to user. Date will be formatted in Frontend
+                    if (!eventsByUserID.isEmpty()){
+                        LocalDate lastLogAfterDate, lastLogBeforeDate ;
+                        Object userLastLogTime = ((LinkedHashMap)eventsByUserID.get(0)).get("time");
+                        LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
+                        
+                        if(lastLogAfter.isPresent()){
+                            lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            if(lastLogAfterDate.isBefore(userLastLogLocalDate)) {
+                                // Should we put the parsed LocalDate in the user instead?
+                                ((LinkedHashMap) user).put("lastLogDate", userLastLogTime);
+                                filteredUsersByLastLog.add(user);
+                                logger.info("user added: " + userId);
+                            }
+                        } else if(lastLogBefore.isPresent()){
+                            lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//                            lastLogToDate = LocalDate.parse(lastLogTo.get());
+                            if(lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
+                                ((LinkedHashMap) user).put("lastLogDate", userLastLogTime );
+                                filteredUsersByLastLog.add(user);
+                                logger.info("user added: " + userId);
+                            }
+                        }
+                    }
+                }
+            }
+            logger.info("final size for filteredUsersByLastLog: " + filteredUsersByLastLog.size());
+            
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
         }
         
-        // Need to add LAst Logged In Date to each user
-        // How Query a cached map that is 
+        // Need to add Last Logged In Date to all users ??
+        
         return searchResults;
     }
 
@@ -277,14 +382,14 @@ public class UsersController {
 
     }
 
-    private MultiValueMap<String, String> buildQueryEventParam (String start, String nbElementMax, Optional<String> lastLogFrom, Optional<String> lastLogTo){
+    private MultiValueMap<String, String> buildQueryEventActiveParam (String start, String nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
     
             MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
             queryEventParams.add("type", "LOGIN");
             queryEventParams.add("first", start);
             queryEventParams.add("max", nbElementMax);
-            lastLogFrom.ifPresent(lastLogFromValue -> queryEventParams.add("dateFrom", lastLogFromValue));
-            lastLogTo.ifPresent(lastLogToValue -> queryEventParams.add("dateTo", lastLogToValue));
+            dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
+            dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
             return queryEventParams;
     }
 }
