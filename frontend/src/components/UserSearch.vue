@@ -1,3 +1,4 @@
+<!--suppress XmlInvalidId -->
 <template>
   <div>
     <!-- Basic Search -->
@@ -262,7 +263,7 @@
               <v-spacer/>
               <download-csv
                   :data="searchResults"
-                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email', 'lastLogDate']"
+                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email', 'role', 'lastLogDate']"
               >
                 <v-btn id="csv-button" class="secondary" small>Download results</v-btn>
               </download-csv>
@@ -295,6 +296,7 @@ export default {
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
         { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
+        { text: "Role", value: "role", class: "table-header" },
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
@@ -424,21 +426,43 @@ export default {
           .find(client => this.clientId === client.id).name;
       return role;
     },
+    // Return only the users having the selected roles. Also add role information to the users.
     filterUsersByRole: function(searchResults, maxSearch) {
-      let roleRequests = this.selectedRoles.map(
+      let usersInRoleRequests = this.selectedRoles.map(
         clientRole => ClientsRepository
           .getUsersInRole(clientRole.clientId, clientRole.name, maxSearch)
+          .then(function (result) {
+            // The result doesn't include the role, so we include a reference to it here to use later.
+            return {'role': clientRole.name, 'result': result}
+          })
           .catch(error => {
             this.handleError(`Search failed for role ${clientRole.name}`, error);
           })
       );
-      return Promise.all(roleRequests)
-        .then(responses => responses.flatMap(
-          response => response.data.map(user => user.id)
-        ))
-        .then(userIds => searchResults.filter(
-          user => userIds.includes(user.id)
-        ));
+
+      return Promise.all(usersInRoleRequests)
+        .then(function (responses) {
+          let userIdsAndRoles = responses.flatMap(
+              response => response.result.data.map(function (user) {
+                return {'id': user.id, 'role': response.role}
+              })
+          );
+          for (let searchResult of searchResults) {
+            for (let user of userIdsAndRoles) {
+              if (searchResult.id == user.id) {
+                if (searchResult.role) {
+                  searchResult.role = searchResult.role + ", " + user.role;
+                } else {
+                  searchResult.role = user.role;
+                }
+              }
+            }
+          }
+          let userIds = userIdsAndRoles.map(userIdAndRole => userIdAndRole.id);
+          return searchResults.filter(
+              user => userIds.includes(user.id)
+          );
+        });
     },
     setSearchResults(results) {
       const maxRes = this.maxResults;
