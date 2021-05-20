@@ -106,99 +106,7 @@
     </v-row>
     
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
-      <h2>Activity Log</h2>
-      <v-row>
-      <v-col class="col-6">
-        <label for="adv-search-org">
-          Active after (From)
-        </label>
-<!--        <v-date-picker
-            id="last-log-date"
-            v-model="lastLogDate"
-            item-value="id"
-            max="2021-04-20"
-            outlined
-            dense
-        ></v-date-picker>-->
-      
-        <v-menu
-            v-model="menuActivityFrom"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="auto"
-        >
-            <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                    v-model="activeFromInput"
-                    id="active-from"
-                    v-bind="attrs"
-                    v-on="on"   
-                    hint="YYYY-MM-DD format"
-                    prepend-inner-icon="mdi-calendar"        
-                    outlined
-                    dense
-                ></v-text-field>
-            </template>
-            <v-date-picker
-                v-model="activeFromInput"
-                @input="menuDate = false"
-                max="maxDateInput"
-                scrollable
-                elevation="10"
-            ></v-date-picker>
-        </v-menu>
-      </v-col>
-       
-      
-       <v-col class="col-6">
-        <label for="adv-search-org">
-          Active before (To)
-        </label>
-<!--        <v-date-picker
-            id="last-log-date"
-            v-model="lastLogDate"
-            item-value="id"
-            max="2021-04-20"
-            outlined
-            dense
-        ></v-date-picker>-->
-      
-        <v-menu
-            v-model="menuActivityTo"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="auto"
-        >
-            <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                    v-model="activeToInput"
-                    id="active-to"
-                    v-bind="attrs"
-                    v-on="on"   
-                    hint="YYYY-MM-DD format"
-                    prepend-inner-icon="mdi-calendar"        
-                    outlined
-                    dense
-                ></v-text-field>
-            </template>
-            <v-date-picker
-                v-model="activeToInput"
-                @input="menuDate = false"
-                max="maxDateInput"
-                scrollable
-                elevation="10"
-            ></v-date-picker>
-        </v-menu>
-      </v-col>
-    </v-row>
-    </v-card>
-    
-    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
-      <h2>Last Log Date</h2>
+      <h2>Last Log Date </h2>
       <v-row>
        <v-col class="col-6">
         <label for="adv-search-org">
@@ -232,7 +140,14 @@
             ></v-date-picker>
         </v-menu>
       </v-col>
-          <v-col class="col-6">
+      <v-col class="col-6">
+      </v-col>
+      <v-col class="col-6">
+        <label for="adv-search-org"> OR </label>
+      </v-col>
+      <v-col class="col-6">
+      </v-col> 
+      <v-col class="col-6">
         <label for="adv-search-org">
           Last Log Date After 
         </label>
@@ -347,7 +262,7 @@
               <v-spacer/>
               <download-csv
                   :data="searchResults"
-                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email']"
+                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email', 'lastLogDate']"
               >
                 <v-btn id="csv-button" class="secondary" small>Download results</v-btn>
               </download-csv>
@@ -379,7 +294,7 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
-        { text: "Last Log Date", value: "lastlogDate", class: "table-header" },
+        { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
       organizations: organizations,
@@ -394,8 +309,6 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
-      activeFromInput: "",
-      activeToInput: "",
       lastLogDateAfterInput: "",
       lastLogDateBeforeInput: "",
       searchResults: [],
@@ -414,9 +327,7 @@ export default {
       params = this.addQueryParameter(params, "firstName", this.firstNameInput);
       params = this.addQueryParameter(params, "username", this.usernameInput);
       params = this.addQueryParameter(params, "email", this.emailInput);
-      params = this.addQueryParameter(params, "org", this.organizationInput);      
-      params = this.addQueryParameter(params, "activeFrom", this.activeFromInput);
-      params = this.addQueryParameter(params, "activeTo", this.activeToInput);
+      params = this.addQueryParameter(params, "org", this.organizationInput);    
       params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDateAfterInput);
       params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDateBeforeInput);
       return params;
