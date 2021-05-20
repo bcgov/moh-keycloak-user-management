@@ -148,25 +148,19 @@ public class UsersController {
                         
                         Object userLastLogTime = ((LinkedHashMap)eventsByUserID.get(0)).get("time");
                         LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
-                        DateTimeFormatter dateTimeFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm a")
-                                        .withZone(ZoneId.of("America/Los_Angeles"));
                         
                         if(lastLogAfter.isPresent()){
                             lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                             if(lastLogAfterDate.isBefore(userLastLogLocalDate)) {
-                                // Should we put the parsed userLastLogDate in the user instead?
-//                              ((LinkedHashMap) user).put("lastLogDate", userLastLogTime);
-//                               ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                                ((LinkedHashMap) user).put("lastLogDate", dateTimeFormater.format(Instant.ofEpochMilli((Long) userLastLogTime)));
+                                //Or we could send the time as is to the Frontend, without formating
+                               ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                                 filteredUsersByLastLog.add(user);
                                 logger.info("user added: " + userId);
                             }
                         } else if(lastLogBefore.isPresent()){
                             lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                             if(lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
-//                                ((LinkedHashMap) user).put("lastLogDate", userLastLogTime );
-//                                ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                                ((LinkedHashMap) user).put("lastLogDate", dateTimeFormater.format(Instant.ofEpochMilli((Long) userLastLogTime)));
+                                ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                                 filteredUsersByLastLog.add(user);
                                 logger.info("user added: " + userId);
                             }
