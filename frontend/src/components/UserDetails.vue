@@ -79,24 +79,6 @@
             <label for="notes">Notes</label>
             <v-textarea outlined dense id="notes" v-model="access_team_notes" maxlength="255" />
 
-            <label for="enabled-radio">Lockout Status</label>
-            <v-radio-group id="enabled-radio" v-model="computedLockout" row height="1">
-              <v-radio v-for="n in LOCK_STATES" :key="n" :label="n" :value="n"></v-radio>
-            </v-radio-group>
-
-            <label
-              for="lockout-reason"
-              v-bind:class="[enabled ? 'disabled' : 'required']"
-            >Lockout Reason</label>
-            <v-text-field
-              dense
-              outlined
-              id="lockout-reason"
-              v-model="lockout_reason"
-              :disabled="enabled"
-              :required="!enabled"
-              :rules="[v => enabled ? true : ((!!v && typeof v === 'string') || (Array.isArray(v) && !!v[0])) || 'Lockout Reason is required' ]"
-            />
           </v-form>
         </v-col>
         <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef">
@@ -130,14 +112,11 @@ export default {
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
-      ],
-      ENABLED: "Enabled",
-      LOCKED: "Locked",
-      REVOKED: "Revoked"
+      ]
     };
   },
   async created() {
-    //TODO error handling
+    // TODO error handling
     this.$store.commit("user/resetState");
     if (this.userId) {
       await this.getUser();
@@ -155,8 +134,8 @@ export default {
     }
   },
   filters: {
-    // the IDP name in keycloak doesn't always match what's known by users
-    // format to match standard naming or capitalization
+    // The IDP alias in keycloak doesn't always match what's known by users
+    // Formatted to match standard naming conventions
     formatIdentityProvider: function(idp) {
       let formattedIdentityProviders = {
         'phsa': 'Health Authority',
@@ -169,37 +148,6 @@ export default {
     }
   },
   computed: {
-    LOCK_STATES() {
-      return [this.ENABLED, this.REVOKED, this.LOCKED];
-    },
-    computedLockout: {
-      get: function() {
-        if (this.enabled) {
-          return this.ENABLED;
-        } else {
-          if (this.revoked) {
-            return this.REVOKED;
-          } else {
-            return this.LOCKED;
-          }
-        }
-      },
-      set: function(newValue) {
-        if (newValue === this.ENABLED) {
-          this.enabled = true;
-          this.revoked = false;
-          this.lockout_reason = "";
-        } else if (newValue === this.REVOKED) {
-          this.enabled = false;
-          this.revoked = true;
-        } else if (newValue === this.LOCKED) {
-          this.enabled = false;
-          this.revoked = false;
-        } else {
-          throw Error(`Unrecognized lock state '${newValue}'`);
-        }
-      }
-    },
     user: {
       get() {
         return this.$store.state.user;
@@ -258,7 +206,7 @@ export default {
     },
     org_details: {
       get() {
-        //Keycloak returns attributes as arrays which doesn't work with the autocomplete
+        // Keycloak returns attributes as arrays which doesn't work with the autocomplete
         let org = this.$store.state.user.attributes.org_details;
         if (Array.isArray(org)) {
           return org[0];
@@ -268,22 +216,6 @@ export default {
       },
       set(org_details) {
         this.$store.commit("user/setOrgDetails", org_details);
-      }
-    },
-    lockout_reason: {
-      get() {
-        return this.$store.state.user.attributes.lockout_reason;
-      },
-      set(lockout_reason) {
-        this.$store.commit("user/setLockoutReason", lockout_reason);
-      }
-    },
-    revoked: {
-      get() {
-        return this.$store.state.user.attributes.revoked;
-      },
-      set(revoked) {
-        this.$store.commit("user/setRevoked", revoked);
       }
     },
     access_team_notes: {
