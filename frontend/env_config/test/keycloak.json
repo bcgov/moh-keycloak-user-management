@@ -1,6 +1,6 @@
 {
     "realm": "moh_applications",
-    "auth-server-url": "https://common-logon-dev.hlth.gov.bc.ca/auth/",
+    "auth-server-url": "https://common-logon-test.hlth.gov.bc.ca/auth/",
     "ssl-required": "none",
     "resource": "USER-MANAGEMENT",
     "public-client": true,
