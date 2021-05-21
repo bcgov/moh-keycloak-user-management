@@ -109,8 +109,8 @@ public class WebClientService {
     }
 
     // Events
-    public ResponseEntity<Object> getEvents(MultiValueMap<String, String> allParams) {
-        return get("/events", allParams);
+    public ResponseEntity<List<Object>> getEvents(MultiValueMap<String, String> allParams) {
+        return getList("/events", allParams);
     }
 
     public ResponseEntity<Object> getAdminEvents(MultiValueMap<String, String> allParams) {

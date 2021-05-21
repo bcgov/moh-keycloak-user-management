@@ -1,12 +1,15 @@
 package ca.bc.gov.hlth.mohums.controller;
 
-import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
+import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -14,18 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 @RestController
 public class UsersController {
@@ -78,104 +76,60 @@ public class UsersController {
             logger.debug("size for filteredUsers by org: " + filteredUsers.size());
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
-        
-        // if LastLog param are present then run the Events search to find lastLogDate for each user
-       Integer valueIteration=100;
+
        if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
-            
-            // 1st option: for every user, query all their events => NO, could 1000s of users
-            // or 2nd option: get all events for last year and filter by date and users
-        
-            logger.debug("Start of search+filter all events by user for last Log Date: " + LocalDateTime.now());
-            
-            List<Object> allEventsLastLog= new ArrayList <> ();
-            // Type=LOGIN and dateFrom=one year from now
+
+            List<LinkedHashMap<String, Object>> allEventsLastLog= new ArrayList <> ();
             LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
             Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            
-            MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam("0", valueIteration.toString(), oneYearAgoParam, Optional.empty());
-            List<Object> eventsLastLog = (ArrayList) webClientService.getEvents(queryEventLastLogParams).getBody();
-            
-            Integer start = 0;
-            while(eventsLastLog != null && !eventsLastLog.isEmpty()){
-            
-                allEventsLastLog.addAll(eventsLastLog);
-                
-                if(eventsLastLog.size() == valueIteration){
-                    start = start+valueIteration;
-                    queryEventLastLogParams = buildQueryEventActiveParam(start.toString(), valueIteration.toString(), oneYearAgoParam, Optional.empty());
-                    eventsLastLog = (ArrayList) webClientService.getEvents(queryEventLastLogParams).getBody();
-                } else {
-                    break;
-                }
-            }
-            logger.info("final size for AllEventsLastLog: " + allEventsLastLog.size());
 
-            // filter user list;
-            logger.debug("numbers of users before filtering by last Log Date: " + users.size());
-            
-            List<Object> filteredUsersByLastLog = new ArrayList<>();
+           int start = 0;
+           int maxEvents = 100;
+           List<LinkedHashMap<String, Object>> eventsLastLog;
+           do {
+               MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
+               eventsLastLog = (List<LinkedHashMap<String, Object>>) (Object) webClientService.getEvents(queryEventLastLogParams).getBody();
+               allEventsLastLog.addAll(eventsLastLog);
+               start += maxEvents;
+           } while (!CollectionUtils.isEmpty(eventsLastLog));
+
+           Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
+                   .filter(event -> event.get("userId") != null)
+                   .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));
+
+           List<Object> filteredUsersByLastLog = new ArrayList<>();
             for (Object user : users) {
                 String userId = ((LinkedHashMap) user).get("id").toString();
-                if(!userId.isEmpty()){
-                    
-                    // Filter only the events for the current user 
-                    // TODO better way to do this will be to build a map of Event per users
-                    Predicate<Object> byUserId = (event -> {
-                        Object userIdFromEvent = ((LinkedHashMap) event).get("userId");
-                        return userIdFromEvent!= null && userIdFromEvent.equals(userId);
-                            });
-   
-                    var eventsByUserID = allEventsLastLog.stream().filter(byUserId)
-                                    .collect(Collectors.toList());
-                
-                    logger.debug("number of events By UserID: " + eventsByUserID.size());
-                    
-                    // sort list of events by time, descending
-                    Comparator compareEventTime = (Comparator<Object>) (Object event1, Object event2) -> {
-                        Long time1 = (Long)(((LinkedHashMap) event1).get("time"));
-                        Long time2 = (Long)(((LinkedHashMap) event2).get("time"));
-                        Instant a = Instant.ofEpochMilli(time1);
-                        Instant b = Instant.ofEpochMilli(time2);
-                        return b.compareTo(a);
-                    };
-                    Collections.sort(eventsByUserID, compareEventTime);
-                  
-                    // Verify if Last Log date match the criteria
-                    // add lastLogDate to user. Date will be formatted in Frontend
-                    if (!eventsByUserID.isEmpty()){
+                if (!userId.isEmpty()){
+
+                    if (!CollectionUtils.isEmpty(loginEventsByUser.get(userId))) {
                         LocalDate lastLogAfterDate, lastLogBeforeDate;
-                        
-                        Object userLastLogTime = ((LinkedHashMap)eventsByUserID.get(0)).get("time");
+
+                        Object userLastLogTime = loginEventsByUser.get(userId).stream()
+                                .max(Comparator.comparing(o -> (Long) ((LinkedHashMap) o).get("time")))
+                                .map(o -> ((LinkedHashMap) o).get("time")).get();
+
                         LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
-                        
+                        //Or we could send the time as is to the Frontend, without formatting
+                        ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
                         if(lastLogAfter.isPresent()){
                             lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                             if(lastLogAfterDate.isBefore(userLastLogLocalDate)) {
-                                //Or we could send the time as is to the Frontend, without formating
-                               ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                                 filteredUsersByLastLog.add(user);
-                                logger.info("user added: " + userId);
                             }
                         } else if(lastLogBefore.isPresent()){
                             lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                             if(lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
-                                ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                                 filteredUsersByLastLog.add(user);
-                                logger.info("user added: " + userId);
                             }
                         }
                     }
                 }
             }
-            
-            logger.debug("End of search+filter all events by user for last Log Date: " + LocalDateTime.now());
-            
+
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
-            logger.info("final size for filteredUsersByLastLog: " + filteredUsersByLastLog.size());
         }
-        
-        // Need to add Last Logged In Date for all users ??
         
         return searchResults;
     }
@@ -333,12 +287,12 @@ public class UsersController {
 
     }
 
-    private MultiValueMap<String, String> buildQueryEventActiveParam (String start, String nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
     
             MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
             queryEventParams.add("type", "LOGIN");
-            queryEventParams.add("first", start);
-            queryEventParams.add("max", nbElementMax);
+            queryEventParams.add("first", String.valueOf(start));
+            queryEventParams.add("max", String.valueOf(nbElementMax));
             dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
             dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
             return queryEventParams;

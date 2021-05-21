@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 public class EventsController {
 
@@ -17,7 +19,7 @@ public class EventsController {
     }
 
     @GetMapping("/events")
-    public ResponseEntity<Object> getEvents(@RequestParam MultiValueMap<String, String> allParams) {
+    public ResponseEntity<List<Object>> getEvents(@RequestParam MultiValueMap<String, String> allParams) {
         return webClientService.getEvents(allParams);
     }
 
