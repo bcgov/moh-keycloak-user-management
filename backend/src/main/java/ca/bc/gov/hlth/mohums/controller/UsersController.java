@@ -103,7 +103,7 @@ public class UsersController {
                 
                 if(eventsLastLog.size() == valueIteration){
                     start = start+valueIteration;
-                    queryEventLastLogParams = buildQueryEventActiveParam(start.toString(), valueIteration.toString() , lastLogAfter, lastLogBefore);
+                    queryEventLastLogParams = buildQueryEventActiveParam(start.toString(), valueIteration.toString(), oneYearAgoParam, Optional.empty());
                     eventsLastLog = (ArrayList) webClientService.getEvents(queryEventLastLogParams).getBody();
                 } else {
                     break;
