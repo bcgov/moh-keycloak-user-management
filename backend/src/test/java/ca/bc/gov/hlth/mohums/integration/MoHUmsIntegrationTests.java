@@ -315,56 +315,6 @@ public class MoHUmsIntegrationTests {
     }
     
     @Test
-    public void searchEventsByDate() throws Exception {
-
-        final List<Object> eventsByLastLogDateFullMonth = webTestClient
-                .get()
-                .uri(
-                        uriBuilder -> uriBuilder
-                                .path("/events")
-                                .queryParam("type", "LOGIN")
-//                                .queryParam("client", "HEM")
-                                .queryParam("first", "0")
-                                .queryParam("max", "1000")
-                                .queryParam("dateFrom", "2021-04-01")
-                                .queryParam("dateTo", "2021-04-10")
-                                .build()
-                )
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Object.class)
-                .returnResult()
-                .getResponseBody();
-        
-        final List<Object> eventsByLastLogDateHalfMonth = webTestClient
-                .get()
-                .uri(
-                        uriBuilder -> uriBuilder
-                                .path("/events")
-                                .queryParam("type", "LOGIN")
-                                .queryParam("client", "HEM")
-                                .queryParam("first", "0")
-                                .queryParam("max", "100")
-                                .queryParam("dateFrom", "2021-04-15")
-                                .queryParam("dateTo", "2021-04-31")
-                                .build()
-                )
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Object.class)
-                .returnResult()
-                .getResponseBody();
-
-        Assertions.assertThat(eventsByLastLogDateFullMonth).isNotEmpty();
-        Assertions.assertThat(eventsByLastLogDateHalfMonth).isNotEmpty();
-        Assertions.assertThat(eventsByLastLogDateFullMonth).containsAll(eventsByLastLogDateHalfMonth);
-        Assertions.assertThat(eventsByLastLogDateFullMonth.size()).isGreaterThan(eventsByLastLogDateHalfMonth.size());
-    }
-    
-    
-    @Test
     public void lookupUserAuthorized() throws Exception {
         webTestClient
                 .get()
