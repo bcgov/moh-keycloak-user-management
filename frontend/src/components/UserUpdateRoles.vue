@@ -84,7 +84,42 @@
       <div class="my-6" v-if="selectedClientId">
         <v-btn id="save-user-roles" class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
       </div>
+      <v-divider class="sub-permissions"></v-divider>
+      <h2>SFDS Permissions</h2>
+      <v-row class="right-gutters">
+        <v-col class="col-4">
+          <label>Uses</label>
+          <v-autocomplete
+              id="sfds-uses"
+              outlined
+              dense
+              :items="sfdsUses"
+              placeholder="Select a use"
+          ></v-autocomplete>
+        </v-col>
+        <v-col class="col-4">
+          <label>Mailboxes</label>
+          <v-autocomplete
+              id="sfds-mailboxes"
+              outlined
+              dense
+              :items="sfdsMailboxes"
+              placeholder="Select a mailbox"
+          ></v-autocomplete>
+        </v-col>
+        <v-col class="col-4">
+          <label>Permissions</label>
+          <v-select
+              id="sfds-permissions"
+              outlined
+              dense
+              :items="sfdsPermissions"
+              placeholder="Select a permission set"
+          ></v-select>
+        </v-col>
+      </v-row>
     </div>
+
   </v-card>
 </template>
 
@@ -101,7 +136,10 @@ export default {
       selectedClientId: null,
       clientRoles: [],
       effectiveClientRoles: [],
-      selectedRoles: []
+      selectedRoles: [],
+      sfdsMailboxes: ['HSCIS', 'BCMA', 'PHC', 'HOOPC'],
+      sfdsUses: ['bcma', 'hscis', 'phc', 'wda', 'hoopc', 'grp'],
+      sfdsPermissions: ['get', 'send', 'get-send', 'get-delete', 'get-send-delete']
     };
   },
   async created() {
@@ -221,6 +259,12 @@ export default {
 </script>
 
 <style>
+.sub-permissions {
+  margin-bottom: 20px
+}
+.right-gutters .col {
+  padding: 10px 12px 10px 10px;
+}
 .roles-checkbox {
   margin: 0px 0px 12px 0px;
   padding: 8px 0px 0px 0px;
