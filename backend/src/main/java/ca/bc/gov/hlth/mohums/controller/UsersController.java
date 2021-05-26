@@ -4,8 +4,6 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +29,6 @@ public class UsersController {
     private final WebClientService webClientService;
 
     private final String vanityHostname;
-
-    private final Logger logger = LoggerFactory.getLogger(UsersController.class);
 
     public UsersController(WebClientService webClientService, @Value("${config.vanity-hostname}") String vanityHostname) {
         this.webClientService = webClientService;
@@ -67,13 +63,11 @@ public class UsersController {
         ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
 
         List<Object> users = searchResults.getBody();
-        logger.info("size for users - 1st search: " + users.size());
 
         if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             users = filteredUsers;
 
-            logger.debug("size for filteredUsers by org: " + filteredUsers.size());
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
 
@@ -88,7 +82,7 @@ public class UsersController {
             List<LinkedHashMap<String, Object>> eventsLastLog;
             do {
                 MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
-                eventsLastLog = (List<LinkedHashMap<String, Object>>) (Object) webClientService.getEvents(queryEventLastLogParams).getBody();
+                eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
                 allEventsLastLog.addAll(eventsLastLog);
                 start += maxEvents;
             } while (!CollectionUtils.isEmpty(eventsLastLog));
@@ -103,24 +97,22 @@ public class UsersController {
                 if (!userId.isEmpty()){
 
                     if (!CollectionUtils.isEmpty(loginEventsByUser.get(userId))) {
-                        LocalDate lastLogAfterDate, lastLogBeforeDate;
 
                         Object userLastLogTime = loginEventsByUser.get(userId).stream()
                                 .max(Comparator.comparing(o -> (Long) ((LinkedHashMap) o).get("time")))
                                 .map(o -> ((LinkedHashMap) o).get("time")).get();
 
-                        LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
-                        //Or we could send the time as is to the Frontend, without formatting
-                        ((LinkedHashMap) user).put("lastLogDate", userLastLogLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                        ((LinkedHashMap) user).put("lastLogDate", userLastLogTime);
 
-                        if(lastLogAfter.isPresent()){
-                            lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                            if(lastLogAfterDate.isBefore(userLastLogLocalDate)) {
+                        LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
+                        if (lastLogAfter.isPresent()) {
+                            LocalDate lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            if (lastLogAfterDate.isBefore(userLastLogLocalDate)) {
                                 filteredUsersByLastLog.add(user);
                             }
-                        } else if(lastLogBefore.isPresent()){
-                            lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                            if(lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
+                        } else if (lastLogBefore.isPresent()) {
+                            LocalDate lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            if (lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
                                 filteredUsersByLastLog.add(user);
                             }
                         }

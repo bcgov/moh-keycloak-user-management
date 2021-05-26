@@ -92,7 +92,7 @@
         />
       </v-col>
       <v-col class="col-6">
-        <label for="adv-search-org">
+        <label for="org-details">
           Organization
         </label>
         <v-autocomplete
@@ -104,84 +104,52 @@
             dense
         ></v-autocomplete>
       </v-col>
-    </v-row>
-    
-    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
-      <h2>Last Log Date </h2>
-      <v-row>
-       <v-col class="col-6">
-        <label for="adv-search-org">
-          Last Log Date Before 
+      <v-col class="col-2" >
+        <label for="last-log-date-radio">
+          Last logged-in
         </label>
-        <v-menu
-            v-model="menuDateBefore"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="auto">
+        <v-radio-group v-model="radios" row dense style="margin: 0px">
+          <v-radio
+              id="last-log-date-radio"
+              label="Before"
+              value="Before"
+          ></v-radio>
+          <v-radio
+              label="After"
+              value="After"
+          ></v-radio>
+        </v-radio-group>
+      </v-col>
+      <v-col class="col-4">
+        <label for="last-log-date">Date</label>
+          <v-menu
+              :close-on-content-click="false"
+              :nudge-right="40"
+              transition="scale-transition"
+              offset-y
+              min-width="auto">
             <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                    v-model="lastLogDateBeforeInput"
-                    id="last-log-date-before"
-                    v-bind="attrs"
-                    v-on="on"   
-                    hint="YYYY-MM-DD format"
-                    prepend-inner-icon="mdi-calendar"        
-                    outlined
-                    dense
-                ></v-text-field>
+              <v-text-field
+                  v-model="lastLogDate"
+                  id="last-log-date"
+                  v-bind="attrs"
+                  v-on="on"
+                  hint="YYYY-MM-DD format"
+                  prepend-inner-icon="mdi-calendar"
+                  outlined
+                  dense
+              ></v-text-field>
             </template>
             <v-date-picker
-                v-model="lastLogDateBeforeInput"
+                v-model="lastLogDate"
                 @input="menuDate = false"
                 max="maxDateInput"
                 scrollable
                 elevation="10"
             ></v-date-picker>
-        </v-menu>
-      </v-col>
-      <v-col class="col-6">
-      </v-col>
-      <v-col class="col-6">
-        <label for="adv-search-org"> OR </label>
-      </v-col>
-      <v-col class="col-6">
-      </v-col> 
-      <v-col class="col-6">
-        <label for="adv-search-org">
-          Last Log Date After 
-        </label>
-        <v-menu
-            v-model="menuDateAfter"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="auto">
-            <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                    v-model="lastLogDateAfterInput"
-                    id="last-log-date-after"
-                    v-bind="attrs"
-                    v-on="on"   
-                    hint="YYYY-MM-DD format"
-                    prepend-inner-icon="mdi-calendar"        
-                    outlined
-                    dense
-                ></v-text-field>
-            </template>
-            <v-date-picker
-                v-model="lastLogDateAfterInput"
-                @input="menuDate = false"
-                max="maxDateInput"
-                scrollable
-                elevation="10"
-            ></v-date-picker>
-        </v-menu>
+          </v-menu>
       </v-col>
     </v-row>
-    </v-card>
     
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
       <h2>User Roles</h2>
@@ -282,8 +250,8 @@ import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
 import app_config from '@/loadconfig';
 
-//const options = {dateStyle: 'short', timeStyle: 'short'};
-//const formatDate = new Intl.DateTimeFormat(undefined, options).format;
+const options = {dateStyle: 'short'};
+const formatDate = new Intl.DateTimeFormat(undefined, options).format;
     
 export default {
   name: "UserSearch",
@@ -311,12 +279,12 @@ export default {
       usernameInput: "",
       emailInput: "",
       organizationInput: "",
-      lastLogDateAfterInput: "",
-      lastLogDateBeforeInput: "",
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false,
-      newTab: false
+      newTab: false,
+      radios: "",
+      lastLogDate: ""
     };
   },
   async created() {
@@ -329,9 +297,12 @@ export default {
       params = this.addQueryParameter(params, "firstName", this.firstNameInput);
       params = this.addQueryParameter(params, "username", this.usernameInput);
       params = this.addQueryParameter(params, "email", this.emailInput);
-      params = this.addQueryParameter(params, "org", this.organizationInput);    
-      params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDateAfterInput);
-      params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDateBeforeInput);
+      params = this.addQueryParameter(params, "org", this.organizationInput);
+      if (this.radios == "Before") {
+        params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDate);
+      } else {
+        params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDate);
+      }
       return params;
     },
     itemsInColumn() {
@@ -377,6 +348,11 @@ export default {
         )).data;
         if (isSearchByRole) {
           results = await this.filterUsersByRole(results, maxSearch);
+        }
+        for (let e of results) {
+          if (e.lastLogDate) {
+            e.lastLogDate = formatDate(e.lastLogDate);
+          }
         }
         this.setSearchResults(results);
       }
