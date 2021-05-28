@@ -24,6 +24,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +55,12 @@ public class MoHUmsIntegrationTests {
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
         jwt = getKcAccessToken();
+        
+                 webTestClient = webTestClient
+                            .mutate()
+                            .responseTimeout(Duration.ofSeconds(60))
+                            .build();
+                 
     }
 
     private String getKcAccessToken() throws IOException, InterruptedException, ParseException {
@@ -166,7 +175,7 @@ public class MoHUmsIntegrationTests {
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("org", "00001763")
+                                .queryParam("org", "00000010")
                                 .queryParam("first", "0")
                                 .queryParam("max", "10000")
                                 .build()
@@ -248,6 +257,63 @@ public class MoHUmsIntegrationTests {
                 .expectBodyList(Object.class).hasSize(0);
     }
 
+    @Test
+    public void searchUsersByLastLogBefore() throws Exception {
+        final List<Object> allUsers = getAll("users");
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("first", "0")
+                                .queryParam("max", "2000")
+//                                .queryParam("lastLogAfter", "2021-04-16")
+                                .queryParam("lastLogBefore", "2021-04-30")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(allUsers).isNotEmpty();
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
+    }
+    
+    
+        @Test
+    public void searchUsersByNameAndLastLogAfter() throws Exception {
+        final List<Object> allUsers = getAll("users");
+
+        final List<Object> filteredUsers = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("first", "0")
+                                .queryParam("max", "2000")
+                                .queryParam("firstName", "Camille")
+//                                .queryParam("firstName", "Trevor")
+                                .queryParam("lastLogAfter", "2021-05-18")
+//                                .queryParam("lastLogBefore", "2021-04-14")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(allUsers).isNotEmpty();
+        Assertions.assertThat(filteredUsers).isNotEmpty();
+        Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
+    }
+    
     @Test
     public void lookupUserAuthorized() throws Exception {
         webTestClient

@@ -1,22 +1,27 @@
 package ca.bc.gov.hlth.mohums.controller;
 
-import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
+import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.springframework.util.CollectionUtils;
 
 @RestController
 public class UsersController {
@@ -29,7 +34,7 @@ public class UsersController {
         this.webClientService = webClientService;
         this.vanityHostname = vanityHostname;
     }
-    
+
     @GetMapping("/users")
     public ResponseEntity<List<Object>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
@@ -40,7 +45,9 @@ public class UsersController {
             @RequestParam Optional<Integer> max,
             @RequestParam Optional<String> search,
             @RequestParam Optional<String> username,
-            @RequestParam Optional<String> org
+            @RequestParam Optional<String> org,
+            @RequestParam Optional<String> lastLogAfter,
+            @RequestParam Optional<String> lastLogBefore
     ) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -54,12 +61,66 @@ public class UsersController {
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
         ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
+
         List<Object> users = searchResults.getBody();
 
         if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
-            
+            users = filteredUsers;
+
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
+        }
+
+        if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
+
+            List<LinkedHashMap<String, Object>> allEventsLastLog= new ArrayList <> ();
+            LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
+            Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
+            int start = 0;
+            int maxEvents = 100;
+            List<LinkedHashMap<String, Object>> eventsLastLog;
+            do {
+                MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
+                eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
+                allEventsLastLog.addAll(eventsLastLog);
+                start += maxEvents;
+            } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
+
+            Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
+                    .filter(event -> event.get("userId") != null)
+                    .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));
+
+            List<Object> filteredUsersByLastLog = new ArrayList<>();
+            for (Object user : users) {
+                String userId = ((LinkedHashMap) user).get("id").toString();
+                if (!userId.isEmpty()){
+
+                    if (!CollectionUtils.isEmpty(loginEventsByUser.get(userId))) {
+
+                        Object userLastLogTime = loginEventsByUser.get(userId).stream()
+                                .max(Comparator.comparing(o -> (Long) ((LinkedHashMap) o).get("time")))
+                                .map(o -> ((LinkedHashMap) o).get("time")).get();
+
+                        ((LinkedHashMap) user).put("lastLogDate", userLastLogTime);
+
+                        LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
+                        if (lastLogAfter.isPresent()) {
+                            LocalDate lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            if (lastLogAfterDate.isBefore(userLastLogLocalDate)) {
+                                filteredUsersByLastLog.add(user);
+                            }
+                        } else if (lastLogBefore.isPresent()) {
+                            LocalDate lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            if (lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
+                                filteredUsersByLastLog.add(user);
+                            }
+                        }
+                    }
+                }
+            }
+
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
         }
 
         return searchResults;
@@ -164,7 +225,7 @@ public class UsersController {
 
     @DeleteMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
-                                                @PathVariable String groupId) {
+                                                   @PathVariable String groupId) {
         return webClientService.removeUserGroups(userId, groupId);
     }
 
@@ -218,4 +279,14 @@ public class UsersController {
 
     }
 
+    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+
+        MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
+        queryEventParams.add("type", "LOGIN");
+        queryEventParams.add("first", String.valueOf(start));
+        queryEventParams.add("max", String.valueOf(nbElementMax));
+        dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
+        dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
+        return queryEventParams;
+    }
 }

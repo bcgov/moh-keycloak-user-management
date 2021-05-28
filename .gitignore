@@ -23,7 +23,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
-/nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
@@ -46,3 +45,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+
+/frontend/nbproject/private/
+frontend/dist/*
+frontend/nbproject/*

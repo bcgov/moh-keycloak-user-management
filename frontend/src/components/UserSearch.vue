@@ -92,7 +92,7 @@
         />
       </v-col>
       <v-col class="col-6">
-        <label for="adv-search-org">
+        <label for="org-details">
           Organization
         </label>
         <v-autocomplete
@@ -104,7 +104,53 @@
             dense
         ></v-autocomplete>
       </v-col>
+      <v-col class="col-2" >
+        <label for="last-log-date-radio">
+          Last logged-in
+        </label>
+        <v-radio-group v-model="radios" row dense style="margin: 0px">
+          <v-radio
+              id="last-log-date-radio"
+              label="Before"
+              value="Before"
+          ></v-radio>
+          <v-radio
+              label="After"
+              value="After"
+          ></v-radio>
+        </v-radio-group>
+      </v-col>
+      <v-col class="col-4">
+        <label for="last-log-date">Date</label>
+          <v-menu
+              :close-on-content-click="false"
+              :nudge-right="40"
+              transition="scale-transition"
+              offset-y
+              min-width="auto">
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                  v-model="lastLogDate"
+                  id="last-log-date"
+                  v-bind="attrs"
+                  v-on="on"
+                  hint="YYYY-MM-DD format"
+                  prepend-inner-icon="mdi-calendar"
+                  outlined
+                  dense
+              ></v-text-field>
+            </template>
+            <v-date-picker
+                v-model="lastLogDate"
+                @input="menuDate = false"
+                max="maxDateInput"
+                scrollable
+                elevation="10"
+            ></v-date-picker>
+          </v-menu>
+      </v-col>
     </v-row>
+    
     <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
       <h2>User Roles</h2>
 
@@ -154,6 +200,7 @@
         </v-row>
       </div>
     </v-card>
+      
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
       <v-col class="col-4" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
@@ -184,7 +231,7 @@
               <v-spacer/>
               <download-csv
                   :data="searchResults"
-                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email', 'role']"
+                  :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email', 'role', 'lastLogDate']"
               >
                 <v-btn id="csv-button" class="secondary" small>Download results</v-btn>
               </download-csv>
@@ -203,6 +250,9 @@ import ClientsRepository from "@/api/ClientsRepository";
 import organizations from "@/assets/organizations"
 import app_config from '@/loadconfig';
 
+const options = {dateStyle: 'short'};
+const formatDate = new Intl.DateTimeFormat(undefined, options).format;
+    
 export default {
   name: "UserSearch",
   data() {
@@ -213,6 +263,7 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
         { text: "Enabled", value: "enabled", class: "table-header" },
+        { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
         { text: "Role", value: "role", class: "table-header" },
         { text: "Keycloak User ID", value: "id", class: "table-header" }
       ],
@@ -231,7 +282,9 @@ export default {
       searchResults: [],
       userSearchLoadingStatus: false,
       advancedSearchSelected: false,
-      newTab: false
+      newTab: false,
+      radios: "",
+      lastLogDate: ""
     };
   },
   async created() {
@@ -245,6 +298,11 @@ export default {
       params = this.addQueryParameter(params, "username", this.usernameInput);
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);
+      if (this.radios == "Before") {
+        params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDate);
+      } else {
+        params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDate);
+      }
       return params;
     },
     itemsInColumn() {
@@ -255,6 +313,9 @@ export default {
     },
     maxResults() {
       return app_config.config.max_results ? app_config.config.max_results : 100;
+    },
+    maxDateInput() {
+      return new Date().toISOString().substr(0, 10).toString();
     }
   },
   methods: {
@@ -287,6 +348,11 @@ export default {
         )).data;
         if (isSearchByRole) {
           results = await this.filterUsersByRole(results, maxSearch);
+        }
+        for (let e of results) {
+          if (e.lastLogDate) {
+            e.lastLogDate = formatDate(e.lastLogDate);
+          }
         }
         this.setSearchResults(results);
       }
