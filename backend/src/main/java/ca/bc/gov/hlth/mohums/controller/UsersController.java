@@ -85,7 +85,7 @@ public class UsersController {
                 eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
                 allEventsLastLog.addAll(eventsLastLog);
                 start += maxEvents;
-            } while (!CollectionUtils.isEmpty(eventsLastLog));
+            } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
 
             Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
                     .filter(event -> event.get("userId") != null)
