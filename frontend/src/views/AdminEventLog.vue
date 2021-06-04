@@ -41,7 +41,7 @@
         />
       </div>
 
-      <v-btn id="search-button" class="secondary" medium @click.native="searchEvents">Search</v-btn>
+      <v-btn id="search-button" class="primary" medium @click.native="searchEvents">Search</v-btn>
 
       <h1 style="margin-bottom: 10px;">Search Results</h1>
 

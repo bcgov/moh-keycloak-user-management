@@ -10,7 +10,7 @@
     <div id="user-info" v-show="user.username">
       <h1>Update - {{ user.username }}</h1>
       <user-details :userId="this.$route.params.userid" ref="userDetails">
-        <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
+        <v-btn id="submit-button" class="primary" medium v-on:click.prevent="updateUser">Update User</v-btn>
       </user-details>
       <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
       <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
@@ -34,7 +34,7 @@ export default {
   },
   methods: {
     updateUser: function() {
-      //Validate the User Details
+      // Validate the User Details
       if (!this.$refs.userDetails.$refs.form.validate()) {
         this.$store.commit("alert/setAlert", {
           message: "Please correct errors before submitting",
@@ -43,7 +43,7 @@ export default {
         window.scrollTo(0, 0);
         return;
       }
-      //Update the user in Keycloak
+      // Update the user in Keycloak
       UsersRepository.updateUser(this.$route.params.userid, this.user)
         .then(() => {
           this.$store.commit("alert/setAlert", {

@@ -28,7 +28,7 @@
         />
       </v-col>
       <v-col class="col-4">
-          <v-btn id="search-button" class="secondary" medium @click.native="searchUser('&search='+userSearchInput)">Search Users</v-btn>
+          <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput)">Search Users</v-btn>
       </v-col>
       <v-col class="col-2">
         <v-btn id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
@@ -203,7 +203,7 @@
       
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
       <v-col class="col-4" style="margin-bottom: 30px">
-        <v-btn id="adv-search-button" class="secondary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
+        <v-btn id="adv-search-button" class="primary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
       </v-col>
     </v-row>
 
@@ -233,7 +233,7 @@
                   :data="searchResults"
                   :fields="['id', 'username', 'enabled', 'firstName', 'lastName', 'email', 'role', 'lastLogDate']"
               >
-                <v-btn id="csv-button" class="secondary" small>Download results</v-btn>
+                <v-btn id="csv-button" class="primary" small>Download results</v-btn>
               </download-csv>
             </v-toolbar>
           </template>

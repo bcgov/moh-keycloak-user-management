@@ -3,7 +3,7 @@
   <div id="user">
     <h1>Create New User</h1>
     <user-details ref="userDetails">
-      <v-btn id="submit-button" class="secondary" medium @click="createUser()">Create User</v-btn>
+      <v-btn id="submit-button" class="primary" medium @click="createUser()">Create User</v-btn>
     </user-details>
   </div>
 </template>

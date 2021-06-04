@@ -11,15 +11,15 @@
           dense
           :items="clients"
           item-text="clientId"
-          item-value="id"
+          return-object
           placeholder="Select an Application"
-          v-model="selectedClientId"
+          v-model="selectedClient"
           @change="getUserClientRoles()"
         ></v-autocomplete>
       </v-col>
     </v-row>
 
-    <div v-if="selectedClientId">
+    <div v-if="selectedClient">
       <v-row no-gutters>
         <v-col class="col-4">
           <v-row no-gutters>
@@ -81,43 +81,110 @@
           </v-row>
         </v-col>
       </v-row>
-      <div class="my-6" v-if="selectedClientId">
-        <v-btn id="save-user-roles" class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+      <div class="my-6" v-if="selectedClient">
+        <v-btn id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
       </div>
-      <v-divider class="sub-permissions"></v-divider>
-      <h2>SFDS Permissions</h2>
-      <v-row class="right-gutters">
-        <v-col class="col-4">
-          <label>Uses</label>
-          <v-autocomplete
-              id="sfds-uses"
-              outlined
-              dense
-              :items="sfdsUses"
-              placeholder="Select a use"
-          ></v-autocomplete>
-        </v-col>
-        <v-col class="col-4">
-          <label>Mailboxes</label>
-          <v-autocomplete
-              id="sfds-mailboxes"
-              outlined
-              dense
-              :items="sfdsMailboxes"
-              placeholder="Select a mailbox"
-          ></v-autocomplete>
-        </v-col>
-        <v-col class="col-4">
-          <label>Permissions</label>
-          <v-select
-              id="sfds-permissions"
-              outlined
-              dense
-              :items="sfdsPermissions"
-              placeholder="Select a permission set"
-          ></v-select>
-        </v-col>
-      </v-row>
+      <span v-if="selectedClient.clientId.includes('SFDS')">
+        <v-divider class="sub-permissions"></v-divider>
+
+        <v-data-table
+            :headers="sfdsTableHeaders"
+            :items="sfds_authorizations">
+          <template v-slot:top>
+            <v-toolbar
+                flat
+            >
+              <h2 class="sfds-authorizations-header">SFDS Authorizations</h2>
+              <v-spacer></v-spacer>
+              <v-dialog v-model="editDialog" max-width="840px">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn color="primary" darkclass="mb-2" v-bind="attrs" v-on="on">
+                    New Authorization
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title>
+                    <span class="headline">{{ dialogTitle }}</span>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-container>
+                      <v-row class="right-gutters">
+                        <v-col class="col-4">
+                          <label>Mailbox</label>
+                          <v-autocomplete
+                              id="sfds-mailboxes"
+                              v-model="currentSfdsAuthorization.mailbox"
+                              outlined
+                              dense
+                              :items="sfdsMailboxes"
+                          ></v-autocomplete>
+                        </v-col>
+                        <v-col class="col-4">
+                          <label>Use</label>
+                          <v-autocomplete
+                              id="sfds-uses"
+                              v-model="currentSfdsAuthorization.uses"
+                              outlined
+                              dense
+                              multiple
+                              chips
+                              :items="sfdsUses"
+                          ></v-autocomplete>
+                        </v-col>
+                        <v-col class="col-4">
+                          <label>Permission</label>
+                          <v-select
+                              id="sfds-permissions"
+                              v-model="currentSfdsAuthorization.permission"
+                              outlined
+                              dense
+                              :items="sfdsPermissions"
+                          ></v-select>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-btn class="primary" @click="saveSfdsAuthorization">
+                      Save
+                    </v-btn>
+                    <v-btn outlined class="primary--text" @click="close">
+                      Cancel
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+              <v-dialog v-model="deleteDialog" max-width="650px" >
+                <v-card >
+                  <v-card-title class="headline">Are you sure you want to delete this authorization?</v-card-title>
+                  <v-card-text class="black--text">
+                    Use: {{ currentSfdsAuthorization.uses }} <br/>
+                    Mailbox: {{ currentSfdsAuthorization.mailbox }} <br/>
+                    Permission: {{ currentSfdsAuthorization.permission }}
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-btn class="red white--text" @click="deleteItemConfirm">Delete</v-btn>
+                    <v-btn outlined class="primary--text" @click="closeDelete">Cancel</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-toolbar>
+          </template>
+          <template v-slot:item.actions="{ item }">
+            <v-icon
+                small
+                class="mr-2"
+                @click="editItem(item)">
+              mdi-pencil
+            </v-icon>
+            <v-icon
+                small
+                @click="deleteItem(item)">
+              mdi-delete
+            </v-icon>
+          </template>
+        </v-data-table>
+      </span>
     </div>
 
   </v-card>
@@ -133,21 +200,47 @@ export default {
   data() {
     return {
       clients: [],
-      selectedClientId: null,
+      selectedClient: null,
       clientRoles: [],
       effectiveClientRoles: [],
       selectedRoles: [],
+      sfdsTableHeaders: [
+        { text: 'Mailbox', value: 'mailbox' },
+        { text: 'Uses', value: 'uses' },
+        { text: 'Permission', value: 'permission' },
+        { text: 'Actions', value: 'actions', sortable: false }
+      ],
+      sfds_authorizations: [],
       sfdsMailboxes: ['HSCIS', 'BCMA', 'PHC', 'HOOPC'],
       sfdsUses: ['bcma', 'hscis', 'phc', 'wda', 'hoopc', 'grp'],
-      sfdsPermissions: ['get', 'send', 'get-send', 'get-delete', 'get-send-delete']
+      sfdsPermissions: ['get', 'send', 'get-send', 'get-delete', 'get-send-delete'],
+      currentSfdsAuthorization: {},
+      editDialog: false,
+      deleteDialog: false,
+      editedIndex: -1,
+      defaultAuthorization: {
+        uses: [],
+        mailbox: '',
+        permission: ''
+      }
     };
   },
   async created() {
     //TODO error handling
     await this.getClients();
-
+  },
+  watch: {
+    editDialog (val) {
+      val || this.close()
+    },
+    deleteDialog (val) {
+      val || this.closeDelete()
+    },
   },
   computed: {
+    dialogTitle () {
+      return this.editedIndex === -1 ? 'New Authorization' : 'Edit Authorization'
+    },
     itemsInColumn() {
       return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
     },
@@ -156,6 +249,43 @@ export default {
     }
   },
   methods: {
+    editItem (item) {
+      this.editedIndex = this.sfds_authorizations.indexOf(item)
+      this.currentSfdsAuthorization = Object.assign({}, item)
+      this.editDialog = true
+    },
+    deleteItem: function (item) {
+      this.editedIndex = this.sfds_authorizations.indexOf(item)
+      this.currentSfdsAuthorization = Object.assign({}, item)
+      this.deleteDialog = true
+    },
+    deleteItemConfirm: function () {
+      this.sfds_authorizations.splice(this.editedIndex, 1)
+      this.closeDelete()
+    },
+    saveSfdsAuthorization: function() {
+      if (this.editedIndex > -1) {
+        Object.assign(this.sfds_authorizations[this.editedIndex], this.currentSfdsAuthorization)
+      } else {
+        this.sfds_authorizations.push(this.currentSfdsAuthorization)
+      }
+      UsersRepository.updateUser(this.$route.params.userid, {'attributes': { 'sfds_auth_1' : JSON.stringify(this.sfds_authorizations) } })
+      this.close()
+    },
+    close () {
+      this.editDialog = false
+      this.$nextTick(() => {
+        this.currentSfdsAuthorization = Object.assign({}, this.defaultAuthorization)
+        this.editedIndex = -1
+      })
+    },
+    closeDelete: function () {
+      this.deleteDialog = false
+      this.$nextTick(() => {
+        this.currentSfdsAuthorization = Object.assign({}, this.defaultAuthorization)
+        this.editedIndex = -1
+      })
+    },
     roleArrayPosition: function(col, item) {
       return (col - 1) * (this.itemsInColumn) + item - 1;
     },
@@ -192,7 +322,7 @@ export default {
     getUserActiveClientRoles: function() {
       return UsersRepository.getUserActiveClientRoles(
         this.userId,
-        this.selectedClientId
+        this.selectedClient.id
       ).catch(e => {
         console.log(e);
       });
@@ -201,7 +331,7 @@ export default {
     getUserAvailableClientRoles: function() {
       return UsersRepository.getUserAvailableClientRoles(
         this.userId,
-        this.selectedClientId
+        this.selectedClient.id
       ).catch(e => {
         console.log(e);
       });
@@ -210,7 +340,7 @@ export default {
     getUserEffectiveClientRoles: function() {
       return UsersRepository.getUserEffectiveClientRoles(
         this.userId,
-        this.selectedClientId
+        this.selectedClient.id
       ).catch(e => {
         console.log(e);
       });
@@ -229,12 +359,12 @@ export default {
       Promise.all([
         UsersRepository.deleteUserClientRoles(
           this.userId,
-          this.selectedClientId,
+          this.selectedClient.id,
           rolesToDelete
         ),
         UsersRepository.addUserClientRoles(
           this.userId,
-          this.selectedClientId,
+          this.selectedClient.id,
           rolesToAdd
         )
       ])
@@ -260,14 +390,17 @@ export default {
 
 <style>
 .sub-permissions {
-  margin-bottom: 20px
+  margin: 20px 0px 20px 0px;
+}
+.sfds-authorizations-header {
+  margin: 22px 0px 22px 0px;
 }
 .right-gutters .col {
-  padding: 10px 12px 10px 10px;
+  padding: 10px 12px 10px 0px;
 }
 .roles-checkbox {
-  margin: 0px 0px 12px 0px;
-  padding: 8px 0px 0px 0px;
+  margin: 0 0 12px 0;
+  padding: 8px 0 0 0;
 }
 /* Tooltip text */
 .tooltip .tooltiptext {
@@ -297,7 +430,7 @@ export default {
   content: "";
   position: absolute;
   top: 10px;
-  left: 0%;
+  left: 0;
   margin-left: -10px;
   border-width: 5px;
   border-style: solid;

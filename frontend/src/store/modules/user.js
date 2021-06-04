@@ -8,7 +8,8 @@ const getDefaultState = () => {
         attributes: {
             phone: '',
             org_details: '',
-            access_team_notes: ''
+            access_team_notes: '',
+            sfds_authorizations: []
         },
         federatedIdentities: []
     }
@@ -30,6 +31,7 @@ const mutations = {
             state.attributes.phone = user.attributes.phone
             state.attributes.org_details = user.attributes.org_details
             state.attributes.access_team_notes = user.attributes.access_team_notes
+            state.attributes.sfds_authorizations = user.attributes.sfds_authorizations
         }
         state.federatedIdentities = user.federatedIdentities;
     },
@@ -56,6 +58,18 @@ const mutations = {
     },
     setAccessTeamNotes(state, access_team_notes) {
         state.attributes.access_team_notes = access_team_notes
+    },
+    setSfdsAuthorizations(state, sfds_authorizations) {
+        state.attributes.sfds_authorizations = sfds_authorizations
+    },
+    addSfdsAuthorization(state, sfds_authorization) {
+        state.sfds_authorizations.push(sfds_authorization)
+    },
+    editSfdsAuthorization(state, sfds_authorization, index) {
+        Object.assign(state.sfds_authorizations[index], sfds_authorization)
+    },
+    deleteSfdsAuthorization(state, index) {
+        state.sfds_authorizations.splice(index, 1)
     }
 }
 

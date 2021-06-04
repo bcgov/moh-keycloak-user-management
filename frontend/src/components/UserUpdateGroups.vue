@@ -15,7 +15,7 @@
       </v-col>
     </v-row>
     <div class="my-6">
-      <v-btn id="save-user-groups" class="secondary"
+      <v-btn id="save-user-groups" class="primary"
              medium v-on:click="updateUserGroups()"
              v-if="adminUser">
         Save User Groups
