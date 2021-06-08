@@ -4,7 +4,6 @@ const getDefaultState = () => {
         firstName: '',
         lastName: '',
         email: '',
-        enabled: true,
         attributes: {
             phone: '',
             org_details: '',
@@ -29,7 +28,6 @@ const mutations = {
         state.firstName = user.firstName
         state.lastName = user.lastName
         state.email = user.email
-        state.enabled = user.enabled
         if (user.attributes) {
             state.attributes.phone = user.attributes.phone
             state.attributes.org_details = user.attributes.org_details
@@ -40,6 +38,17 @@ const mutations = {
             state.attributes.sfds_auth_4 = user.attributes.sfds_auth_4
         }
         state.federatedIdentities = user.federatedIdentities;
+    },
+    setUserDetails(state, user) {
+        state.username = user.username
+        state.firstName = user.firstName
+        state.lastName = user.lastName
+        state.email = user.email
+        if (user.attributes) {
+            state.attributes.phone = user.attributes.phone
+            state.attributes.org_details = user.attributes.org_details
+            state.attributes.access_team_notes = user.attributes.access_team_notes
+        }
     },
     setUsername(state, username) {
         state.username = username
