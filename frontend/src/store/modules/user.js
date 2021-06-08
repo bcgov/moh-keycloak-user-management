@@ -9,7 +9,10 @@ const getDefaultState = () => {
             phone: '',
             org_details: '',
             access_team_notes: '',
-            sfds_authorizations: []
+            sfds_auth_1: [],
+            sfds_auth_2: [],
+            sfds_auth_3: [],
+            sfds_auth_4: [],
         },
         federatedIdentities: []
     }
@@ -31,7 +34,10 @@ const mutations = {
             state.attributes.phone = user.attributes.phone
             state.attributes.org_details = user.attributes.org_details
             state.attributes.access_team_notes = user.attributes.access_team_notes
-            state.attributes.sfds_authorizations = user.attributes.sfds_authorizations
+            state.attributes.sfds_auth_1 = user.attributes.sfds_auth_1
+            state.attributes.sfds_auth_2 = user.attributes.sfds_auth_2
+            state.attributes.sfds_auth_3 = user.attributes.sfds_auth_3
+            state.attributes.sfds_auth_4 = user.attributes.sfds_auth_4
         }
         state.federatedIdentities = user.federatedIdentities;
     },
@@ -59,18 +65,18 @@ const mutations = {
     setAccessTeamNotes(state, access_team_notes) {
         state.attributes.access_team_notes = access_team_notes
     },
-    setSfdsAuthorizations(state, sfds_authorizations) {
-        state.attributes.sfds_authorizations = sfds_authorizations
+    setSfdsAuth1(state, sfds_auth_1) {
+        state.attributes.sfds_auth_1 = sfds_auth_1
     },
-    addSfdsAuthorization(state, sfds_authorization) {
-        state.sfds_authorizations.push(sfds_authorization)
+    setSfdsAuth2(state, sfds_auth_1) {
+        state.attributes.sfds_auth_2 = sfds_auth_1
     },
-    editSfdsAuthorization(state, sfds_authorization, index) {
-        Object.assign(state.sfds_authorizations[index], sfds_authorization)
+    setSfdsAuth3(state, sfds_auth_1) {
+        state.attributes.sfds_auth_3 = sfds_auth_1
     },
-    deleteSfdsAuthorization(state, index) {
-        state.sfds_authorizations.splice(index, 1)
-    }
+    setSfdsAuth4(state, sfds_auth_1) {
+        state.attributes.sfds_auth_4 = sfds_auth_1
+    },
 }
 
 export default {
