@@ -18,15 +18,6 @@ export default {
   },
   methods: {
     createUser: function(userDetails) {
-      if (!this.$refs.userDetails.$refs.form.validate()) {
-        this.$store.commit("alert/setAlert", {
-          message: "Please correct errors before submitting",
-          type: "error"
-        });
-        window.scrollTo(0, 0);
-        return;
-      }
-
       UsersRepository.createUser(userDetails)
         .then(response => {
           //Keycloak returns the newly created user id in the response location

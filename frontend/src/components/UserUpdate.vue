@@ -32,15 +32,6 @@ export default {
   },
   methods: {
     updateUser: function(userDetails) {
-      // Validate the User Details
-      if (!this.$refs.userDetails.$refs.form.validate()) {
-        this.$store.commit("alert/setAlert", {
-          message: "Please correct errors before submitting",
-          type: "error"
-        });
-        window.scrollTo(0, 0);
-        return;
-      }
       // Update the user in Keycloak
       this.$store.commit("user/setUserDetails", userDetails);
       UsersRepository.updateUser(this.$route.params.userid, userDetails)

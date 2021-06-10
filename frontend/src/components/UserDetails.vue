@@ -148,6 +148,15 @@ export default {
         });
     },
     updateUser: function() {
+      // Validate the User Details
+      if (!this.$refs.form.validate()) {
+        this.$store.commit("alert/setAlert", {
+          message: "Please correct errors before submitting",
+          type: "error"
+        });
+        window.scrollTo(0, 0);
+        return;
+      }
       this.$emit('submit-user-updates', this.user)
     }
   },
