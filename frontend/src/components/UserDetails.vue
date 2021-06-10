@@ -90,7 +90,7 @@
           </ul>
         </v-col>
       </v-row>
-      <v-btn id="submit-button" class="primary" medium @click="updateUser">Update User</v-btn>
+      <v-btn id="submit-button" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
     </v-card>
   </div>
 </template>
@@ -101,7 +101,7 @@ import organizations from "@/assets/organizations"
 
 export default {
   name: "UserDetails",
-  props: ['userId'],
+  props: ['userId', 'updateOrCreate'],
   organizations: organizations.map((item) => {
     item.value = JSON.stringify(item);
     item.text = `${item.id} - ${item.name}`;
@@ -118,13 +118,12 @@ export default {
         firstName: '',
         lastName: '',
         email: '',
-        enabled: '',
         attributes: {
-          phone: '',
-          org_details: '',
-          access_team_notes: ''
+          phone: null,
+          org_details: null,
+          access_team_notes: null
         },
-        federatedIdentities: ''
+        federatedIdentities: null
       }
     };
   },

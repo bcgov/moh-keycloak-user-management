@@ -9,7 +9,7 @@
     </v-skeleton-loader>
     <div id="user-info" v-show="user.username">
       <h1>Update - {{ user.username }}</h1>
-      <user-details :userId="this.$route.params.userid" @submit-user-updates="updateUser" ref="userDetails"></user-details>
+      <user-details :userId="this.$route.params.userid" update-or-create="Update" @submit-user-updates="updateUser" ref="userDetails"></user-details>
       <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
       <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
     </div>

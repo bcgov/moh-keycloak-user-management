@@ -2,9 +2,7 @@
 <template>
   <div id="user">
     <h1>Create New User</h1>
-    <user-details ref="userDetails">
-      <v-btn id="submit-button" class="primary" medium @click="createUser()">Create User</v-btn>
-    </user-details>
+    <user-details ref="userDetails" update-or-create="Create" @submit-user-updates="createUser"></user-details>
   </div>
 </template>
 
@@ -19,7 +17,7 @@ export default {
     UserDetails
   },
   methods: {
-    createUser: function() {
+    createUser: function(userDetails) {
       if (!this.$refs.userDetails.$refs.form.validate()) {
         this.$store.commit("alert/setAlert", {
           message: "Please correct errors before submitting",
@@ -28,7 +26,8 @@ export default {
         window.scrollTo(0, 0);
         return;
       }
-      UsersRepository.createUser(this.user)
+
+      UsersRepository.createUser(userDetails)
         .then(response => {
           //Keycloak returns the newly created user id in the response location
           let responseLocation = response.headers.location;
@@ -56,11 +55,6 @@ export default {
         .finally(() => {
           window.scrollTo(0, 0);
         });
-    }
-  },
-  computed: {
-    user() {
-      return this.$store.state.user;
     }
   }
 };
