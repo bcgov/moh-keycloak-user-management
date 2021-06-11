@@ -262,10 +262,8 @@ export default {
         { text: "First name", value: "firstName", class: "table-header" },
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" },
-        { text: "Enabled", value: "enabled", class: "table-header" },
         { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
-        { text: "Role", value: "role", class: "table-header" },
-        { text: "Keycloak User ID", value: "id", class: "table-header" }
+        { text: "Role", value: "role", class: "table-header" }
       ],
       organizations: organizations,
       clients: [ "" ],
