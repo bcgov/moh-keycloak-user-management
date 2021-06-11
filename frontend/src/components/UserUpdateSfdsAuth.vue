@@ -19,48 +19,58 @@
               <span class="headline">{{ dialogTitle }}</span>
             </v-card-title>
             <v-card-text>
+              <v-alert id="sfds-auth-alert" v-model="alertStatus" :type="alertType" dismissible>{{ alertMessage }}</v-alert>
               <v-container>
-                <v-row class="right-gutters">
-                  <v-col class="col-4">
-                    <label>Mailbox</label>
-                    <v-autocomplete
-                        id="sfds-mailboxes"
-                        v-model="currentSfdsAuthorization.mailbox"
-                        outlined
-                        dense
-                        :items="sfdsMailboxes"
-                    ></v-autocomplete>
-                  </v-col>
-                  <v-col class="col-4">
-                    <label>Use</label>
-                    <v-autocomplete
-                        id="sfds-uses"
-                        v-model="currentSfdsAuthorization.uses"
-                        outlined
-                        dense
-                        multiple
-                        chips
-                        :items="sfdsUses"
-                    ></v-autocomplete>
-                  </v-col>
-                  <v-col class="col-4">
-                    <label>Permission</label>
-                    <v-select
-                        id="sfds-permissions"
-                        v-model="currentSfdsAuthorization.permission"
-                        outlined
-                        dense
-                        :items="sfdsPermissions"
-                    ></v-select>
-                  </v-col>
-                </v-row>
+                <v-form ref="sfdsForm">
+                  <v-row class="right-gutters">
+                    <v-col class="col-4">
+                      <label class="required" >Mailbox</label>
+                      <v-autocomplete
+                          id="sfds-mailboxes"
+                          v-model="currentSfdsAuthorization.mailbox"
+                          :items="sfdsMailboxes"
+                          required
+                          :rules="mailboxRules"
+                          outlined
+                          dense
+                      ></v-autocomplete>
+                    </v-col>
+                    <v-col class="col-4">
+                      <label class="required" >Use</label>
+                      <v-autocomplete
+                          id="sfds-uses"
+                          v-model="currentSfdsAuthorization.uses"
+                          :items="sfdsUses"
+                          required
+                          :rules="[v => !!v || 'At least one use is required',
+                                  (v) =>  v.length>0 || 'At least one use is required']"
+                          outlined
+                          dense
+                          multiple
+                          chips
+                      ></v-autocomplete>
+                    </v-col>
+                    <v-col class="col-4">
+                      <label class="required" >Permission</label>
+                      <v-select
+                          id="sfds-permissions"
+                          v-model="currentSfdsAuthorization.permission"
+                          :items="sfdsPermissions"
+                          required
+                          :rules="[v => !!v || 'A permission is required']"
+                          outlined
+                          dense
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+                </v-form>
               </v-container>
             </v-card-text>
             <v-card-actions>
               <v-btn class="primary" @click="saveSfdsAuthorization">
                 Save
               </v-btn>
-              <v-btn outlined class="primary--text" @click="close">
+              <v-btn outlined class="primary--text" @click="closeDialog">
                 Cancel
               </v-btn>
             </v-card-actions>
@@ -70,13 +80,14 @@
           <v-card >
             <v-card-title class="headline">Are you sure you want to delete this authorization?</v-card-title>
             <v-card-text class="black--text">
-              Use: {{ currentSfdsAuthorization.uses }} <br/>
-              Mailbox: {{ currentSfdsAuthorization.mailbox }} <br/>
-              Permission: {{ currentSfdsAuthorization.permission }}
+              <v-alert id="sfds-delete-auth-alert" v-model="alertStatus" :type="alertType" dismissible>{{ alertMessage }}</v-alert>
+              <strong>Mailbox:</strong> {{ currentSfdsAuthorization.mailbox }} <br/>
+              <strong>Use:</strong> {{ currentSfdsAuthorization.uses }} <br/>
+              <strong>Permission:</strong> {{ currentSfdsAuthorization.permission }}
             </v-card-text>
             <v-card-actions>
               <v-btn class="red white--text" @click="deleteItemConfirm">Delete</v-btn>
-              <v-btn outlined class="primary--text" @click="closeDelete">Cancel</v-btn>
+              <v-btn outlined class="primary--text" @click="closeDialog">Cancel</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -112,6 +123,7 @@ export default {
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       sfdsAuthorizations: [],
+      sfdsAuthorizationsToSet: [],
       sfdsMailboxes: ['HSCIS', 'BCMA', 'PHC', 'HOOPC'],
       sfdsUses: ['bcma', 'hscis', 'phc', 'wda', 'hoopc', 'grp'],
       sfdsPermissions: ['get', 'send', 'get-send', 'get-delete', 'get-send-delete'],
@@ -123,7 +135,10 @@ export default {
         uses: [],
         mailbox: '',
         permission: ''
-      }
+      },
+      alertStatus: false,
+      alertType: "error",
+      alertMessage: ''
     };
   },
   async created() {
@@ -150,15 +165,26 @@ export default {
   },
   watch: {
     editDialog (val) {
-      val || this.close()
+      val || this.closeDialog()
     },
     deleteDialog (val) {
-      val || this.closeDelete()
+      val || this.closeDialog()
     }
   },
   computed: {
     dialogTitle () {
       return this.editedIndex === -1 ? 'New Authorization' : 'Edit Authorization'
+    },
+    mailboxRules() {
+      const rules = []
+      const rule1 = v => !!v || 'A mailbox is required'
+      rules.push(rule1)
+
+      if (this.sfdsAuthorizations.length>0 && this.editedIndex === -1) {
+        const rule2 = v => this.sfdsAuthorizations.some( sfdsAuth => sfdsAuth['mailbox'] !== v) || 'Mailbox must be unique'
+        rules.push(rule2)
+      }
+      return rules
     }
   },
   methods: {
@@ -173,27 +199,29 @@ export default {
       this.deleteDialog = true
     },
     deleteItemConfirm: function () {
-      this.sfdsAuthorizations.splice(this.editedIndex, 1)
+      this.alertStatus = false
+      this.sfdsAuthorizationsToSet = JSON.parse(JSON.stringify(this.sfdsAuthorizations));
+      this.sfdsAuthorizationsToSet.splice(this.editedIndex, 1)
       this.commitAndUpdateUserWithSfdsAuthUpdates()
-      this.closeDelete()
     },
     saveSfdsAuthorization: function() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.sfdsAuthorizations[this.editedIndex], this.currentSfdsAuthorization)
-      } else {
-        this.sfdsAuthorizations.push(this.currentSfdsAuthorization)
+      this.alertStatus = false
+      if (!this.$refs.sfdsForm.validate()) {
+        return;
       }
-      this.commitAndUpdateUserWithSfdsAuthUpdates()
-      this.close()
+      // JSON stringify and parse for deep clone of an array with simple objects
+      this.sfdsAuthorizationsToSet = JSON.parse(JSON.stringify(this.sfdsAuthorizations));
+      if (this.editedIndex > -1) {
+        Object.assign(this.sfdsAuthorizationsToSet[this.editedIndex], this.currentSfdsAuthorization);
+      } else {
+        this.sfdsAuthorizationsToSet.push(this.currentSfdsAuthorization);
+      }
+      this.commitAndUpdateUserWithSfdsAuthUpdates();
     },
-    close: function () {
+    closeDialog: function () {
+      this.$refs.sfdsForm.resetValidation()
+      this.alertStatus = false
       this.editDialog = false
-      this.$nextTick(() => {
-        this.currentSfdsAuthorization = Object.assign({}, this.defaultAuthorization)
-        this.editedIndex = -1
-      })
-    },
-    closeDelete: function () {
       this.deleteDialog = false
       this.$nextTick(() => {
         this.currentSfdsAuthorization = Object.assign({}, this.defaultAuthorization)
@@ -201,14 +229,27 @@ export default {
       })
     },
     commitAndUpdateUserWithSfdsAuthUpdates: function () {
-      let sfdsAuthString = JSON.stringify(this.sfdsAuthorizations);
+      this.setSfdsAuthStoreState(this.sfdsAuthorizationsToSet)
+      UsersRepository.updateUser(this.$route.params.userid, this.$store.state.user)
+          .then(() => {
+            // JSON stringify and parse for deep clone of an array with simple objects
+            this.sfdsAuthorizations = JSON.parse(JSON.stringify(this.sfdsAuthorizationsToSet));
+            this.closeDialog()
+          })
+          .catch(error => {
+            this.alertStatus = true
+            this.alertMessage = "Error updating user sfds authorizations: " + error
+            this.setSfdsAuthStoreState(this.sfdsAuthorizations)
+          });
+    },
+    setSfdsAuthStoreState: function(sfdsAuthz) {
+      let sfdsAuthString = JSON.stringify(sfdsAuthz);
       // Keycloak can only store attributes at 255 chars
       // A user could require up to ~1000 characters worth of mailbox permissions in the current storage format
       let sfdsAuths = chunkString(sfdsAuthString, 255);
       for (let i = 0; i < 4; i++) {
-          this.$store.commit("user/setSfdsAuth" + (i+1), sfdsAuths[i]);
+        this.$store.commit("user/setSfdsAuth" + (i+1), sfdsAuths[i]);
       }
-      UsersRepository.updateUser(this.$route.params.userid, this.$store.state.user);
     }
   }
 }
