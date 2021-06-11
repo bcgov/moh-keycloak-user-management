@@ -188,14 +188,6 @@ export default {
         this.$store.commit("user/setEmail", email);
       }
     },
-    enabled: {
-      get() {
-        return this.$store.state.user.enabled;
-      },
-      set(enabled) {
-        this.$store.commit("user/setEnabled", enabled);
-      }
-    },
     phone: {
       get() {
         return this.$store.state.user.attributes.phone;
