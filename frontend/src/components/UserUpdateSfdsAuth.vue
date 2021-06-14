@@ -1,5 +1,6 @@
 <template>
   <v-data-table
+      id="sfds-authorizations-table"
       :headers="sfdsTableHeaders"
       :items="sfdsAuthorizations">
     <template v-slot:top>
@@ -10,7 +11,7 @@
         <v-spacer></v-spacer>
         <v-dialog v-model="editDialog" max-width="840px">
           <template v-slot:activator="{ on, attrs }">
-            <v-btn color="primary" darkclass="mb-2" v-bind="attrs" v-on="on">
+            <v-btn id="new-sfds-auth-btn" color="primary" darkclass="mb-2" v-bind="attrs" v-on="on">
               New Authorization
             </v-btn>
           </template>
@@ -24,7 +25,7 @@
                 <v-form ref="sfdsForm">
                   <v-row class="right-gutters">
                     <v-col class="col-4">
-                      <label class="required" >Mailbox</label>
+                      <label class="required" for="sfds-mailboxes" >Mailbox</label>
                       <v-autocomplete
                           id="sfds-mailboxes"
                           v-model="currentSfdsAuthorization.mailbox"
@@ -36,9 +37,10 @@
                       ></v-autocomplete>
                     </v-col>
                     <v-col class="col-4">
-                      <label class="required" >Use</label>
+                      <label class="required" for="sfds-uses" id="sfds-uses-label" >Use</label>
                       <v-autocomplete
                           id="sfds-uses"
+                          class="sfds-uses"
                           v-model="currentSfdsAuthorization.uses"
                           :items="sfdsUses"
                           required
@@ -51,7 +53,7 @@
                       ></v-autocomplete>
                     </v-col>
                     <v-col class="col-4">
-                      <label class="required" >Permission</label>
+                      <label class="required" for="sfds-permissions" >Permission</label>
                       <v-select
                           id="sfds-permissions"
                           v-model="currentSfdsAuthorization.permission"
@@ -67,7 +69,7 @@
               </v-container>
             </v-card-text>
             <v-card-actions>
-              <v-btn class="primary" @click="saveSfdsAuthorization">
+              <v-btn id="save-sfds-auth-btn" class="primary" @click="saveSfdsAuthorization">
                 Save
               </v-btn>
               <v-btn outlined class="primary--text" @click="closeDialog">
@@ -86,7 +88,7 @@
               <strong>Permission:</strong> {{ currentSfdsAuthorization.permission }}
             </v-card-text>
             <v-card-actions>
-              <v-btn class="red white--text" @click="deleteItemConfirm">Delete</v-btn>
+              <v-btn id="confirm-delete-sfds-btn" class="red white--text" @click="deleteItemConfirm">Delete</v-btn>
               <v-btn outlined class="primary--text" @click="closeDialog">Cancel</v-btn>
             </v-card-actions>
           </v-card>
@@ -101,6 +103,7 @@
         mdi-pencil
       </v-icon>
       <v-icon
+          :id="item.mailbox+'-delete-btn'"
           small
           @click="deleteItem(item)">
         mdi-delete
@@ -219,10 +222,13 @@ export default {
       this.commitAndUpdateUserWithSfdsAuthUpdates();
     },
     closeDialog: function () {
-      this.$refs.sfdsForm.resetValidation()
+      if (this.deleteDialog === true) {
+        this.deleteDialog = false
+      } else {
+        this.$refs.sfdsForm.resetValidation()
+        this.editDialog = false
+      }
       this.alertStatus = false
-      this.editDialog = false
-      this.deleteDialog = false
       this.$nextTick(() => {
         this.currentSfdsAuthorization = Object.assign({}, this.defaultAuthorization)
         this.editedIndex = -1
