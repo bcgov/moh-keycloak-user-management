@@ -1,6 +1,5 @@
 import { itsbAccessTeamUser } from "../roles/roles"
 import { Selector } from "testcafe";
-import AdvancedSearchForm from "../pages/AdvancedSearchForm";
 
 const SFDS_CLIENT = 'SFDS';
 const TEST_CAFE_USER_ID = '3195a1bf-4bea-47c4-955d-cf52d4e2fc15';
