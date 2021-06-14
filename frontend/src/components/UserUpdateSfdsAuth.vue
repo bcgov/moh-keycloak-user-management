@@ -28,7 +28,7 @@
                       <label class="required" for="sfds-mailboxes" >Mailbox</label>
                       <v-autocomplete
                           id="sfds-mailboxes"
-                          v-model="currentSfdsAuthorization.mailbox"
+                          v-model="currentSfdsAuthorization.m"
                           :items="sfdsMailboxes"
                           required
                           :rules="mailboxRules"
@@ -41,7 +41,7 @@
                       <v-autocomplete
                           id="sfds-uses"
                           class="sfds-uses"
-                          v-model="currentSfdsAuthorization.uses"
+                          v-model="currentSfdsAuthorization.u"
                           :items="sfdsUses"
                           required
                           :rules="[v => !!v || 'At least one use is required',
@@ -56,7 +56,7 @@
                       <label class="required" for="sfds-permissions" >Permission</label>
                       <v-select
                           id="sfds-permissions"
-                          v-model="currentSfdsAuthorization.permission"
+                          v-model="currentSfdsAuthorization.p"
                           :items="sfdsPermissions"
                           required
                           :rules="[v => !!v || 'A permission is required']"
@@ -83,9 +83,9 @@
             <v-card-title class="headline">Are you sure you want to delete this authorization?</v-card-title>
             <v-card-text class="black--text">
               <v-alert id="sfds-delete-auth-alert" v-model="alertStatus" :type="alertType" dismissible>{{ alertMessage }}</v-alert>
-              <strong>Mailbox:</strong> {{ currentSfdsAuthorization.mailbox }} <br/>
-              <strong>Use:</strong> {{ currentSfdsAuthorization.uses }} <br/>
-              <strong>Permission:</strong> {{ currentSfdsAuthorization.permission }}
+              <strong>Mailbox:</strong> {{ currentSfdsAuthorization.m }} <br/>
+              <strong>Use:</strong> {{ currentSfdsAuthorization.u }} <br/>
+              <strong>Permission:</strong> {{ currentSfdsAuthorization.p }}
             </v-card-text>
             <v-card-actions>
               <v-btn id="confirm-delete-sfds-btn" class="red white--text" @click="deleteItemConfirm">Delete</v-btn>
@@ -103,7 +103,7 @@
         mdi-pencil
       </v-icon>
       <v-icon
-          :id="item.mailbox+'-delete-btn'"
+          :id="item.m+'-delete-btn'"
           small
           @click="deleteItem(item)">
         mdi-delete
@@ -120,9 +120,9 @@ export default {
   data() {
     return {
       sfdsTableHeaders: [
-        { text: 'Mailbox', value: 'mailbox' },
-        { text: 'Uses', value: 'uses' },
-        { text: 'Permission', value: 'permission' },
+        { text: 'Mailbox', value: 'm' },
+        { text: 'Uses', value: 'u' },
+        { text: 'Permission', value: 'p' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       sfdsAuthorizations: [],
@@ -135,9 +135,9 @@ export default {
       deleteDialog: false,
       editedIndex: -1,
       defaultAuthorization: {
-        uses: [],
-        mailbox: '',
-        permission: ''
+        m: '',
+        u: [],
+        p: ''
       },
       alertStatus: false,
       alertType: "error",
@@ -183,11 +183,20 @@ export default {
       const rule1 = v => !!v || 'A mailbox is required'
       rules.push(rule1)
 
-      if (this.sfdsAuthorizations.length>0 && this.editedIndex === -1) {
-        const rule2 = v => this.sfdsAuthorizations.some( sfdsAuth => sfdsAuth['mailbox'] !== v) || 'Mailbox must be unique'
-        rules.push(rule2)
+      if (this.sfdsAuthorizations.length>0) {
+        // Check all existing SFDS authorizations for unique mailbox
+        if (this.editedIndex === -1) {
+          const rule2 = v => !(this.sfdsAuthorizations.some( sfdsAuth => sfdsAuth['m'] === v)) || 'Mailbox must be unique';
+          rules.push(rule2);
+        // Check all existing SFDS authorizations except the currently selected one for unique mailbox
+        } else {
+          const authsToMatch = JSON.parse(JSON.stringify(this.sfdsAuthorizations));
+          authsToMatch.splice(this.editedIndex, 1);
+          const rule2 = v => !(authsToMatch.some( sfdsAuth => sfdsAuth['m'] === v)) || 'Mailbox must be unique';
+          rules.push(rule2);
+        }
       }
-      return rules
+      return rules;
     }
   },
   methods: {
