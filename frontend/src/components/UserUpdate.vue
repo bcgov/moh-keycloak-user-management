@@ -34,7 +34,7 @@ export default {
     updateUser: function(userDetails) {
       // Update the user in Keycloak
       this.$store.commit("user/setUserDetails", userDetails);
-      UsersRepository.updateUser(this.$route.params.userid, userDetails)
+      UsersRepository.updateUser(this.$route.params.userid, this.user)
         .then(() => {
           this.$store.commit("alert/setAlert", {
             message: "User updated successfully",
