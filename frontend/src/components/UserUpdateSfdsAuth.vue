@@ -127,7 +127,7 @@ export default {
       ],
       sfdsAuthorizations: [],
       sfdsAuthorizationsToSet: [],
-      sfdsMailboxes: ['HSCIS', 'BCMA', 'PHC', 'HOOPC'],
+      sfdsMailboxes: ['hscis', 'bcma', 'phc', 'hoopc'],
       sfdsUses: ['bcma', 'hscis', 'phc', 'wda', 'hoopc', 'grp'],
       sfdsPermissions: ['get', 'send', 'get-send', 'get-delete', 'get-send-delete'],
       currentSfdsAuthorization: {},
