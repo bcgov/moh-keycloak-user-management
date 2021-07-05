@@ -222,6 +222,8 @@ export default {
         return;
       }
       // JSON stringify and parse for deep clone of an array with simple objects
+      // Clone the array so that the datatable presented to the user isn't updated until the request is successfully submitted
+      // After a success response we'll copy the new resulting array back.
       this.sfdsAuthorizationsToSet = JSON.parse(JSON.stringify(this.sfdsAuthorizations));
       if (this.editedIndex > -1) {
         Object.assign(this.sfdsAuthorizationsToSet[this.editedIndex], this.currentSfdsAuthorization);
