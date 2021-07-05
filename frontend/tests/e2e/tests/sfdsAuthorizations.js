@@ -50,7 +50,7 @@ test.skip('Test Add SFDS Authorization', async t => {
 
 // This test works but requires an SFDS Auth to be created first (which doesn't currently work)
 // To run this test first create an SFDS auth with mailbox id = SFDS_MAILBOX_TO_ADD
-test('Test Delete SFDS Authorization', async t => {
+test.skip('Test Delete SFDS Authorization', async t => {
     await t
         //Select a user
         .typeText('#user-search', 'testcafe')
