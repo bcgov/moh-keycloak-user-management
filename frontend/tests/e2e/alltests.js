@@ -4,6 +4,7 @@ import { Role } from 'testcafe';
 const SITE_UNDER_TEST = 'http://localhost:8080';
 
 const TEST_CAFE_USER_ID = '3195a1bf-4bea-47c4-955d-cf52d4e2fc15';
+const CLIENT_TO_TEST = 'FMDB';
 
 const regularAccUser = Role(SITE_UNDER_TEST, async t => {
     await t
@@ -50,13 +51,12 @@ test('Test update user', async t => {
 });
 
 test('Test update user role', async t => {
-    const client = 'FMDB'
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
         .click(Selector('td').withText(TEST_CAFE_USER_ID))
-        .typeText('#select-client', client, { replace: true })
-        .click(Selector('.v-list-item').withText('FMDB'))
+        .typeText('#select-client', CLIENT_TO_TEST, { replace: true })
+        .click(Selector('.v-list-item').withText(CLIENT_TO_TEST))
         .click('#role-0')
         .click('#save-user-roles')
         .expect(Selector('#primary-alert').textContent)

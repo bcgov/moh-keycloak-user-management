@@ -29,7 +29,7 @@
               :disabled="!!userId"
               outlined
               id="user-name"
-              v-model="username"
+              v-model="user.username"
               required
               :rules="[v => !!v || 'Username is required']"
             />
@@ -39,7 +39,7 @@
               dense
               outlined
               id="first-name"
-              v-model="firstName"
+              v-model="user.firstName"
               required
               :rules="[v => !!v || 'First Name is required']"
             />
@@ -49,7 +49,7 @@
               dense
               outlined
               id="last-name"
-              v-model="lastName"
+              v-model="user.lastName"
               required
               :rules="[v => !!v || 'Last Name is required']"
             />
@@ -59,38 +59,38 @@
               dense
               outlined
               id="email"
-              v-model="email"
+              v-model="user.email"
               required
               :rules="emailRules"
               type="email"
             />
             <label for="phone">Telephone Number</label>
-            <v-text-field dense outlined id="phone" v-model="phone" />
+            <v-text-field dense outlined id="phone" v-model="user.attributes.phone" />
 
             <label for="org-details">Organization</label>
             <v-autocomplete
                 id="org-details"
-                v-model="org_details"
+                v-model="user.attributes.org_details"
                 :items="$options.organizations"
                 dense
                 outlined
             ></v-autocomplete>
 
             <label for="notes">Notes</label>
-            <v-textarea outlined dense id="notes" v-model="access_team_notes" maxlength="255" />
+            <v-textarea outlined dense id="notes" v-model="user.attributes.access_team_notes" maxlength="255" />
 
           </v-form>
         </v-col>
         <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef">
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
-            <li v-for="identity in federatedIdentities" :key="identity.id">
+            <li v-for="identity in user.federatedIdentities" :key="identity.id">
               {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
             </li>
           </ul>
         </v-col>
       </v-row>
-      <slot></slot>
+      <v-btn id="submit-button" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
     </v-card>
   </div>
 </template>
@@ -101,7 +101,7 @@ import organizations from "@/assets/organizations"
 
 export default {
   name: "UserDetails",
-  props: ['userId'],
+  props: ['userId', 'updateOrCreate'],
   organizations: organizations.map((item) => {
     item.value = JSON.stringify(item);
     item.text = `${item.id} - ${item.name}`;
@@ -112,7 +112,19 @@ export default {
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
-      ]
+      ],
+      user: {
+        username: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        attributes: {
+          phone: null,
+          org_details: null,
+          access_team_notes: null
+        },
+        federatedIdentities: null
+      }
     };
   },
   async created() {
@@ -127,10 +139,25 @@ export default {
       return UsersRepository.getUser(this.userId)
         .then(response => {
           this.user = response.data;
+          // Keycloak returns attributes as arrays which doesn't work with the autocomplete for org details
+          this.user.attributes.org_details = formatOrganization(this.user.attributes.org_details);
+          this.$store.commit("user/setUser", this.user);
         })
         .catch(e => {
           console.log(e);
         });
+    },
+    updateUser: function() {
+      // Validate the User Details
+      if (!this.$refs.form.validate()) {
+        this.$store.commit("alert/setAlert", {
+          message: "Please correct errors before submitting",
+          type: "error"
+        });
+        window.scrollTo(0, 0);
+        return;
+      }
+      this.$emit('submit-user-updates', this.user)
     }
   },
   filters: {
@@ -146,85 +173,15 @@ export default {
       }
       return formattedIdentityProviders[idp] || idp;
     }
-  },
-  computed: {
-    user: {
-      get() {
-        return this.$store.state.user;
-      },
-      set(user) {
-        this.$store.commit("user/setUser", user);
-      }
-    },
-    username: {
-      get() {
-        return this.$store.state.user.username;
-      },
-      set(username) {
-        this.$store.commit("user/setUsername", username);
-      }
-    },
-    firstName: {
-      get() {
-        return this.$store.state.user.firstName;
-      },
-      set(firstName) {
-        this.$store.commit("user/setFirstName", firstName);
-      }
-    },
-    lastName: {
-      get() {
-        return this.$store.state.user.lastName;
-      },
-      set(lastName) {
-        this.$store.commit("user/setLastName", lastName);
-      }
-    },
-    email: {
-      get() {
-        return this.$store.state.user.email;
-      },
-      set(email) {
-        this.$store.commit("user/setEmail", email);
-      }
-    },
-    phone: {
-      get() {
-        return this.$store.state.user.attributes.phone;
-      },
-      set(phone) {
-        this.$store.commit("user/setPhone", phone);
-      }
-    },
-    org_details: {
-      get() {
-        // Keycloak returns attributes as arrays which doesn't work with the autocomplete
-        let org = this.$store.state.user.attributes.org_details;
-        if (Array.isArray(org)) {
-          return org[0];
-        } else {
-          return org;
-        }
-      },
-      set(org_details) {
-        this.$store.commit("user/setOrgDetails", org_details);
-      }
-    },
-    access_team_notes: {
-      get() {
-        return this.$store.state.user.attributes.access_team_notes;
-      },
-      set(access_team_notes) {
-        this.$store.commit("user/setAccessTeamNotes", access_team_notes);
-      }
-    },
-    federatedIdentities: {
-      get() {
-        return this.$store.state.user.federatedIdentities;
-      }
-    }
   }
 };
+function formatOrganization(organization) {
+  if (Array.isArray(organization)) {
+    return organization[0];
+  } else {
+    return organization;
+  }
+}
 </script>
 
 <style scoped>

@@ -9,9 +9,7 @@
     </v-skeleton-loader>
     <div id="user-info" v-show="user.username">
       <h1>Update - {{ user.username }}</h1>
-      <user-details :userId="this.$route.params.userid" ref="userDetails">
-        <v-btn id="submit-button" class="secondary" medium v-on:click.prevent="updateUser">Update User</v-btn>
-      </user-details>
+      <user-details :userId="this.$route.params.userid" update-or-create="Update" @submit-user-updates="updateUser" ref="userDetails"></user-details>
       <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
       <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
     </div>
@@ -33,17 +31,9 @@ export default {
     UserUpdateRoles
   },
   methods: {
-    updateUser: function() {
-      //Validate the User Details
-      if (!this.$refs.userDetails.$refs.form.validate()) {
-        this.$store.commit("alert/setAlert", {
-          message: "Please correct errors before submitting",
-          type: "error"
-        });
-        window.scrollTo(0, 0);
-        return;
-      }
-      //Update the user in Keycloak
+    updateUser: function(userDetails) {
+      // Update the user in Keycloak
+      this.$store.commit("user/setUserDetails", userDetails);
       UsersRepository.updateUser(this.$route.params.userid, this.user)
         .then(() => {
           this.$store.commit("alert/setAlert", {

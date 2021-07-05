@@ -11,15 +11,15 @@
           dense
           :items="clients"
           item-text="clientId"
-          item-value="id"
+          return-object
           placeholder="Select an Application"
-          v-model="selectedClientId"
+          v-model="selectedClient"
           @change="getUserClientRoles()"
         ></v-autocomplete>
       </v-col>
     </v-row>
 
-    <div v-if="selectedClientId">
+    <div v-if="selectedClient">
       <v-row no-gutters>
         <v-col class="col-4">
           <v-row no-gutters>
@@ -81,24 +81,31 @@
           </v-row>
         </v-col>
       </v-row>
-      <div class="my-6" v-if="selectedClientId">
-        <v-btn id="save-user-roles" class="secondary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+      <div class="my-6" v-if="selectedClient">
+        <v-btn id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
       </div>
+      <span v-if="selectedClient.clientId.includes('SFDS')">
+        <v-divider class="sub-permissions"></v-divider>
+        <user-update-sfds-auth></user-update-sfds-auth>
+      </span>
     </div>
+
   </v-card>
 </template>
 
 <script>
 import ClientsRepository from "@/api/ClientsRepository";
 import UsersRepository from "@/api/UsersRepository";
+import UserUpdateSfdsAuth from "@/components/UserUpdateSfdsAuth";
 
 export default {
   name: "UserUpdateRoles",
+  components: { UserUpdateSfdsAuth },
   props: ['userId'],
   data() {
     return {
       clients: [],
-      selectedClientId: null,
+      selectedClient: null,
       clientRoles: [],
       effectiveClientRoles: [],
       selectedRoles: []
@@ -107,7 +114,6 @@ export default {
   async created() {
     //TODO error handling
     await this.getClients();
-
   },
   computed: {
     itemsInColumn() {
@@ -154,7 +160,7 @@ export default {
     getUserActiveClientRoles: function() {
       return UsersRepository.getUserActiveClientRoles(
         this.userId,
-        this.selectedClientId
+        this.selectedClient.id
       ).catch(e => {
         console.log(e);
       });
@@ -163,7 +169,7 @@ export default {
     getUserAvailableClientRoles: function() {
       return UsersRepository.getUserAvailableClientRoles(
         this.userId,
-        this.selectedClientId
+        this.selectedClient.id
       ).catch(e => {
         console.log(e);
       });
@@ -172,7 +178,7 @@ export default {
     getUserEffectiveClientRoles: function() {
       return UsersRepository.getUserEffectiveClientRoles(
         this.userId,
-        this.selectedClientId
+        this.selectedClient.id
       ).catch(e => {
         console.log(e);
       });
@@ -191,12 +197,12 @@ export default {
       Promise.all([
         UsersRepository.deleteUserClientRoles(
           this.userId,
-          this.selectedClientId,
+          this.selectedClient.id,
           rolesToDelete
         ),
         UsersRepository.addUserClientRoles(
           this.userId,
-          this.selectedClientId,
+          this.selectedClient.id,
           rolesToAdd
         )
       ])
@@ -221,9 +227,12 @@ export default {
 </script>
 
 <style>
+.right-gutters .col {
+  padding: 10px 12px 10px 0px;
+}
 .roles-checkbox {
-  margin: 0px 0px 12px 0px;
-  padding: 8px 0px 0px 0px;
+  margin: 0 0 12px 0;
+  padding: 8px 0 0 0;
 }
 /* Tooltip text */
 .tooltip .tooltiptext {
@@ -253,7 +262,7 @@ export default {
   content: "";
   position: absolute;
   top: 10px;
-  left: 0%;
+  left: 0;
   margin-left: -10px;
   border-width: 5px;
   border-style: solid;
