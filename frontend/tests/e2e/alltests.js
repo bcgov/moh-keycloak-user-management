@@ -33,9 +33,7 @@ test('Test search', async t => {
     await t.typeText('#user-search', 'testcafe')
         .click('#search-button')
         .expect(Selector('html').textContent)
-        // This is the ID of the testcafe user.
-        // TODO Replace ID with Username
-//        .contains(TEST_CAFE_USER_ID);
+        // Search with Username not with ID anymore
         .contains(TEST_CAFE_USERNAME);
 });
 
@@ -45,9 +43,7 @@ test('Test update user', async t => {
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        // This is the ID of the testcafe user.
-        // TODO Replace ID with Username
-//        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        // Search with Username not with ID anymore
         .click(Selector('td').withText(TEST_CAFE_USERNAME))
         .typeText('#org-details', random_value, { replace: true })
         .click('#submit-button')
@@ -59,8 +55,7 @@ test('Test update user role', async t => {
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')        
-// TODO Replace ID with Username
-//        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        // Search with Username not with ID anymore
         .click(Selector('td').withText(TEST_CAFE_USERNAME))
         .typeText('#select-client', CLIENT_TO_TEST, { replace: true })
         .click(Selector('.v-list-item').withText(CLIENT_TO_TEST))
@@ -73,9 +68,7 @@ test('Test update user role', async t => {
 test('Test search by administrator', async t => {
     await t
         .click('#admin-event-log-link')
-        // TODO Replace ID with Username => TO TEST
       .typeText('#admin-id', TEST_CAFE_USER_ID)
-//        .typeText('#admin-id', TEST_CAFE_USERNAME)
         .pressKey('enter')
         .expect(Selector('#search-results').textContent)
         .contains('Test Cafe');
