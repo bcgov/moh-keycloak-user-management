@@ -23,7 +23,7 @@ test.skip('Test Add SFDS Authorization', async t => {
         //Select a user
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        // Search with Username not with ID anymore
+        // Search with Username
         .click(Selector('td').withText(TEST_CAFE_USERNAME))
         // Select the SFDS Client
         .typeText('#select-client', SFDS_CLIENT, { replace: true })
@@ -56,7 +56,7 @@ test.skip('Test Delete SFDS Authorization', async t => {
         //Select a user
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        // Search with Username not with ID anymore
+        // Search with Username 
         .click(Selector('td').withText(TEST_CAFE_USERNAME))
         // Select the SFDS Client
         .typeText('#select-client', SFDS_CLIENT, { replace: true })

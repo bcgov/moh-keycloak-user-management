@@ -33,7 +33,6 @@ test('Test search', async t => {
     await t.typeText('#user-search', 'testcafe')
         .click('#search-button')
         .expect(Selector('html').textContent)
-        // Search with Username not with ID anymore
         .contains(TEST_CAFE_USERNAME);
 });
 
@@ -43,7 +42,6 @@ test('Test update user', async t => {
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        // Search with Username not with ID anymore
         .click(Selector('td').withText(TEST_CAFE_USERNAME))
         .typeText('#org-details', random_value, { replace: true })
         .click('#submit-button')
@@ -55,7 +53,6 @@ test('Test update user role', async t => {
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')        
-        // Search with Username not with ID anymore
         .click(Selector('td').withText(TEST_CAFE_USERNAME))
         .typeText('#select-client', CLIENT_TO_TEST, { replace: true })
         .click(Selector('.v-list-item').withText(CLIENT_TO_TEST))
