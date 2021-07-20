@@ -3,6 +3,7 @@ import { Selector } from "testcafe";
 
 const SFDS_CLIENT = 'SFDS';
 const TEST_CAFE_USER_ID = '3195a1bf-4bea-47c4-955d-cf52d4e2fc15';
+const TEST_CAFE_USERNAME = 'testcafe';
 const SFDS_MAILBOX_TO_ADD = 'BCMA';
 const SFDS_USE_TO_ADD = 'bcma';
 const SFDS_PERMISSION_TO_ADD = 'send';
@@ -22,7 +23,8 @@ test.skip('Test Add SFDS Authorization', async t => {
         //Select a user
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        // Search with Username
+        .click(Selector('td').withText(TEST_CAFE_USERNAME))
         // Select the SFDS Client
         .typeText('#select-client', SFDS_CLIENT, { replace: true })
         .click(Selector('.v-list-item').withText(SFDS_CLIENT))
@@ -37,7 +39,6 @@ test.skip('Test Add SFDS Authorization', async t => {
         // Permission
         .click('#sfds-permissions')
         .click(Selector('.v-list-item').withText(SFDS_PERMISSION_TO_ADD))
-
         .click('#save-sfds-auth-btn')
         .expect(Selector('#sfds-authorizations-table').textContent)
         .contains(SFDS_MAILBOX_TO_ADD)
@@ -55,7 +56,8 @@ test.skip('Test Delete SFDS Authorization', async t => {
         //Select a user
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        // Search with Username 
+        .click(Selector('td').withText(TEST_CAFE_USERNAME))
         // Select the SFDS Client
         .typeText('#select-client', SFDS_CLIENT, { replace: true })
         .click(Selector('.v-list-item').withText(SFDS_CLIENT))
