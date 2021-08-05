@@ -214,9 +214,9 @@ export default {
       return SfdsRepository.getUses()
         .then(response => {
             this.sfdsUses = response.data.map((item) => {
-            item.label = `${item.id} - ${item.name}`;
-            return item;
-          });
+                item.label = `${item.id} - ${item.name}`;
+                return item;
+            });
         })
         .catch(e => {
           console.log(e);
@@ -226,18 +226,15 @@ export default {
       console.log("get SFDS Accounts API call");
       SfdsRepository.getAccounts()
         .then(response => {
-          this.sfdsMailboxes = response.data.map((item) => {
-            item.label = `${item.id} - ${item.name}`;
-            return item;
-          });
+            this.sfdsMailboxes = response.data.map((item) => {
+                item.label = `${item.id} - ${item.name}`;
+                return item;
+            });
         })
         .catch(e => {
           console.log(e);
         });
 
-    },
-    getSfdsObjectLabel: function(item) {
-      return `${item.id} - ${item.name}`;
     },
     editItem: function (item) {
       this.editedIndex = this.sfdsAuthorizations.indexOf(item)
