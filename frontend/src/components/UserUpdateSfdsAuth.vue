@@ -150,7 +150,6 @@ export default {
     };
   },
   async created() {
-    //TODO error handling
     await this.getUses();
     await this.getAccounts();
     
