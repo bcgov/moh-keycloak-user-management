@@ -12,7 +12,6 @@ function kcRequest() {
             headers: {Authorization: 'Bearer ' + keycloak.token}
         });
     }
-
     return keycloak.updateToken(0).then(createAxios);
 }
 
@@ -24,9 +23,17 @@ function umsRequest() {
             headers: {Authorization: 'Bearer ' + keycloak.token}
         });
     }
-
     return keycloak.updateToken(0).then(createAxios);
-
 }
 
-export { kcRequest, umsRequest }
+function sfdsRequest() {
+    function createAxios() {
+        const baseURL = app_config.config.sfds_url;
+        return axios.create({
+            baseURL: baseURL
+        });
+    }
+    return keycloak.updateToken(0).then(createAxios);
+}
+
+export {kcRequest, umsRequest, sfdsRequest}

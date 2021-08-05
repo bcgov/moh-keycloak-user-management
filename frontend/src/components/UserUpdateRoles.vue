@@ -135,7 +135,7 @@ export default {
         .catch(e => {
           console.log(e);
         });
-    },
+    }, 
     getUserClientRoles: async function() {
       this.effectiveClientRoles = [];
       this.clientRoles = [];
@@ -228,7 +228,7 @@ export default {
 
 <style>
 .right-gutters .col {
-  padding: 10px 12px 10px 0px;
+  padding: 10px 12px 10px 0;
 }
 .roles-checkbox {
   margin: 0 0 12px 0;

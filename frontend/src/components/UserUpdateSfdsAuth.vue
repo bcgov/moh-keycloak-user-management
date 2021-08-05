@@ -30,6 +30,8 @@
                           id="sfds-mailboxes"
                           v-model="currentSfdsAuthorization.m"
                           :items="sfdsMailboxes"
+                          item-text="label"
+                          item-value="id"
                           required
                           :rules="mailboxRules"
                           outlined
@@ -42,7 +44,9 @@
                           id="sfds-uses"
                           class="sfds-uses"
                           v-model="currentSfdsAuthorization.u"
-                          :items="sfdsUses"
+                          :items="sfdsUses"     
+                          item-text=label
+                          item-value="id"
                           required
                           :rules="[v => !!v || 'At least one use is required',
                                   (v) =>  v.length>0 || 'At least one use is required']"
@@ -114,6 +118,7 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
+import SfdsRepository from "@/api/SfdsRepository"; 
 
 export default {
   name: "UserUpdateSfdsAuth",
@@ -127,8 +132,8 @@ export default {
       ],
       sfdsAuthorizations: [],
       sfdsAuthorizationsToSet: [],
-      sfdsMailboxes: ['hscis', 'bcma', 'phc', 'hoopc'],
-      sfdsUses: ['bcma', 'hscis', 'phc', 'wda', 'hoopc', 'grp'],
+      sfdsUses: [],   
+      sfdsMailboxes: [],
       sfdsPermissions: ['get', 'send', 'get-send', 'get-delete', 'get-send-delete'],
       currentSfdsAuthorization: {},
       editDialog: false,
@@ -145,8 +150,11 @@ export default {
     };
   },
   async created() {
+    await this.getUses();
+    await this.getAccounts();
+    
     let sfdsAuthString = "";
-
+    
     if (this.$store.state.user.attributes.sfds_auth_1) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_1[0]);
     }
@@ -200,6 +208,33 @@ export default {
     }
   },
   methods: {
+    getUses: function() {
+      console.log("get SFDS Uses API call");
+      return SfdsRepository.getUses()
+        .then(response => {
+            this.sfdsUses = response.data.map((item) => {
+                item.label = `${item.id} - ${item.name}`;
+                return item;
+            });
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    }, 
+    getAccounts: function() {
+      console.log("get SFDS Accounts API call");
+      SfdsRepository.getAccounts()
+        .then(response => {
+            this.sfdsMailboxes = response.data.map((item) => {
+                item.label = `${item.id} - ${item.name}`;
+                return item;
+            });
+        })
+        .catch(e => {
+          console.log(e);
+        });
+
+    },
     editItem: function (item) {
       this.editedIndex = this.sfdsAuthorizations.indexOf(item)
       this.currentSfdsAuthorization = Object.assign({}, item)
@@ -277,9 +312,9 @@ function chunkString(str, size) {
 
 <style scoped>
   .sub-permissions {
-    margin: 20px 0px 20px 0px;
+    margin: 20px 0 20px 0;
   }
   .sfds-authorizations-header {
-    margin: 22px 0px 22px 0px;
+    margin: 22px 0 22px 0;
   }
 </style>

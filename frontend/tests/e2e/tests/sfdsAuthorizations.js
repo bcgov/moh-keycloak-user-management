@@ -4,7 +4,7 @@ import { Selector } from "testcafe";
 const SFDS_CLIENT = 'SFDS';
 const TEST_CAFE_USER_ID = '3195a1bf-4bea-47c4-955d-cf52d4e2fc15';
 const TEST_CAFE_USERNAME = 'testcafe';
-const SFDS_MAILBOX_TO_ADD = 'BCMA';
+const SFDS_MAILBOX_TO_ADD = 'bcma';
 const SFDS_USE_TO_ADD = 'bcma';
 const SFDS_PERMISSION_TO_ADD = 'send';
 
