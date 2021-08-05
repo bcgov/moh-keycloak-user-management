@@ -313,9 +313,9 @@ function chunkString(str, size) {
 
 <style scoped>
   .sub-permissions {
-    margin: 20px 0px 20px 0px;
+    margin: 20px 0 20px 0;
   }
   .sfds-authorizations-header {
-    margin: 22px 0px 22px 0px;
+    margin: 22px 0 22px 0;
   }
 </style>
