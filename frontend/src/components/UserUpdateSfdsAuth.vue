@@ -215,7 +215,7 @@ export default {
             this.sfdsUses = response.data.map((item) => {
                 item.label = `${item.id} - ${item.name}`;
                 return item;
-            });
+            }).sort((a, b) => a.label > b.label && 1 || -1);
         })
         .catch(e => {
           console.log(e);
@@ -228,7 +228,7 @@ export default {
             this.sfdsMailboxes = response.data.map((item) => {
                 item.label = `${item.id} - ${item.name}`;
                 return item;
-            });
+            }).sort((a, b) => a.label > b.label && 1 || -1);
         })
         .catch(e => {
           console.log(e);
