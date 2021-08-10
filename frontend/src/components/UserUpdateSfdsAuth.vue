@@ -233,7 +233,6 @@ export default {
         .catch(e => {
           console.log(e);
         });
-
     },
     editItem: function (item) {
       this.editedIndex = this.sfdsAuthorizations.indexOf(item)
@@ -281,8 +280,11 @@ export default {
       })
     },
     commitAndUpdateUserWithSfdsAuthUpdates: function () {
-      this.setSfdsAuthStoreState(this.sfdsAuthorizationsToSet)
-      UsersRepository.updateUser(this.$route.params.userid, this.$store.state.user)
+      // we can only have up to ~1000char stored in KC for all the mailbox permissions per users
+      var isLengthOK = this.isLengthOK(this.sfdsAuthorizationsToSet);
+      if(isLengthOK){
+        this.setSfdsAuthStoreState(this.sfdsAuthorizationsToSet)
+        UsersRepository.updateUser(this.$route.params.userid, this.$store.state.user)
           .then(() => {
             // JSON stringify and parse for deep clone of an array with simple objects
             this.sfdsAuthorizations = JSON.parse(JSON.stringify(this.sfdsAuthorizationsToSet));
@@ -290,9 +292,21 @@ export default {
           })
           .catch(error => {
             this.alertStatus = true
-            this.alertMessage = "Error updating user sfds authorizations: " + error
+            this.alertMessage = "Error updating user SFDS Authorizations: " + error
             this.setSfdsAuthStoreState(this.sfdsAuthorizations)
           });
+      }
+    },    
+    isLengthOK: function(sfdsAuthz) {
+      let sfdsAuthString = JSON.stringify(sfdsAuthz);
+      // Keycloak can only store 4 attributes at 255 chars, so the size limit is 1020char
+      if (sfdsAuthString.length > 1020) {
+        this.alertStatus = true
+        this.alertMessage = "Error: There are too many SFDS Authorizations for this user, please remove some before adding more."
+        this.setSfdsAuthStoreState(this.sfdsAuthorizations)
+        return false;
+      }
+      return true;
     },
     setSfdsAuthStoreState: function(sfdsAuthz) {
       let sfdsAuthString = JSON.stringify(sfdsAuthz);
