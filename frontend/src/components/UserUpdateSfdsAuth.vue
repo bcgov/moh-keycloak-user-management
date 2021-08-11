@@ -2,13 +2,13 @@
   <v-data-table
       id="sfds-authorizations-table"
       :headers="sfdsTableHeaders"
-      :items="sfdsAuthorizations">
+      :items="sfdsAuthorizations"
+      class="break">
     <template v-slot:top>
-      <v-toolbar
-          flat
-      >
+      <v-toolbar flat >
         <h2 class="sfds-authorizations-header">SFDS Authorizations</h2>
         <v-spacer></v-spacer>
+        
         <v-dialog v-model="editDialog" max-width="840px">
           <template v-slot:activator="{ on, attrs }">
             <v-btn id="new-sfds-auth-btn" color="primary" darkclass="mb-2" v-bind="attrs" v-on="on">
@@ -82,6 +82,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        
         <v-dialog v-model="deleteDialog" max-width="650px" >
           <v-card >
             <v-card-title class="headline">Are you sure you want to delete this authorization?</v-card-title>
@@ -97,8 +98,10 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        
       </v-toolbar>
     </template>
+      
     <template v-slot:item.actions="{ item }">
       <v-icon
           small
@@ -125,9 +128,9 @@ export default {
   data() {
     return {
       sfdsTableHeaders: [
-        { text: 'Mailbox', value: 'm' },
-        { text: 'Uses', value: 'u' },
-        { text: 'Permission', value: 'p' },
+        { text: 'Mailbox', value: 'm'},
+        { text: 'Uses', value: 'u', width:'60%', class:'break' },
+        { text: 'Permission', value: 'p'},
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       sfdsAuthorizations: [],
@@ -330,5 +333,8 @@ function chunkString(str, size) {
   }
   .sfds-authorizations-header {
     margin: 22px 0 22px 0;
+  }
+  .break {
+    word-break: break-all;
   }
 </style>
