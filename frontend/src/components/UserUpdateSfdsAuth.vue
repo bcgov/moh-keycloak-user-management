@@ -209,8 +209,8 @@ export default {
       }
       
       // if Mailbox does not exist anymore in SFDS, then the permission need to be updated/deleted
-      const rule3 = v => (this.sfdsMailboxes.some(mailbox => mailbox['id'] === v)) || 'This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations.';
-      rules.push(rule3);
+//      const rule3 = v => (this.sfdsMailboxes.some(mailbox => mailbox['id'] === v)) || 'This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations.';
+//      rules.push(rule3);
       
       return rules;
     }
@@ -245,6 +245,11 @@ export default {
     editItem: function (item) {
       this.editedIndex = this.sfdsAuthorizations.indexOf(item)
       this.currentSfdsAuthorization = Object.assign({}, item)
+      // if Mailbox does not exist anymore in SFDS, then the permission need to be updated/deleted
+      if (!this.sfdsMailboxes.some(mailbox => mailbox['id'] === this.currentSfdsAuthorization.m)) {
+        this.alertStatus = true
+        this.alertMessage = "This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations."
+      }
       this.editDialog = true
     },
     deleteItem: function (item) {
@@ -263,6 +268,7 @@ export default {
       if (!this.$refs.sfdsForm.validate()) {
         return;
       }
+
       // JSON stringify and parse for deep clone of an array with simple objects
       // Clone the array so that the datatable presented to the user isn't updated until the request is successfully submitted
       // After a success response we'll copy the new resulting array back.
@@ -272,6 +278,13 @@ export default {
       } else {
         this.sfdsAuthorizationsToSet.push(this.currentSfdsAuthorization);
       }
+      
+      // Check global error
+      var isGlobalErrorRaised = this.isGlobalErrorRaised(this.sfdsAuthorizationsToSet);
+      if(isGlobalErrorRaised){
+        return;
+      }
+      
       this.commitAndUpdateUserWithSfdsAuthUpdates();
     },
     closeDialog: function () {
@@ -288,9 +301,6 @@ export default {
       })
     },
     commitAndUpdateUserWithSfdsAuthUpdates: function () {
-      // we can only have up to ~1000char stored in KC for all the mailbox permissions per users
-      var isLengthOK = this.isLengthOK(this.sfdsAuthorizationsToSet);
-      if(isLengthOK){
         this.setSfdsAuthStoreState(this.sfdsAuthorizationsToSet)
         UsersRepository.updateUser(this.$route.params.userid, this.$store.state.user)
           .then(() => {
@@ -303,18 +313,26 @@ export default {
             this.alertMessage = "Error updating user SFDS Authorizations: " + error
             this.setSfdsAuthStoreState(this.sfdsAuthorizations)
           });
-      }
     },    
-    isLengthOK: function(sfdsAuthz) {
+    isGlobalErrorRaised: function(sfdsAuthz) {
+      // 1 - check if Mailbox does not exist anymore in SFDS
+      // Need this here too, as we need to prevent the user to save the faulty set of permission again
+      if (!this.sfdsMailboxes.some(mailbox => mailbox['id'] === this.currentSfdsAuthorization.m)) {
+        this.alertStatus = true
+        this.alertMessage = "This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations."
+        this.setSfdsAuthStoreState(this.sfdsAuthorizations)
+        return true;
+      }
+      // 2 - check length of KC attributes
       let sfdsAuthString = JSON.stringify(sfdsAuthz);
       // Keycloak can only store 4 attributes at 255 chars, so the size limit is 1020char
       if (sfdsAuthString.length > 1020) {
         this.alertStatus = true
         this.alertMessage = "Error: There are too many SFDS Authorizations for this user, please remove some before adding more."
         this.setSfdsAuthStoreState(this.sfdsAuthorizations)
-        return false;
+        return true;
       }
-      return true;
+      return false;
     },
     setSfdsAuthStoreState: function(sfdsAuthz) {
       let sfdsAuthString = JSON.stringify(sfdsAuthz);
