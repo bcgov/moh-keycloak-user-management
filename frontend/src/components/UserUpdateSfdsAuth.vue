@@ -207,6 +207,11 @@ export default {
           rules.push(rule2);
         }
       }
+      
+      // if Mailbox does not exist anymore in SFDS, then the permission need to be updated/deleted
+      const rule3 = v => (this.sfdsMailboxes.some(mailbox => mailbox['id'] === v)) || 'This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations.';
+      rules.push(rule3);
+      
       return rules;
     }
   },
