@@ -4,6 +4,8 @@ import { Role } from 'testcafe';
 const SITE_UNDER_TEST = 'http://localhost:8080';
 
 const TEST_CAFE_USER_ID = '3195a1bf-4bea-47c4-955d-cf52d4e2fc15';
+const TEST_CAFE_USERNAME = 'testcafe';
+const CLIENT_TO_TEST = 'FMDB';
 
 const regularAccUser = Role(SITE_UNDER_TEST, async t => {
     await t
@@ -31,8 +33,7 @@ test('Test search', async t => {
     await t.typeText('#user-search', 'testcafe')
         .click('#search-button')
         .expect(Selector('html').textContent)
-        // This is the ID of the testcafe user.
-        .contains(TEST_CAFE_USER_ID);
+        .contains(TEST_CAFE_USERNAME);
 });
 
 test('Test update user', async t => {
@@ -41,8 +42,7 @@ test('Test update user', async t => {
     await t
         .typeText('#user-search', 'testcafe')
         .click('#search-button')
-        // This is the ID of the testcafe user.
-        .click(Selector('td').withText(TEST_CAFE_USER_ID))
+        .click(Selector('td').withText(TEST_CAFE_USERNAME))
         .typeText('#org-details', random_value, { replace: true })
         .click('#submit-button')
         .expect(Selector('html').textContent)
@@ -50,13 +50,12 @@ test('Test update user', async t => {
 });
 
 test('Test update user role', async t => {
-    const client = 'FMDB'
     await t
         .typeText('#user-search', 'testcafe')
-        .click('#search-button')
-        .click(Selector('td').withText(TEST_CAFE_USER_ID))
-        .typeText('#select-client', client, { replace: true })
-        .click(Selector('.v-list-item').withText('FMDB'))
+        .click('#search-button')        
+        .click(Selector('td').withText(TEST_CAFE_USERNAME))
+        .typeText('#select-client', CLIENT_TO_TEST, { replace: true })
+        .click(Selector('.v-list-item').withText(CLIENT_TO_TEST))
         .click('#role-0')
         .click('#save-user-roles')
         .expect(Selector('#primary-alert').textContent)
@@ -66,7 +65,7 @@ test('Test update user role', async t => {
 test('Test search by administrator', async t => {
     await t
         .click('#admin-event-log-link')
-        .typeText('#admin-id', TEST_CAFE_USER_ID)
+      .typeText('#admin-id', TEST_CAFE_USER_ID)
         .pressKey('enter')
         .expect(Selector('#search-results').textContent)
         .contains('Test Cafe');
