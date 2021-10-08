@@ -36,36 +36,8 @@ export default {
       vueCliMode: process.env.NODE_ENV,
       showKeycloakTools: false
     };
-  },
-  mounted() {
-    const requiredRoles = ["view-events", "manage-users", "view-users", "query-clients", "query-groups", "query-users"];
-    let actualRoles = [];
-    if (this.$keycloak.tokenParsed.resource_access) {
-      actualRoles = this.$keycloak.tokenParsed.resource_access['realm-management'].roles;
-    }
-    const missingRoles = getMissingRoles(
-        requiredRoles,
-        actualRoles
-    );
-    if (missingRoles.length > 0) {
-      this.$store.commit("alert/setAlert", {
-        message: `You are missing roles required to use this application.
-          Missing roles: ${missingRoles.join(', ')}.`,
-        type: "error"
-      });
-    }
   }
 };
-
-function getMissingRoles(requiredRoles, actualRoles) {
-  const missingRoles = [];
-  requiredRoles.forEach(requiredRole => {
-    if (!actualRoles.includes(requiredRole)) {
-      missingRoles.push(requiredRole);
-    }
-  });
-  return missingRoles;
-}
 </script>
 
 <style src=./assets/css/main.css></style>
