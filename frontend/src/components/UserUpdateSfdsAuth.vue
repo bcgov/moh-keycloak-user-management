@@ -170,6 +170,9 @@ export default {
     if (this.$store.state.user.attributes.sfds_auth_4) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_4[0]);
     }
+    if (this.$store.state.user.attributes.sfds_auth_5) {
+      sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_5[0]);
+    }
 
     if (sfdsAuthString !== "") {
       this.sfdsAuthorizations = JSON.parse(sfdsAuthString);
@@ -320,8 +323,8 @@ export default {
       }
       // 2 - check length of KC attributes
       let sfdsAuthString = JSON.stringify(sfdsAuthz);
-      // Keycloak can only store 4 attributes at 255 chars, so the size limit is 1020char
-      if (sfdsAuthString.length > 1020) {
+      // Keycloak can store 255 characters in an attribute. The UMC is coded to save 5 attributes. 5 attributes * 255 characters = 1275.
+      if (sfdsAuthString.length > 1275) {
         this.alertStatus = true
         this.alertMessage = "Error: There are too many SFDS Authorizations for this user, please remove some before adding more."
         this.setSfdsAuthStoreState(this.sfdsAuthorizations)
@@ -334,7 +337,7 @@ export default {
       // Keycloak can only store attributes at 255 chars
       // A user could require up to ~1000 characters worth of mailbox permissions in the current storage format
       let sfdsAuths = chunkString(sfdsAuthString, 255);
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         this.$store.commit("user/setSfdsAuth" + (i+1), sfdsAuths[i]);
       }
     }
