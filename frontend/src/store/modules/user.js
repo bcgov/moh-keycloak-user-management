@@ -12,6 +12,7 @@ const getDefaultState = () => {
             sfds_auth_2: [],
             sfds_auth_3: [],
             sfds_auth_4: [],
+            sfds_auth_5: []
         },
         federatedIdentities: []
     }
@@ -36,6 +37,7 @@ const mutations = {
             state.attributes.sfds_auth_2 = user.attributes.sfds_auth_2
             state.attributes.sfds_auth_3 = user.attributes.sfds_auth_3
             state.attributes.sfds_auth_4 = user.attributes.sfds_auth_4
+            state.attributes.sfds_auth_5 = user.attributes.sfds_auth_5
         }
         state.federatedIdentities = user.federatedIdentities;
     },
@@ -85,6 +87,9 @@ const mutations = {
     },
     setSfdsAuth4(state, sfds_auth_1) {
         state.attributes.sfds_auth_4 = sfds_auth_1
+    },
+    setSfdsAuth5(state, sfds_auth_1) {
+        state.attributes.sfds_auth_5 = sfds_auth_1
     },
 }
 
