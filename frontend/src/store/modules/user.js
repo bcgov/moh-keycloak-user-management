@@ -90,7 +90,7 @@ const mutations = {
     },
     setSfdsAuth5(state, sfds_auth_1) {
         state.attributes.sfds_auth_5 = sfds_auth_1
-    },
+    }
 }
 
 export default {

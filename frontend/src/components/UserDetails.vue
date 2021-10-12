@@ -148,6 +148,7 @@ export default {
           if (this.user.attributes.org_details) {
             this.user.attributes.org_details = formatOrganization(this.user.attributes.org_details);
           }
+
           this.$store.commit("user/setUser", this.user);
         })
         .catch(e => {
