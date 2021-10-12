@@ -139,8 +139,15 @@ export default {
       return UsersRepository.getUser(this.userId)
         .then(response => {
           this.user = response.data;
+
+          if (!this.user.attributes) {
+            this.user.attributes = {}
+          }
+
           // Keycloak returns attributes as arrays which doesn't work with the autocomplete for org details
-          this.user.attributes.org_details = formatOrganization(this.user.attributes.org_details);
+          if (this.user.attributes.org_details) {
+            this.user.attributes.org_details = formatOrganization(this.user.attributes.org_details);
+          }
           this.$store.commit("user/setUser", this.user);
         })
         .catch(e => {
