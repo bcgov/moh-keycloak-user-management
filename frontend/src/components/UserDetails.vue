@@ -118,6 +118,7 @@ export default {
         firstName: '',
         lastName: '',
         email: '',
+        enabled: true,
         attributes: {
           phone: null,
           org_details: null,

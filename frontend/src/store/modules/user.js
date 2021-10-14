@@ -4,6 +4,7 @@ const getDefaultState = () => {
         firstName: '',
         lastName: '',
         email: '',
+        enabled: true,
         attributes: {
             phone: '',
             org_details: '',
@@ -29,6 +30,7 @@ const mutations = {
         state.firstName = user.firstName
         state.lastName = user.lastName
         state.email = user.email
+        state.enabled = user.enabled
         if (user.attributes) {
             state.attributes.phone = user.attributes.phone
             state.attributes.org_details = user.attributes.org_details
@@ -46,6 +48,7 @@ const mutations = {
         state.firstName = user.firstName
         state.lastName = user.lastName
         state.email = user.email
+        state.enabled = user.enabled
         if (user.attributes) {
             state.attributes.phone = user.attributes.phone
             state.attributes.org_details = user.attributes.org_details
