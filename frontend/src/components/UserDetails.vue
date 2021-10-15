@@ -38,6 +38,7 @@
             <v-text-field
               dense
               outlined
+              :disabled="!updateUserDetailsRole"
               id="first-name"
               v-model="user.firstName"
               required
@@ -48,6 +49,7 @@
             <v-text-field
               dense
               outlined
+              :disabled="!updateUserDetailsRole"
               id="last-name"
               v-model="user.lastName"
               required
@@ -58,6 +60,7 @@
             <v-text-field
               dense
               outlined
+              :disabled="!updateUserDetailsRole"
               id="email"
               v-model="user.email"
               required
@@ -65,11 +68,12 @@
               type="email"
             />
             <label for="phone">Telephone Number</label>
-            <v-text-field dense outlined id="phone" v-model="user.attributes.phone" />
+            <v-text-field dense outlined :disabled="!updateUserDetailsRole" id="phone" v-model="user.attributes.phone" />
 
             <label for="org-details">Organization</label>
             <v-autocomplete
                 id="org-details"
+                :disabled="!updateUserDetailsRole"
                 v-model="user.attributes.org_details"
                 :items="$options.organizations"
                 dense
@@ -77,7 +81,7 @@
             ></v-autocomplete>
 
             <label for="notes">Notes</label>
-            <v-textarea outlined dense id="notes" v-model="user.attributes.access_team_notes" maxlength="255" />
+            <v-textarea outlined dense id="notes" :disabled="!updateUserDetailsRole" v-model="user.attributes.access_team_notes" maxlength="255" />
 
           </v-form>
         </v-col>
@@ -90,7 +94,7 @@
           </ul>
         </v-col>
       </v-row>
-      <v-btn id="submit-button" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
+      <v-btn id="submit-button" v-if="updateUserDetailsRole" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
     </v-card>
   </div>
 </template>
@@ -135,6 +139,13 @@ export default {
       await this.getUser();
     }
   },
+  computed: {
+    updateUserDetailsRole: function() {
+      return (this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE']
+          && this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'].roles.includes('manage-users-details'))
+          ? true : false
+    }
+  },
   methods: {
     getUser: function() {
       return UsersRepository.getUser(this.userId)
@@ -177,6 +188,7 @@ export default {
         'phsa': 'Health Authority',
         'moh_idp': 'MoH LDAP',
         'idir': 'IDIR',
+        'idir_aad': 'IDIR AzureAD',
         'bceid': 'BCeID',
         'bcsc': 'BCSC'
       }
