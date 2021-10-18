@@ -40,7 +40,8 @@ label{
     font-size: 1rem;
     font-weight: 600;
 }
-label.disabled {
+label.disabled,
+label[disabled="disabled"] {
     color: #777;
     opacity: 0.75;
 }
