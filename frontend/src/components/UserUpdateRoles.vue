@@ -29,6 +29,7 @@
             <v-col class="col-6" v-for="col in numberOfClientRoleColumns" :key="col">
               <span v-for="item in itemsInColumn" :key="item">
                 <v-checkbox
+                    :disabled="!hasRoleForManageUserRoles"
                     v-if="item*col <= clientRoles.length"
                     class="roles-checkbox"
                     hide-details="auto"
@@ -82,7 +83,7 @@
         </v-col>
       </v-row>
       <div class="my-6" v-if="selectedClient">
-        <v-btn id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+        <v-btn v-if="hasRoleForManageUserRoles" id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
       </div>
       <span v-if="selectedClient.clientId.includes('SFDS')">
         <v-divider class="sub-permissions"></v-divider>
@@ -121,6 +122,12 @@ export default {
     },
     numberOfClientRoleColumns() {
       return (this.clientRoles.length > 10) ? 2 : 1
+    },
+    hasRoleForManageUserRoles: function() {
+      const umsClientId = "USER-MANAGEMENT-SERVICE";
+      const manageUserRolesName = "manage-user-roles";
+
+      return !!this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(manageUserRolesName)
     }
   },
   methods: {
