@@ -6,7 +6,7 @@
       <v-row no-gutters>
         <v-col class="col-7">
           <v-form ref="form">
-            <label for="user-name" :disabled="!!userId" class="required">Username</label>
+            <label for="user-name" :disabled="!!userId || !editUserDetailsPermission" class="required">Username</label>
             <v-tooltip right v-if="!userId">
               <template v-slot:activator="{ on }">
                 <v-icon id="user-name-tooltip-icon" v-on="on" small>mdi-help-circle</v-icon>
@@ -26,7 +26,7 @@
             </v-tooltip>
             <v-text-field
               dense
-              :disabled="!!userId"
+              :disabled="!!userId || !editUserDetailsPermission"
               outlined
               id="user-name"
               v-model="user.username"
@@ -34,50 +34,55 @@
               :rules="[v => !!v || 'Username is required']"
             />
 
-            <label for="first-name" class="required">First Name</label>
+            <label :disabled="!editUserDetailsPermission" for="first-name" class="required">First Name</label>
             <v-text-field
               dense
               outlined
+              :disabled="!editUserDetailsPermission"
               id="first-name"
               v-model="user.firstName"
               required
               :rules="[v => !!v || 'First Name is required']"
             />
 
-            <label for="last-name" class="required">Last Name</label>
+            <label :disabled="!editUserDetailsPermission" for="last-name" class="required">Last Name</label>
             <v-text-field
               dense
               outlined
+              :disabled="!editUserDetailsPermission"
               id="last-name"
               v-model="user.lastName"
               required
               :rules="[v => !!v || 'Last Name is required']"
             />
 
-            <label for="email" class="required">Email Address</label>
+            <label :disabled="!editUserDetailsPermission" for="email" class="required">Email Address</label>
             <v-text-field
               dense
               outlined
+              :disabled="!editUserDetailsPermission"
               id="email"
               v-model="user.email"
               required
               :rules="emailRules"
               type="email"
             />
-            <label for="phone">Telephone Number</label>
-            <v-text-field dense outlined id="phone" v-model="user.attributes.phone" />
 
-            <label for="org-details">Organization</label>
+            <label :disabled="!editUserDetailsPermission" for="phone">Telephone Number</label>
+            <v-text-field dense outlined :disabled="!editUserDetailsPermission" id="phone" v-model="user.attributes.phone" />
+
+            <label :disabled="!editUserDetailsPermission" for="org-details">Organization</label>
             <v-autocomplete
                 id="org-details"
+                :disabled="!editUserDetailsPermission"
                 v-model="user.attributes.org_details"
                 :items="$options.organizations"
                 dense
                 outlined
             ></v-autocomplete>
 
-            <label for="notes">Notes</label>
-            <v-textarea outlined dense id="notes" v-model="user.attributes.access_team_notes" maxlength="255" />
+            <label :disabled="!editUserDetailsPermission" for="notes">Notes</label>
+            <v-textarea outlined dense id="notes" :disabled="!editUserDetailsPermission" v-model="user.attributes.access_team_notes" maxlength="255" />
 
           </v-form>
         </v-col>
@@ -90,7 +95,7 @@
           </ul>
         </v-col>
       </v-row>
-      <v-btn id="submit-button" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
+      <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
     </v-card>
   </div>
 </template>
@@ -135,6 +140,25 @@ export default {
       await this.getUser();
     }
   },
+  computed: {
+    editUserDetailsPermission: function() {
+      const onCreateUserPage = !this.userId;
+
+      const umsClientId = "USER-MANAGEMENT-SERVICE";
+      const manageUserDetailsRoleName = "manage-user-details";
+      const createUserRoleName = "create-user";
+
+      const hasManageUserDetails = this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(manageUserDetailsRoleName);
+      const hasCreateUser = this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName);
+
+      if (onCreateUserPage && hasCreateUser) {
+        return true
+      } else if (!onCreateUserPage && hasManageUserDetails) {
+        return true
+      }
+      return false
+    }
+  },
   methods: {
     getUser: function() {
       return UsersRepository.getUser(this.userId)
@@ -177,6 +201,7 @@ export default {
         'phsa': 'Health Authority',
         'moh_idp': 'MoH LDAP',
         'idir': 'IDIR',
+        'idir_aad': 'IDIR AzureAD',
         'bceid': 'BCeID',
         'bcsc': 'BCSC'
       }

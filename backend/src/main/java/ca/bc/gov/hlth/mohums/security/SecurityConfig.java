@@ -32,8 +32,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.view-events}")
     private String viewEventsRole;
 
-    @Value("${user-management-client.roles.manage-users}")
-    private String manageUsersRole;
+    @Value("${user-management-client.roles.create-user}")
+    private String createUserRole;
+
+    @Value("${user-management-client.roles.manage-user-details}")
+    private String manageUserDetailsRole;
+
+    @Value("${user-management-client.roles.manage-user-roles}")
+    private String manageUserRolesRole;
 
     @Value("${user-management-client.roles.manage-user-groups}")
     private String manageUserGroupsRole;
@@ -57,11 +63,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
                 .mvcMatchers(HttpMethod.GET,"/users/{userId}/groups").access(String.format("hasRole('%s') and hasRole('%s')", viewUsersRole, viewGroupsRole))
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
-                .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(manageUsersRole)
-                .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUsersRole, manageUserGroupsRole))
-                .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUsersRole)
-                .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUsersRole, manageUserGroupsRole))
-                .mvcMatchers(HttpMethod.DELETE, "/users/**").hasRole(manageUsersRole)
+                .mvcMatchers(HttpMethod.POST, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
+                .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(createUserRole)
+                .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUserDetailsRole, manageUserGroupsRole))
+                .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUserDetailsRole)
+                .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUserDetailsRole, manageUserGroupsRole))
+                .mvcMatchers(HttpMethod.DELETE, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
                 .mvcMatchers("/*").denyAll()
                 .and()
             .oauth2ResourceServer().jwt()

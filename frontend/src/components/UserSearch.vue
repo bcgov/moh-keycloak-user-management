@@ -31,7 +31,7 @@
           <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput)">Search Users</v-btn>
       </v-col>
       <v-col class="col-2">
-        <v-btn id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
+        <v-btn v-if="hasCreateUserRole" id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
       </v-col>
     </v-row>
 
@@ -44,7 +44,7 @@
         </a>
       </v-col>
       <v-col class="col-6">
-        <v-btn id="adv-create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
+        <v-btn v-if="hasCreateUserRole" id="adv-create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
       </v-col>
 
       <v-col class="col-6">
@@ -314,6 +314,12 @@ export default {
     },
     maxDateInput() {
       return new Date().toISOString().substr(0, 10).toString();
+    },
+    hasCreateUserRole: function() {
+      const umsClientId = "USER-MANAGEMENT-SERVICE";
+      const createUserRoleName = "create-user";
+
+      return !!this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName)
     }
   },
   methods: {
