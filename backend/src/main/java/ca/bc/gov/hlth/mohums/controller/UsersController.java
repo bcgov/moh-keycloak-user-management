@@ -47,7 +47,8 @@ public class UsersController {
             @RequestParam Optional<String> username,
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
-            @RequestParam Optional<String> lastLogBefore
+            @RequestParam Optional<String> lastLogBefore,
+            @RequestParam Optional<String> clientName
     ) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -87,6 +88,11 @@ public class UsersController {
                 start += maxEvents;
             } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
 
+            //Filter login events to just the specified clientId
+            if (clientName.isPresent()){
+                allEventsLastLog = allEventsLastLog.stream().filter(event -> event.get("clientId").equals(clientName.get())).collect(Collectors.toList());
+            }
+            
             Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
                     .filter(event -> event.get("userId") != null)
                     .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));

@@ -301,6 +301,14 @@ export default {
       } else {
         params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDate);
       }
+      if (this.selectedClientId){
+        this.clients.forEach(client => {
+          if (client.id==this.selectedClientId){
+            params = this.addQueryParameter(params, "clientName", client.name);
+          }
+        });
+      }
+      
       return params;
     },
     itemsInColumn() {
