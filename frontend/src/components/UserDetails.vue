@@ -148,7 +148,7 @@ export default {
     // TODO error handling
     this.$store.commit("user/resetState");
     if (this.userId) {
-      await this.getUser()
+      await this.getUser();
       await this.loadUserRoles();
     }
   },
