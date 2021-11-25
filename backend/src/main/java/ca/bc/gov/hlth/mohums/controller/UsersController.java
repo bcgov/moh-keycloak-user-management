@@ -48,7 +48,9 @@ public class UsersController {
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
             @RequestParam Optional<String> lastLogBefore,
-            @RequestParam Optional<String> clientName
+            @RequestParam Optional<String> clientName,
+            @RequestParam Optional<String> clientId,
+            @RequestParam Optional<String[]> selectedRoles
     ) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -69,6 +71,41 @@ public class UsersController {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             users = filteredUsers;
 
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
+        }
+        
+        //Filter based on selected client & roles
+        if (clientId.isPresent()){
+            List<Object> filteredUsers = new ArrayList<>();
+            String[] roles = null;
+            Map<String,String> clientsInRoles = new HashMap<>();
+            if (selectedRoles.isEmpty()){
+                //If no roles selected, grab all roles for the selected client
+                ResponseEntity res = webClientService.getClientRoles(clientId.get());
+                List<Map> allRoles = (List)res.getBody();
+                roles = new String[allRoles.size()];
+                for (int i=0; i<allRoles.size(); i++){
+                    roles[i] = (String)allRoles.get(i).get("name");
+                }
+            }else{
+                roles = selectedRoles.get();
+            }
+            for (String role:roles){
+                ResponseEntity res = webClientService.getUsersInRole(clientId.get(),role,null);
+                List<Map> usersInRole = (List)res.getBody();
+                for(Map u: usersInRole){
+                    clientsInRoles.put((String)u.get("id"),role);
+                }
+            }
+            for (Object user: users){
+                Map userMap = (Map)user;
+                if (clientsInRoles.containsKey((String)userMap.get("id"))){
+                    //Store the role in the user object
+                    userMap.put("role", clientsInRoles.get((String)userMap.get("id")));
+                    filteredUsers.add(user);
+                }
+            }
+            users = filteredUsers;
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
 
