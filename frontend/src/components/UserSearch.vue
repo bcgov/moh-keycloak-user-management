@@ -24,11 +24,11 @@
           dense
           v-model="userSearchInput"
           placeholder="Username, email, name, or ID"
-          @keyup.enter="searchUser('&search='+userSearchInput)"
+          @keyup.enter="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))"
         />
       </v-col>
       <v-col class="col-4">
-          <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput)">Search Users</v-btn>
+          <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Users</v-btn>
       </v-col>
       <v-col class="col-2">
         <v-btn v-if="hasCreateUserRole" id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
@@ -56,6 +56,7 @@
             outlined
             dense
             v-model="lastNameInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -67,6 +68,7 @@
             outlined
             dense
             v-model="firstNameInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -78,6 +80,7 @@
             outlined
             dense
             v-model="usernameInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -89,6 +92,7 @@
             outlined
             dense
             v-model="emailInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -102,6 +106,9 @@
             item-value="id"
             outlined
             dense
+            clearable
+            placeholder="Select an Organization"
+            @keyup.enter="searchUser(advancedSearchParams)"
         ></v-autocomplete>
       </v-col>
       <v-col class="col-2" >
@@ -138,6 +145,8 @@
                   prepend-inner-icon="mdi-calendar"
                   outlined
                   dense
+                  clearable
+                  @keyup.enter="searchUser(advancedSearchParams)"
               ></v-text-field>
             </template>
             <v-date-picker
@@ -167,6 +176,8 @@
               placeholder="Select an Application"
               v-model="selectedClientId"
               @change="loadUserClientRoles()"
+              clearable
+              @keyup.enter="searchUser(advancedSearchParams)"
             ></v-autocomplete>
         </v-col>
       </v-row>
@@ -293,7 +304,7 @@ export default {
       let params = '';
       params = this.addQueryParameter(params, "lastName", this.lastNameInput);
       params = this.addQueryParameter(params, "firstName", this.firstNameInput);
-      params = this.addQueryParameter(params, "username", this.usernameInput);
+      params = this.addQueryParameter(params, "username", this.usernameInput.replaceAll("\\","%5C"));
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);
       if (this.radios == "Before") {
