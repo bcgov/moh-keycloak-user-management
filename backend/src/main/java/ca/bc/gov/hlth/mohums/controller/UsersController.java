@@ -76,37 +76,8 @@ public class UsersController {
         
         //Filter based on selected client & roles
         if (clientId.isPresent()){
-            List<Object> filteredUsers = new ArrayList<>();
-            String[] roles = null;
-            Map<String,String> clientsInRoles = new HashMap<>();
-            if (selectedRoles.isEmpty()){
-                //If no roles selected, grab all roles for the selected client
-                ResponseEntity res = webClientService.getClientRoles(clientId.get());
-                List<Map> allRoles = (List)res.getBody();
-                roles = new String[allRoles.size()];
-                for (int i=0; i<allRoles.size(); i++){
-                    roles[i] = (String)allRoles.get(i).get("name");
-                }
-            }else{
-                roles = selectedRoles.get();
-            }
-            for (String role:roles){
-                ResponseEntity res = webClientService.getUsersInRole(clientId.get(),role,null);
-                List<Map> usersInRole = (List)res.getBody();
-                for(Map u: usersInRole){
-                    clientsInRoles.put((String)u.get("id"),role);
-                }
-            }
-            for (Object user: users){
-                Map userMap = (Map)user;
-                if (clientsInRoles.containsKey((String)userMap.get("id"))){
-                    //Store the role in the user object
-                    userMap.put("role", clientsInRoles.get((String)userMap.get("id")));
-                    filteredUsers.add(user);
-                }
-            }
-            users = filteredUsers;
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
+            users = filterUsersByRole(selectedRoles,clientId.get(),users);
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
         }
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
@@ -167,6 +138,49 @@ public class UsersController {
         }
 
         return searchResults;
+    }
+    
+    /**
+     * Filter the results by the selected clientId, and optionally the list of selected roles
+     * If no roles selected, use all roles for that client.
+     * @param selectedRoles - Set of roles passed in as search parameters
+     * @param clientId - cientId passed in as search parameter
+     * @param users - Unfiltered search results
+     * @return List
+     */
+    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId,List users){
+        List<Object> filteredUsers = new ArrayList<>();
+        String[] roles = null;
+        Map<String,String> userRoleMap = new HashMap<>();
+        if (selectedRoles.isEmpty()){
+            //If no roles selected, grab all roles for the selected client
+            ResponseEntity res = webClientService.getClientRoles(clientId);
+            List<Map> allRoles = (List)res.getBody();
+            roles = allRoles.stream().map(r -> (String)r.get("name")).toArray(size -> new String[size]);
+        }else{
+            roles = selectedRoles.get();
+        }
+        for (String role:roles){
+            ResponseEntity res = webClientService.getUsersInRole(clientId,role,null);
+            List<Map> usersInRole = (List)res.getBody();
+            for(Map u: usersInRole){
+                String key = (String)u.get("id");
+                if (userRoleMap.containsKey(key)){
+                    userRoleMap.put(key,userRoleMap.get(key)+", "+role);
+                }else{
+                    userRoleMap.put(key,role);
+                }
+            }
+        }
+        for (Object user: users){
+            Map userMap = (Map)user;
+            if (userRoleMap.containsKey((String)userMap.get("id"))){
+                //Store the role in the user object for frontend display
+                userMap.put("role", userRoleMap.get((String)userMap.get("id")));
+                filteredUsers.add(user);
+            }
+        }
+        return filteredUsers;
     }
 
     @GetMapping("/users/{userId}")

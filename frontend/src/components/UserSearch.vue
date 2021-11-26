@@ -310,17 +310,9 @@ export default {
         });
       }
       if (this.selectedRoles){
-        //console.log(this.selectedRoles);
-        let roles = "";
-        this.selectedRoles.forEach(selectedRole => {
-          if (roles.length>0){
-            roles = roles+",";
-          }          
-          roles = roles+selectedRole.name;
-        });
+        let roles = this.selectedRoles.map(role => role.name).join(",");
         params = this.addQueryParameter(params,"selectedRoles",roles);
       }
-      //console.log(params);
       
       return params;
     },
