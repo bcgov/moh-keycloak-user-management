@@ -96,8 +96,8 @@
           <br/><br/>
           <label for="all-roles">Application Roles</label>
           <ul id="all-roles" style="margin-top: 5px; list-style: square">
-              <li v-for="client in user.allRoles" :key="client.clientName">
-                {{client.clientName}} [<span v-for="role in client.effectiveRoles" :key="role.id">{{role.name}} </span>]
+              <li v-for="client in allRoles" :key="client.clientName">
+                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}]
               </li>
           </ul>
         </v-col>
@@ -137,9 +137,10 @@ export default {
           org_details: null,
           access_team_notes: null
         },
-        allRoles: null,
+        
         federatedIdentities: null
-      }
+      },
+      allRoles: null
     };
   },
   async created() {
@@ -192,7 +193,7 @@ export default {
         });
     },
     loadUserRoles: function(){    
-      this.user.allRoles = [];
+      this.allRoles = [];
       /*
       No API call exists to load all roles for a user, so we need to first query
       for a list of clients, then load the roles for each client one by one
@@ -204,23 +205,11 @@ export default {
                 let roleCollection = {};
                 roleCollection.clientName = client.name;
                 roleCollection.effectiveRoles = clientRoles.data;
-                this.user.allRoles.push(roleCollection);
-                //Sort results by client name
-                this.user.allRoles.sort(function(a, b) {
-                    var nameA = a.clientName.toUpperCase(); // ignore upper and lowercase
-                    var nameB = b.clientName.toUpperCase(); // ignore upper and lowercase
-                    if (nameA < nameB) {
-                      return -1;
-                    }
-                    if (nameA > nameB) {
-                      return 1;
-                    }
-                    return 0;
-                });
-                //Need to force an update as vue doesn't notice the collection has changed
-                this.$forceUpdate();
+                this.allRoles.push(roleCollection);
+                //Sort results by client name every time a new result comes in
+                this.allRoles.sort((a, b) => a.clientName.localeCompare(b.clientName, undefined, {sensitivity: 'base'}))
               }
-            });      
+            }); 
           });            
         });
     },
