@@ -220,6 +220,8 @@ export default {
             type: "success"
           });
           window.scrollTo(0, 0);
+          //Update list of roles from UserDetails module
+          this.$root.$refs.UserDetails.loadUserRoles();
         })
         .catch((error) => {
           this.$store.commit("alert/setAlert", {

@@ -93,6 +93,13 @@
               {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
             </li>
           </ul>
+          <br/><br/>
+          <label for="all-roles">Application Roles</label>
+          <ul id="all-roles" style="margin-top: 5px; list-style: square">
+              <li v-for="client in allRoles" :key="client.clientName">
+                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}]
+              </li>
+          </ul>
         </v-col>
       </v-row>
       <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
@@ -102,7 +109,8 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import organizations from "@/assets/organizations"
+import organizations from "@/assets/organizations";
+import clients from "@/api/ClientsRepository";
 
 export default {
   name: "UserDetails",
@@ -129,15 +137,20 @@ export default {
           org_details: null,
           access_team_notes: null
         },
+        
         federatedIdentities: null
-      }
+      },
+      allRoles: null
     };
   },
   async created() {
+    //Create global ref to allow role update from UserUpdateRoles
+    this.$root.$refs.UserDetails = this;
     // TODO error handling
     this.$store.commit("user/resetState");
     if (this.userId) {
       await this.getUser();
+      await this.loadUserRoles();
     }
   },
   computed: {
@@ -173,11 +186,31 @@ export default {
           if (this.user.attributes.org_details) {
             this.user.attributes.org_details = formatOrganization(this.user.attributes.org_details);
           }
-
           this.$store.commit("user/setUser", this.user);
         })
         .catch(e => {
           console.log(e);
+        });
+    },
+    loadUserRoles: function(){    
+      this.allRoles = [];
+      /*
+      No API call exists to load all roles for a user, so we need to first query
+      for a list of clients, then load the roles for each client one by one
+      */     
+      clients.get().then(allClients => {        
+        allClients.data.forEach(client => {
+            UsersRepository.getUserEffectiveClientRoles(this.userId,client.id).then(clientRoles => {
+              if (clientRoles.data.length>0){
+                let roleCollection = {};
+                roleCollection.clientName = client.name;
+                roleCollection.effectiveRoles = clientRoles.data;
+                this.allRoles.push(roleCollection);
+                //Sort results by client name every time a new result comes in
+                this.allRoles.sort((a, b) => a.clientName.localeCompare(b.clientName, undefined, {sensitivity: 'base'}))
+              }
+            }); 
+          });            
         });
     },
     updateUser: function() {
