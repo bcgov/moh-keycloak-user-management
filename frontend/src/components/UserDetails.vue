@@ -172,25 +172,6 @@ export default {
       return false
     }
   },
-  computed: {
-    editUserDetailsPermission: function() {
-      const onCreateUserPage = !this.userId;
-
-      const umsClientId = "USER-MANAGEMENT-SERVICE";
-      const manageUserDetailsRoleName = "manage-user-details";
-      const createUserRoleName = "create-user";
-
-      const hasManageUserDetails = this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(manageUserDetailsRoleName);
-      const hasCreateUser = this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName);
-
-      if (onCreateUserPage && hasCreateUser) {
-        return true
-      } else if (!onCreateUserPage && hasManageUserDetails) {
-        return true
-      }
-      return false
-    }
-  },
   methods: {
     getUser: function() {
       return UsersRepository.getUser(this.userId)
