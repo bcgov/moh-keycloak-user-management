@@ -32,14 +32,10 @@ const mutations = {
         state.email = user.email
         state.enabled = user.enabled
         if (user.attributes) {
-            state.attributes.phone = user.attributes.phone
-            state.attributes.org_details = user.attributes.org_details
-            state.attributes.access_team_notes = user.attributes.access_team_notes
-            state.attributes.sfds_auth_1 = user.attributes.sfds_auth_1
-            state.attributes.sfds_auth_2 = user.attributes.sfds_auth_2
-            state.attributes.sfds_auth_3 = user.attributes.sfds_auth_3
-            state.attributes.sfds_auth_4 = user.attributes.sfds_auth_4
-            state.attributes.sfds_auth_5 = user.attributes.sfds_auth_5
+            //Copy over all attributes
+            for (const property in user.attributes) {
+                state.attributes[property] = user.attributes[property];
+            }
         }
         state.federatedIdentities = user.federatedIdentities;
     },
@@ -50,9 +46,10 @@ const mutations = {
         state.email = user.email
         state.enabled = user.enabled
         if (user.attributes) {
-            state.attributes.phone = user.attributes.phone
-            state.attributes.org_details = user.attributes.org_details
-            state.attributes.access_team_notes = user.attributes.access_team_notes
+            //Copy over all attributes
+            for (const property in user.attributes) {
+                state.attributes[property] = user.attributes[property];
+            }
         }
     },
     setUsername(state, username) {

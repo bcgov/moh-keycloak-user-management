@@ -24,11 +24,11 @@
           dense
           v-model="userSearchInput"
           placeholder="Username, email, name, or ID"
-          @keyup.enter="searchUser('&search='+userSearchInput)"
+          @keyup.enter="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))"
         />
       </v-col>
       <v-col class="col-4">
-          <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput)">Search Users</v-btn>
+          <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Users</v-btn>
       </v-col>
       <v-col class="col-2">
         <v-btn v-if="hasCreateUserRole" id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
@@ -56,6 +56,7 @@
             outlined
             dense
             v-model="lastNameInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -67,6 +68,7 @@
             outlined
             dense
             v-model="firstNameInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -78,6 +80,7 @@
             outlined
             dense
             v-model="usernameInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -89,6 +92,7 @@
             outlined
             dense
             v-model="emailInput"
+            @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
       <v-col class="col-6">
@@ -102,6 +106,9 @@
             item-value="id"
             outlined
             dense
+            clearable
+            placeholder="Select an Organization"
+            @keyup.enter="searchUser(advancedSearchParams)"
         ></v-autocomplete>
       </v-col>
       <v-col class="col-2" >
@@ -138,6 +145,8 @@
                   prepend-inner-icon="mdi-calendar"
                   outlined
                   dense
+                  clearable
+                  @keyup.enter="searchUser(advancedSearchParams)"
               ></v-text-field>
             </template>
             <v-date-picker
@@ -167,6 +176,8 @@
               placeholder="Select an Application"
               v-model="selectedClientId"
               @change="loadUserClientRoles()"
+              clearable
+              @keyup.enter="searchUser(advancedSearchParams)"
             ></v-autocomplete>
         </v-col>
       </v-row>
@@ -293,7 +304,7 @@ export default {
       let params = '';
       params = this.addQueryParameter(params, "lastName", this.lastNameInput);
       params = this.addQueryParameter(params, "firstName", this.firstNameInput);
-      params = this.addQueryParameter(params, "username", this.usernameInput);
+      params = this.addQueryParameter(params, "username", this.usernameInput.replaceAll("\\","%5C"));
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);
       if (this.radios == "Before") {
@@ -301,6 +312,19 @@ export default {
       } else {
         params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDate);
       }
+      if (this.selectedClientId){
+        params = this.addQueryParameter(params, "clientId", this.selectedClientId);
+        this.clients.forEach(client => {
+          if (client.id==this.selectedClientId){
+            params = this.addQueryParameter(params, "clientName", client.name);
+          }
+        });
+      }
+      if (this.selectedRoles){
+        let roles = this.selectedRoles.map(role => role.name).join(",");
+        params = this.addQueryParameter(params,"selectedRoles",roles);
+      }
+      
       return params;
     },
     itemsInColumn() {
@@ -344,15 +368,10 @@ export default {
                           ? app_config.config.max_search
                           : (this.maxResults * 10);
       this.userSearchLoadingStatus = true;
-      let isSearchByRole = this.advancedSearchSelected
-        && this.selectedRoles.length > 0;
       try {
         let results = (await UsersRepository.get(
           `?briefRepresentation=false&first=0&max=${maxSearch}` + queryParameters
         )).data;
-        if (isSearchByRole) {
-          results = await this.filterUsersByRole(results, maxSearch);
-        }
         for (let e of results) {
           if (e.lastLogDate) {
             e.lastLogDate = formatDate(e.lastLogDate);
@@ -405,44 +424,6 @@ export default {
       role.clientName = this.clients
           .find(client => this.clientId === client.id).name;
       return role;
-    },
-    // Return only the users having the selected roles. Also add role information to the users.
-    filterUsersByRole: function(searchResults, maxSearch) {
-      let usersInRoleRequests = this.selectedRoles.map(
-        clientRole => ClientsRepository
-          .getUsersInRole(clientRole.clientId, clientRole.name, maxSearch)
-          .then(function (result) {
-            // The result doesn't include the role, so we include a reference to it here to use later.
-            return {'role': clientRole.name, 'result': result}
-          })
-          .catch(error => {
-            this.handleError(`Search failed for role ${clientRole.name}`, error);
-          })
-      );
-
-      return Promise.all(usersInRoleRequests)
-        .then(function (responses) {
-          let userIdsAndRoles = responses.flatMap(
-              response => response.result.data.map(function (user) {
-                return {'id': user.id, 'role': response.role}
-              })
-          );
-          for (let searchResult of searchResults) {
-            for (let user of userIdsAndRoles) {
-              if (searchResult.id == user.id) {
-                if (searchResult.role) {
-                  searchResult.role = searchResult.role + ", " + user.role;
-                } else {
-                  searchResult.role = user.role;
-                }
-              }
-            }
-          }
-          let userIds = userIdsAndRoles.map(userIdAndRole => userIdAndRole.id);
-          return searchResults.filter(
-              user => userIds.includes(user.id)
-          );
-        });
     },
     setSearchResults(results) {
       const maxRes = this.maxResults;

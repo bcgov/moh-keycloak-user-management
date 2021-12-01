@@ -47,7 +47,10 @@ public class UsersController {
             @RequestParam Optional<String> username,
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
-            @RequestParam Optional<String> lastLogBefore
+            @RequestParam Optional<String> lastLogBefore,
+            @RequestParam Optional<String> clientName,
+            @RequestParam Optional<String> clientId,
+            @RequestParam Optional<String[]> selectedRoles
     ) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -70,6 +73,12 @@ public class UsersController {
 
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
+        
+        //Filter based on selected client & roles
+        if (clientId.isPresent()){
+            users = filterUsersByRole(selectedRoles,clientId.get(),users);
+            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
+        }
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
 
@@ -87,6 +96,11 @@ public class UsersController {
                 start += maxEvents;
             } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
 
+            //Filter login events to just the specified clientId
+            if (clientName.isPresent()){
+                allEventsLastLog = allEventsLastLog.stream().filter(event -> event.get("clientId").equals(clientName.get())).collect(Collectors.toList());
+            }
+            
             Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
                     .filter(event -> event.get("userId") != null)
                     .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));
@@ -124,6 +138,49 @@ public class UsersController {
         }
 
         return searchResults;
+    }
+    
+    /**
+     * Filter the results by the selected clientId, and optionally the list of selected roles
+     * If no roles selected, use all roles for that client.
+     * @param selectedRoles - Set of roles passed in as search parameters
+     * @param clientId - cientId passed in as search parameter
+     * @param users - Unfiltered search results
+     * @return List
+     */
+    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId,List users){
+        List<Object> filteredUsers = new ArrayList<>();
+        String[] roles = null;
+        Map<String,String> userRoleMap = new HashMap<>();
+        if (selectedRoles.isEmpty()){
+            //If no roles selected, grab all roles for the selected client
+            ResponseEntity res = webClientService.getClientRoles(clientId);
+            List<Map> allRoles = (List)res.getBody();
+            roles = allRoles.stream().map(r -> (String)r.get("name")).toArray(size -> new String[size]);
+        }else{
+            roles = selectedRoles.get();
+        }
+        for (String role:roles){
+            ResponseEntity res = webClientService.getUsersInRole(clientId,role,null);
+            List<Map> usersInRole = (List)res.getBody();
+            for(Map u: usersInRole){
+                String key = (String)u.get("id");
+                if (userRoleMap.containsKey(key)){
+                    userRoleMap.put(key,userRoleMap.get(key)+", "+role);
+                }else{
+                    userRoleMap.put(key,role);
+                }
+            }
+        }
+        for (Object user: users){
+            Map userMap = (Map)user;
+            if (userRoleMap.containsKey((String)userMap.get("id"))){
+                //Store the role in the user object for frontend display
+                userMap.put("role", userRoleMap.get((String)userMap.get("id")));
+                filteredUsers.add(user);
+            }
+        }
+        return filteredUsers;
     }
 
     @GetMapping("/users/{userId}")
