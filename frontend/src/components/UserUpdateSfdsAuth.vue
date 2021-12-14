@@ -2,11 +2,11 @@
   <v-data-table
       id="sfds-authorizations-table"
       :headers="sfdsTableHeaders"
-      :items="sfdsAuthorizations"
+      :items="filteredSfdsAuthorizations"
       class="break">
     <template v-slot:top>
       <v-toolbar flat >
-        <h2 class="sfds-authorizations-header">SFDS Authorizations</h2>
+        <h2 class="sfds-authorizations-header">Mailbox Authorizations</h2>
         <v-spacer></v-spacer>
         
         <v-dialog v-model="editDialog" max-width="840px">
@@ -44,7 +44,7 @@
                           id="sfds-uses"
                           class="sfds-uses"
                           v-model="currentSfdsAuthorization.u"
-                          :items="sfdsUses"     
+                          :items="filteredSfdsUses"     
                           item-text=label
                           item-value="id"
                           required
@@ -125,6 +125,7 @@ import SfdsRepository from "@/api/SfdsRepository";
 
 export default {
   name: "UserUpdateSfdsAuth",
+  props: ['selectedClient'],
   data() {
     return {
       sfdsTableHeaders: [
@@ -158,23 +159,24 @@ export default {
     
     let sfdsAuthString = "";
     
-    if (this.$store.state.user.attributes.sfds_auth_1) {
+    if (this.$store.state.user.attributes.sfds_auth_1 && this.$store.state.user.attributes.sfds_auth_1.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_1[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_2) {
+    if (this.$store.state.user.attributes.sfds_auth_2 && this.$store.state.user.attributes.sfds_auth_2.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_2[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_3) {
+    if (this.$store.state.user.attributes.sfds_auth_3 && this.$store.state.user.attributes.sfds_auth_3.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_3[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_4) {
+    if (this.$store.state.user.attributes.sfds_auth_4 && this.$store.state.user.attributes.sfds_auth_4.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_4[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_5) {
+    if (this.$store.state.user.attributes.sfds_auth_5 && this.$store.state.user.attributes.sfds_auth_5.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_5[0]);
     }
 
     if (sfdsAuthString !== "") {
+      console.log(sfdsAuthString);
       this.sfdsAuthorizations = JSON.parse(sfdsAuthString);
     } else {
       this.sfdsAuthorizations = [];
@@ -189,6 +191,12 @@ export default {
     }
   },
   computed: {
+    filteredSfdsAuthorizations() {
+      return this.sfdsAuthorizations.filter(item => this.selectedClient.clientId=='HSCIS'?item.u.includes("hscis"):!item.u.includes("hscis"));
+    },
+    filteredSfdsUses(){
+      return this.sfdsUses.filter(item => this.selectedClient.clientId=='HSCIS'?item.label.includes("hscis"):!item.label.includes("hscis"))
+    },
     dialogTitle () {
       return this.editedIndex === -1 ? 'New Authorization' : 'Edit Authorization'
     },
