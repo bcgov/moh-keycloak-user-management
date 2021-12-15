@@ -176,7 +176,6 @@ export default {
     }
 
     if (sfdsAuthString !== "") {
-      console.log(sfdsAuthString);
       this.sfdsAuthorizations = JSON.parse(sfdsAuthString);
     } else {
       this.sfdsAuthorizations = [];
