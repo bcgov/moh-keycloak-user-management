@@ -158,19 +158,19 @@ export default {
     
     let sfdsAuthString = "";
     
-    if (this.$store.state.user.attributes.sfds_auth_1) {
-      sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_1[0]);
+    if (this.$store.state.user.attributes.sfds_auth_1 && this.$store.state.user.attributes.sfds_auth_1.length>0) {
+      sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_1[0] );
     }
-    if (this.$store.state.user.attributes.sfds_auth_2) {
+    if (this.$store.state.user.attributes.sfds_auth_2 && this.$store.state.user.attributes.sfds_auth_2.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_2[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_3) {
+    if (this.$store.state.user.attributes.sfds_auth_3 && this.$store.state.user.attributes.sfds_auth_3.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_3[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_4) {
+    if (this.$store.state.user.attributes.sfds_auth_4 && this.$store.state.user.attributes.sfds_auth_4.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_4[0]);
     }
-    if (this.$store.state.user.attributes.sfds_auth_5) {
+    if (this.$store.state.user.attributes.sfds_auth_5 && this.$store.state.user.attributes.sfds_auth_5.length>0) {
       sfdsAuthString = sfdsAuthString.concat(this.$store.state.user.attributes.sfds_auth_5[0]);
     }
 
