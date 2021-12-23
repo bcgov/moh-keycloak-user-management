@@ -271,14 +271,6 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      headers: [
-        { text: "Username", value: "username", class: "table-header" },
-        { text: "First name", value: "firstName", class: "table-header" },
-        { text: "Last name", value: "lastName", class: "table-header" },
-        { text: "Email", value: "email", class: "table-header" },
-        { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
-        { text: "Role", value: "role", class: "table-header" }
-      ],
       organizations: organizations,
       clients: [ "" ],
       selectedClientId: null,
@@ -329,6 +321,22 @@ export default {
       }
       
       return params;
+    },
+    headers(){
+      let hdrs = [
+        { text: "Username", value: "username", class: "table-header" },
+        { text: "First name", value: "firstName", class: "table-header" },
+        { text: "Last name", value: "lastName", class: "table-header" },
+        { text: "Email", value: "email", class: "table-header" }
+      ];
+      let showRoles = (this.radios!=null && this.radios!="") || 
+                      (this.selectedClientId!=null && this.selectedClientId!="") || 
+                      (this.lastLogDate!=null && this.lastLogDate!="");
+      if (showRoles){
+        hdrs.push({ text: "Last Log Date", value: "lastLogDate", class: "table-header" });
+        hdrs.push({ text: "Role", value: "role", class: "table-header" });
+      }
+      return hdrs;
     },
     itemsInColumn() {
       return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
@@ -459,7 +467,7 @@ export default {
       this.emailInput = "";
       this.organizationInput = "";
       this.selectedClientId = null;
-      this.lastLogDate = null;
+      this.lastLogDate = "";
       this.radios = "";
     }
   }
