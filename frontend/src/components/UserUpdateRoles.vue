@@ -18,8 +18,14 @@
         ></v-autocomplete>
       </v-col>
     </v-row>
-
+    <v-skeleton-loader
+        ref="roleSkeleton"
+        v-show="selectedClient && (!clientRoles || clientRoles.length==0)"
+        type="article, button"    >
+    </v-skeleton-loader>
+          
     <div v-if="selectedClient">
+      <div id="select-user-roles" v-show="clientRoles && clientRoles.length>0">
       <v-row no-gutters>
         <v-col class="col-4">
           <v-row no-gutters>
@@ -89,6 +95,7 @@
         <v-divider class="sub-permissions"></v-divider>
         <user-update-sfds-auth></user-update-sfds-auth>
       </span>
+    </div>
     </div>
 
   </v-card>
