@@ -94,7 +94,7 @@
             </li>
           </ul>
           <br/><br/>
-          <label for="all-roles">Application Roles</label>
+          <label for="all-roles">Application Roles and Last Login</label>
           <v-skeleton-loader
               ref="roleSkeleton"
               v-show="!rolesLoaded"
@@ -103,7 +103,7 @@
           <div id="user-roles" v-show="rolesLoaded">          
           <ul id="all-roles" style="margin-top: 5px; list-style: square">
               <li v-for="client in allRoles" :key="client.clientName">
-                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}]
+                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}] {{client.lastLogin}}
               </li>
           </ul>
           </div>
@@ -204,6 +204,10 @@ export default {
       this.allRoles = [];
       this.rolesLoaded = false;
       let vueObj = this;
+      let lastLoginMap = [];
+      UsersRepository.getUserLogins(this.userId).then(lastLogins => {
+        lastLoginMap = lastLogins.data;
+      });
       /*
       No API call exists to load all roles for a user, so we need to first query
       for a list of clients, then load the roles for each client one by one
@@ -220,7 +224,11 @@ export default {
           ).then(function(rolesArray) {
             rolesArray.forEach(clientRoles =>{
                 if (clientRoles.data.length>0){
-                  vueObj.allRoles.push({clientName: clientRoles.clientName, effectiveRoles:clientRoles.data});                
+                  let lastLoginStr = "- N/A";
+                  if (lastLoginMap[clientRoles.clientName]){
+                    lastLoginStr = "- "+new Date(lastLoginMap[clientRoles.clientName]).toLocaleDateString("en-US");
+                  }
+                  vueObj.allRoles.push({clientName: clientRoles.clientName, effectiveRoles:clientRoles.data, lastLogin: lastLoginStr});                
                 }
             });            
             vueObj.allRoles.sort((a, b) => a.clientName.localeCompare(b.clientName, undefined, {sensitivity: 'base'}))
