@@ -21,81 +21,81 @@
     <v-skeleton-loader
         ref="roleSkeleton"
         v-show="selectedClient && (!clientRoles || clientRoles.length==0)"
-        type="article, button"    >
-    </v-skeleton-loader>
+        type="article, button"
+    ></v-skeleton-loader>
           
     <div v-if="selectedClient">
       <div id="select-user-roles" v-show="clientRoles && clientRoles.length>0">
-      <v-row no-gutters>
-        <v-col class="col-4">
-          <v-row no-gutters>
-            <v-col class="col-12">
-              <label>Roles</label>
-            </v-col>
-            <v-col class="col-6" v-for="col in numberOfClientRoleColumns" :key="col">
-              <span v-for="item in itemsInColumn" :key="item">
+        <v-row no-gutters>
+          <v-col class="col-4">
+            <v-row no-gutters>
+              <v-col class="col-12">
+                <label>Roles</label>
+              </v-col>
+              <v-col class="col-6" v-for="col in numberOfClientRoleColumns" :key="col">
+                <span v-for="item in itemsInColumn" :key="item">
+                  <v-checkbox
+                      :disabled="!hasRoleForManageUserRoles"
+                      v-if="item*col <= clientRoles.length"
+                      class="roles-checkbox"
+                      hide-details="auto"
+                      v-model="selectedRoles"
+                      :value="clientRoles[roleArrayPosition(col, item)]"
+                      :key="clientRoles[roleArrayPosition(col, item)].name"
+                  >
+                    <span slot="label" class="tooltip" :id="'role-' + roleArrayPosition(col,item)">
+                      {{clientRoles[roleArrayPosition(col, item)].name}}
+                      <span v-show="clientRoles[roleArrayPosition(col, item)].description" class="tooltiptext"> {{ clientRoles[roleArrayPosition(col, item)].description }} </span>
+                    </span>
+                  </v-checkbox>
+                </span>
+              </v-col>
+            </v-row>
+          </v-col>
+          <v-col class="col-4" no-gutters>
+            <v-row no-gutters>
+              <v-col class="col-12">
+                <label>
+                  Effective Roles
+                  <v-tooltip right>
+                    <template v-slot:activator="{ on }">
+                      <v-icon v-on="on" small>mdi-help-circle</v-icon>
+                    </template>
+                    <span>
+                      Effective roles represent all roles assigned to a user for this client.
+                      <br />This may include roles provided by group membership which cannot be directly removed.
+                    </span>
+                  </v-tooltip>
+                </label>
+              </v-col>
+              <v-col class="col-6">
                 <v-checkbox
-                    :disabled="!hasRoleForManageUserRoles"
-                    v-if="item*col <= clientRoles.length"
                     class="roles-checkbox"
                     hide-details="auto"
-                    v-model="selectedRoles"
-                    :value="clientRoles[roleArrayPosition(col, item)]"
-                    :key="clientRoles[roleArrayPosition(col, item)].name"
+                    disabled
+                    readonly
+                    v-for="role in effectiveClientRoles"
+                    v-model="effectiveClientRoles"
+                    :value="role"
+                    :key="role.name"
                 >
-                  <span slot="label" class="tooltip" :id="'role-' + roleArrayPosition(col,item)">
-                    {{clientRoles[roleArrayPosition(col, item)].name}}
-                    <span v-show="clientRoles[roleArrayPosition(col, item)].description" class="tooltiptext"> {{ clientRoles[roleArrayPosition(col, item)].description }} </span>
+                  <span slot="label" class="tooltip">
+                    {{role.name}}
+                    <span v-show="role.description" class="tooltiptext"> {{ role.description }} </span>
                   </span>
                 </v-checkbox>
-              </span>
-            </v-col>
-          </v-row>
-        </v-col>
-        <v-col class="col-4" no-gutters>
-          <v-row no-gutters>
-            <v-col class="col-12">
-              <label>
-                Effective Roles
-                <v-tooltip right>
-                  <template v-slot:activator="{ on }">
-                    <v-icon v-on="on" small>mdi-help-circle</v-icon>
-                  </template>
-                  <span>
-                    Effective roles represent all roles assigned to a user for this client.
-                    <br />This may include roles provided by group membership which cannot be directly removed.
-                  </span>
-                </v-tooltip>
-              </label>
-            </v-col>
-            <v-col class="col-6">
-              <v-checkbox
-                  class="roles-checkbox"
-                  hide-details="auto"
-                  disabled
-                  readonly
-                  v-for="role in effectiveClientRoles"
-                  v-model="effectiveClientRoles"
-                  :value="role"
-                  :key="role.name"
-              >
-                <span slot="label" class="tooltip">
-                  {{role.name}}
-                  <span v-show="role.description" class="tooltiptext"> {{ role.description }} </span>
-                </span>
-              </v-checkbox>
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-      <div class="my-6" v-if="selectedClient">
-        <v-btn v-if="hasRoleForManageUserRoles" id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+        <div class="my-6" v-if="selectedClient">
+          <v-btn v-if="hasRoleForManageUserRoles" id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
+        </div>
+        <span v-if="selectedClient.clientId.includes('SFDS')">
+          <v-divider class="sub-permissions"></v-divider>
+          <user-update-sfds-auth></user-update-sfds-auth>
+        </span>
       </div>
-      <span v-if="selectedClient.clientId.includes('SFDS')">
-        <v-divider class="sub-permissions"></v-divider>
-        <user-update-sfds-auth></user-update-sfds-auth>
-      </span>
-    </div>
     </div>
 
   </v-card>
