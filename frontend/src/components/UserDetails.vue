@@ -226,7 +226,7 @@ export default {
                 if (clientRoles.data.length>0){
                   let lastLoginStr = "- N/A";
                   if (lastLoginMap[clientRoles.clientName]){
-                    lastLoginStr = "- "+new Date(lastLoginMap[clientRoles.clientName]).toLocaleDateString("en-US");
+                    lastLoginStr = "- "+new Date(lastLoginMap[clientRoles.clientName]).toLocaleDateString("en-CA");
                   }
                   vueObj.allRoles.push({clientName: clientRoles.clientName, effectiveRoles:clientRoles.data, lastLogin: lastLoginStr});                
                 }
