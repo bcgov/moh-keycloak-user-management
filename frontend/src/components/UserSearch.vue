@@ -217,7 +217,7 @@
       <v-col class="col-6" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="primary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
         &nbsp;
-        <v-btn id="clear-search-button" class="primary" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
+        <v-btn id="clear-search-button" class="BC-Gov-SecondaryButton" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
       </v-col>
     </v-row>
 
