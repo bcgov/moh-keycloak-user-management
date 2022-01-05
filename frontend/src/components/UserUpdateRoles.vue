@@ -91,9 +91,9 @@
         <div class="my-6" v-if="selectedClient">
           <v-btn v-if="hasRoleForManageUserRoles" id="save-user-roles" class="primary" medium v-on:click="updateUserClientRoles()">Save User Roles</v-btn>
         </div>
-        <span v-if="selectedClient.clientId.includes('SFDS')">
+        <span v-if="selectedClient.clientId.includes('SFDS') || selectedClient.clientId.includes('HSCIS')">
           <v-divider class="sub-permissions"></v-divider>
-          <user-update-sfds-auth></user-update-sfds-auth>
+          <user-update-sfds-auth :selectedClient="this.selectedClient"></user-update-sfds-auth>
         </span>
       </div>
     </div>
