@@ -101,11 +101,11 @@
               type="list-item@5">
           </v-skeleton-loader>
           <div id="user-roles" v-show="rolesLoaded">          
-          <ul id="all-roles" style="margin-top: 5px; list-style: square">
+            <ul id="all-roles" style="margin-top: 5px; list-style: square">
               <li v-for="client in allRoles" :key="client.clientName">
                 {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}] {{client.lastLogin}}
               </li>
-          </ul>
+            </ul>
           </div>
         </v-col>
       </v-row>
