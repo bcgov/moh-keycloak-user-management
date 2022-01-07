@@ -54,7 +54,7 @@ public class AuthorizedClientsParser {
         return clients;
     }
 
-    private static String decodeBase64(String stringToDecode) {
+    public static String decodeBase64(String stringToDecode) {
 
         byte[] bytesToDecode = stringToDecode.getBytes(StandardCharsets.UTF_8);
         byte[] decodedBytes = Base64.getDecoder().decode(bytesToDecode);

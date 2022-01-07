@@ -5,6 +5,9 @@
 
     <appender name="Console"
               class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
                 %d{ISO8601} %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
@@ -14,6 +17,9 @@
 
     <appender name="RollingFile"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
         <file>${LOGS}/ums.log</file>
         <encoder
                 class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -34,6 +40,33 @@
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
     </appender>
+    
+    <appender name="Audit"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/audit.log</file>
+         <encoder
+                class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+        </encoder>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy -->
+            <!-- rollover daily and when the file reaches 10 MegaBytes -->
+            <fileNamePattern>${LOGS}/archived/audit-%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+            <!-- keep 30 days of history -->
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Audit logger set to debug-->
+    <logger name="ca.bc.gov.hlth.mohums.security" level="debug" > 
+        <appender-ref ref="Audit"/>
+    </logger>
 
     <!-- LOG everything at INFO level -->
     <root level="info">

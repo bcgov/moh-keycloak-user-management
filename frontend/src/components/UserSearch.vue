@@ -30,6 +30,7 @@
       <v-col class="col-4">
           <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Users</v-btn>
       </v-col>
+         
       <v-col class="col-2">
         <v-btn v-if="hasCreateUserRole" id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
       </v-col>
@@ -213,8 +214,10 @@
     </v-card>
       
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
-      <v-col class="col-4" style="margin-bottom: 30px">
+      <v-col class="col-6" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="primary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
+        &nbsp;
+        <v-btn id="clear-search-button" class="BC-Gov-SecondaryButton" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
       </v-col>
     </v-row>
 
@@ -268,14 +271,6 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      headers: [
-        { text: "Username", value: "username", class: "table-header" },
-        { text: "First name", value: "firstName", class: "table-header" },
-        { text: "Last name", value: "lastName", class: "table-header" },
-        { text: "Email", value: "email", class: "table-header" },
-        { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
-        { text: "Role", value: "role", class: "table-header" }
-      ],
       organizations: organizations,
       clients: [ "" ],
       selectedClientId: null,
@@ -326,6 +321,22 @@ export default {
       }
       
       return params;
+    },
+    headers(){
+      let hdrs = [
+        { text: "Username", value: "username", class: "table-header" },
+        { text: "First name", value: "firstName", class: "table-header" },
+        { text: "Last name", value: "lastName", class: "table-header" },
+        { text: "Email", value: "email", class: "table-header" }
+      ];
+      let showRoles = (this.radios!=null && this.radios!="") || 
+                      (this.selectedClientId!=null && this.selectedClientId!="") || 
+                      (this.lastLogDate!=null && this.lastLogDate!="");
+      if (showRoles){
+        hdrs.push({ text: "Last Log Date", value: "lastLogDate", class: "table-header" });
+        hdrs.push({ text: "Role", value: "role", class: "table-header" });
+      }
+      return hdrs;
     },
     itemsInColumn() {
       return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
@@ -446,6 +457,18 @@ export default {
         type: "error"
       });
       window.scrollTo(0, 0);
+    },
+    clearSearchCriteria(){
+      this.selectedRoles = []
+      this.userSearchInput = "";
+      this.lastNameInput = "";
+      this.firstNameInput = "";
+      this.usernameInput = "";
+      this.emailInput = "";
+      this.organizationInput = "";
+      this.selectedClientId = null;
+      this.lastLogDate = "";
+      this.radios = "";
     }
   }
 };
