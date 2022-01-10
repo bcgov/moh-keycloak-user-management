@@ -144,6 +144,7 @@
                   v-on="on"
                   hint="YYYY-MM-DD format"
                   prepend-inner-icon="mdi-calendar"
+                  :disabled="!(radios == 'Before'||radios == 'After')"
                   outlined
                   dense
                   clearable
@@ -182,8 +183,12 @@
             ></v-autocomplete>
         </v-col>
       </v-row>
-
-      <div v-if="selectedClientId">
+      <v-skeleton-loader
+          ref="roleSkeleton"
+          v-show="!rolesLoaded && selectedClientId"
+          type="list-item@3">
+      </v-skeleton-loader>
+      <div v-if="selectedClientId" v-show="rolesLoaded">
         <v-row no-gutters>
           <v-col class="col-4">
             <v-row no-gutters>
@@ -288,7 +293,8 @@ export default {
       advancedSearchSelected: false,
       newTab: false,
       radios: "",
-      lastLogDate: ""
+      lastLogDate: "",
+      rolesLoaded: false
     };
   },
   async created() {
@@ -302,9 +308,9 @@ export default {
       params = this.addQueryParameter(params, "username", this.usernameInput.replaceAll("\\","%5C"));
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);
-      if (this.radios == "Before") {
+      if (this.radios == "Before" && this.lastLogDate) {
         params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDate);
-      } else {
+      } else if (this.radios == "After" && this.lastLogDate) {
         params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDate);
       }
       if (this.selectedClientId){
@@ -329,11 +335,12 @@ export default {
         { text: "Last name", value: "lastName", class: "table-header" },
         { text: "Email", value: "email", class: "table-header" }
       ];
-      let showRoles = (this.radios!=null && this.radios!="") || 
-                      (this.selectedClientId!=null && this.selectedClientId!="") || 
-                      (this.lastLogDate!=null && this.lastLogDate!="");
-      if (showRoles){
+      let showLogins = (this.radios!=null && this.radios!="") && (this.lastLogDate!=null && this.lastLogDate!="");
+      let showRoles = (this.selectedClientId!=null && this.selectedClientId!="");
+      if (showLogins){
         hdrs.push({ text: "Last Log Date", value: "lastLogDate", class: "table-header" });
+      }
+      if (showRoles){
         hdrs.push({ text: "Role", value: "role", class: "table-header" });
       }
       return hdrs;
@@ -416,6 +423,7 @@ export default {
         });
     },
     loadUserClientRoles: async function() {
+      this.rolesLoaded = false;
       this.clientRoles = [];
       this.selectedRoles = [];
       if (this.selectedClientId) {
@@ -428,6 +436,7 @@ export default {
             this.handleError("Client Role search failed", error);
           });
         this.clientRoles.push(...loadedRoles);
+        this.rolesLoaded = true;
       }
     },
     appendClientInfo: function(role) {
