@@ -341,7 +341,7 @@ public class MoHUmsIntegrationTests {
     public void updateUser() throws Exception {
         webTestClient
                 .put()
-                .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952")
+                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}}")
                 .header("Authorization", "Bearer " + jwt)
@@ -355,7 +355,7 @@ public class MoHUmsIntegrationTests {
         //123-tschiavo user
         webTestClient
                 .post()
-                .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
@@ -377,7 +377,7 @@ public class MoHUmsIntegrationTests {
         //123-tschiavo user
         webTestClient
                 .method(HttpMethod.DELETE)
-                .uri("/users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
@@ -398,7 +398,7 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 // 123-tschiavo user
-                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/groups")
+                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
@@ -409,7 +409,7 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .put()
                 // 123-tschiavo user
-                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
@@ -420,7 +420,7 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .delete()
                 // 123-tschiavo user
-                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
@@ -519,7 +519,7 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 // 1b2ce61a-1235-4a0e-8334-1ac557151757 is the realm-management client, which is not in the list of USER-MANAGEMENT-SERVICE roles.
-                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
+                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
@@ -530,7 +530,7 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 // a425bf07-a2bd-403f-a605-afc2b4898c3f is GIS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-gis"
-                .uri("users/39f73cbd-dbf0-41c6-a45c-997c44c1c952/role-mappings/clients/a425bf07-a2bd-403f-a605-afc2b4898c3f")
+                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/a425bf07-a2bd-403f-a605-afc2b4898c3f")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
