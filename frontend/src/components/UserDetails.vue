@@ -125,7 +125,7 @@ export default {
   data() {
     return {
       organizations: app_config.organizations.map((item) => {
-        item.value = JSON.stringify(item);
+        item.value = `{"id":"${item.id}","name":"${item.name}"}`
         item.text = `${item.id} - ${item.name}`;
         return item;
       }),

@@ -275,11 +275,12 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      organizations: app_config.organizations.map((item) => {
-        item.value = JSON.stringify(item);
-        item.text = `${item.id} - ${item.name}`;
-        return item;
-      }),
+      organizations: app_config.organizations
+          .map((item) => {
+            item.value = `{"id":"${item.id}","name":"${item.name}"}`
+            item.text = `${item.id} - ${item.name}`;
+            return item;
+          }),
       clients: [ "" ],
       selectedClientId: null,
       clientRoles: [],
