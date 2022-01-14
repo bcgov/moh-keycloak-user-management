@@ -4,8 +4,8 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestInstance(Lifecycle.PER_CLASS)
-@Ignore
+@Disabled("LOADTEST client no longer exists in Keycloak DEV")
 public class MoHUmsPrepareLoadTests {
 
     private static final JSONParser JSON_PARSER = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
