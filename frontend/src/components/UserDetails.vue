@@ -116,7 +116,7 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import organizations from "@/assets/organizations";
+import organizations from "../../public/organizations.json";
 import clients from "@/api/ClientsRepository";
 
 export default {

@@ -1,0 +1,16 @@
+[
+    {"id" : "00000010", "name" :  "Ministry of Health"},
+    {"id" : "00000025", "name" :  "Government of Yukon - Dept of Health"},
+    {"id" : "00000032", "name" :  "Providence Health Care"},
+    {"id" : "00001480", "name" :  "TimberWest Forest Company"},
+    {"id" : "00001762", "name" :  "Northern Health Authority"},
+    {"id" : "00001763", "name" :  "Interior Health Authority"},
+    {"id" : "00001764", "name" :  "Vancouver Island Health Authority"},
+    {"id" : "00001765", "name" :  "Vancouver Coastal Health Authority"},
+    {"id" : "00001766", "name" :  "Fraser Health Authority"},
+    {"id" : "00001767", "name" :  "Provincial Health Services Authority"},
+    {"id" : "00002158", "name" :  "Provider Registry Project"},
+    {"id" : "00005502", "name" :  "ICBC - Head Office"},
+    {"id" : "00006501", "name" :  "Belkorp Industries Inc - Parent"},
+    {"id" : "00015824", "name" :  "First Nations Health Authority - Employees"}
+]

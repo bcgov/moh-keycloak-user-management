@@ -266,7 +266,7 @@
 <script>
 import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
-import organizations from "@/assets/organizations"
+import organizations from "../../public/organizations.json"
 import app_config from '@/loadconfig';
 
 const options = {dateStyle: 'short'};
