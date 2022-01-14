@@ -10,7 +10,7 @@
     </parent>
     <groupId>ca.bc.gov.hlth</groupId>
     <artifactId>moh-ums</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.0-SNAPSHOT</version>
     <name>moh-ums</name>
     <description>Service to call Keycloak User Management API's on behalf of users</description>
 
