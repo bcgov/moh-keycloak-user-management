@@ -266,7 +266,6 @@
 <script>
 import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
-import organizations from "../../public/organizations.json"
 import app_config from '@/loadconfig';
 
 const options = {dateStyle: 'short'};
@@ -276,7 +275,11 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      organizations: organizations,
+      organizations: app_config.organizations.map((item) => {
+        item.value = JSON.stringify(item);
+        item.text = `${item.id} - ${item.name}`;
+        return item;
+      }),
       clients: [ "" ],
       selectedClientId: null,
       clientRoles: [],
