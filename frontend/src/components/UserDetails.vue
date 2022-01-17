@@ -76,7 +76,7 @@
                 id="org-details"
                 :disabled="!editUserDetailsPermission"
                 v-model="user.attributes.org_details"
-                :items="$options.organizations"
+                :items="organizations"
                 dense
                 outlined
             ></v-autocomplete>
@@ -116,19 +116,19 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import organizations from "@/assets/organizations";
+import app_config from '@/loadconfig';
 import clients from "@/api/ClientsRepository";
 
 export default {
   name: "UserDetails",
   props: ['userId', 'updateOrCreate'],
-  organizations: organizations.map((item) => {
-    item.value = JSON.stringify(item);
-    item.text = `${item.id} - ${item.name}`;
-    return item;
-  }),
   data() {
     return {
+      organizations: app_config.organizations.map((item) => {
+        item.value = `{"id":"${item.id}","name":"${item.name}"}`
+        item.text = `${item.id} - ${item.name}`;
+        return item;
+      }),
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
