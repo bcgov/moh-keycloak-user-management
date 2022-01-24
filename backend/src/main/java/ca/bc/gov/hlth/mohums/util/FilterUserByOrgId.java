@@ -81,7 +81,7 @@ public final class FilterUserByOrgId implements Predicate<Object> {
             // These exceptions are thrown when the value found by EXPRESSION
             // is not a valid JSON object. We can't stop people from creating
             // 'org_details' attributes that don't contain JSON data.
-            LOGGER.warn("Unable to parse: \"{}\": {}.", organizationDetails, e);
+            LOGGER.warn("Unable to parse: \"{}\": {}.", organizationDetails, e.getMessage());
         }
 
         return id;
