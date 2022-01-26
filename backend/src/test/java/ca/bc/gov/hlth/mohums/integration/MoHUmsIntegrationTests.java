@@ -176,8 +176,8 @@ public class MoHUmsIntegrationTests {
                         uriBuilder -> uriBuilder
                                 .path("/users")
                                 .queryParam("org", "00000010")
-                                .queryParam("first", "0")
-                                .queryParam("max", "10000")
+                                .queryParam("first", 0)
+                                .queryParam("max", 5000)
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -266,8 +266,8 @@ public class MoHUmsIntegrationTests {
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("first", "0")
-                                .queryParam("max", "2000")
+                                .queryParam("first", 0)
+                                .queryParam("max", 2000)
                                 .queryParam("lastLogBefore",
                                         LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                                 .build()
@@ -293,8 +293,8 @@ public class MoHUmsIntegrationTests {
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("first", "0")
-                                .queryParam("max", "2000")
+                                .queryParam("first", 0)
+                                .queryParam("max", 2000)
                                 .queryParam("firstName", "Trevor")
                                 .queryParam("lastLogAfter",
                                         LocalDate.now().minusMonths(1).format(DateTimeFormatter.ISO_DATE))
@@ -617,7 +617,7 @@ public class MoHUmsIntegrationTests {
                         uriBuilder -> uriBuilder
                                 .path("/" + resource)
                                 .queryParam("first", 0)
-                                .queryParam("max", 10_000)
+                                .queryParam("max", 5000)
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
