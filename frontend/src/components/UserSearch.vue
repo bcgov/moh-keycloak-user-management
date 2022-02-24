@@ -257,10 +257,12 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
+import OrganizationsRepository from "@/api/OrganizationsRepository";
+
 import ClientsRepository from "@/api/ClientsRepository";
-import organizations from "@/assets/organizations"
 import app_config from '@/loadconfig';
 
+// import organizations from '@/assets/organizations.json';
 const options = {dateStyle: 'short'};
 const formatDate = new Intl.DateTimeFormat(undefined, options).format;
     
@@ -276,7 +278,7 @@ export default {
         { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
         { text: "Role", value: "role", class: "table-header" }
       ],
-      organizations: organizations,
+      organizations:[],
       clients: [ "" ],
       selectedClientId: null,
       clientRoles: [],
@@ -298,6 +300,7 @@ export default {
   },
   async created() {
     await this.loadClients();
+    await this.setOrganizations();
   },
   computed: {
     advancedSearchParams() {
@@ -440,6 +443,37 @@ export default {
         this.searchResults = results;
       }
     },
+    setOrganizations: async function () {
+      try {
+        let results = (await OrganizationsRepository.get()).data;
+        this.setOrganizationsHelper(results)
+      }
+      catch (error) {
+        this.handleError("organization search failed", error);
+      } 
+    finally {
+      this.userSearchLoadingStatus = false;
+    }
+    },
+    setOrganizationsHelper : function (results){
+        const maxRes = this.maxResults;
+      if (results.length > maxRes) {
+        this.searchResults = results.slice(0, maxRes);
+        this.$store.commit("alert/setAlert", {
+          message: "Your search returned more than the maximum number of results ("
+                  + maxRes + "). Please consider refining the search criteria.",
+          type: "warning"
+        });
+        window.scrollTo(0, 0);
+      }
+      else {
+        // text: "00000010 - Ministry of Health"
+        for(var i = 0; i < results.length; i++){
+            this.organizations.push(results[i]["id"] + " - " + results[i]["name"]);
+        }
+        this.organizations.sort((a, b) => (a > b ? 1 : -1));
+      }
+    }, 
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
         message: message + ": " + error,

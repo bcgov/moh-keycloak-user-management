@@ -76,7 +76,7 @@
                 id="org-details"
                 :disabled="!editUserDetailsPermission"
                 v-model="user.attributes.org_details"
-                :items="$options.organizations"
+                :items="organizations"
                 dense
                 outlined
             ></v-autocomplete>
@@ -109,19 +109,18 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import organizations from "@/assets/organizations";
+// import organizations from "@/assets/organizations";
+import OrganizationsRepository from "@/api/OrganizationsRepository";
+
 import clients from "@/api/ClientsRepository";
 
 export default {
   name: "UserDetails",
   props: ['userId', 'updateOrCreate'],
-  organizations: organizations.map((item) => {
-    item.value = JSON.stringify(item);
-    item.text = `${item.id} - ${item.name}`;
-    return item;
-  }),
+
   data() {
     return {
+      organizations: [],
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
@@ -151,6 +150,7 @@ export default {
     if (this.userId) {
       await this.getUser();
       await this.loadUserRoles();
+      await this.loadOrganizations();
     }
   },
   computed: {
@@ -224,7 +224,38 @@ export default {
         return;
       }
       this.$emit('submit-user-updates', this.user)
+    },
+    loadOrganizations: async function() {
+      try {
+        let results = (await OrganizationsRepository.get()).data;
+        this.loadOrganizationsHelper(results)
+      }
+      catch (error) {
+        this.handleError("organization search failed", error);
+      } 
+      finally {
+        this.userSearchLoadingStatus = false;
     }
+  },
+  loadOrganizationsHelper : function (results){
+        const maxRes = this.maxResults;
+      if (results.length > maxRes) {
+        this.searchResults = results.slice(0, maxRes);
+        this.$store.commit("alert/setAlert", {
+          message: "Your search returned more than the maximum number of results ("
+                  + maxRes + "). Please consider refining the search criteria.",
+          type: "warning"
+        });
+        window.scrollTo(0, 0);
+      }
+      else {
+        // text: "00000010 - Ministry of Health"
+        for(var i = 0; i < results.length; i++){
+            this.organizations.push(results[i]["id"] + " - " + results[i]["name"]);
+        }
+        this.organizations.sort((a, b) => (a > b ? 1 : -1));
+      }
+    }, 
   },
   filters: {
     // The IDP alias in keycloak doesn't always match what's known by users
