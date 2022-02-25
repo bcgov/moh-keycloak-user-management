@@ -300,7 +300,7 @@ export default {
   },
   async created() {
     await this.loadClients();
-    await this.setOrganizations();
+    await this.loadOrganizations();
   },
   computed: {
     advancedSearchParams() {
@@ -443,19 +443,16 @@ export default {
         this.searchResults = results;
       }
     },
-    setOrganizations: async function () {
+    loadOrganizations: async function () {
       try {
         let results = (await OrganizationsRepository.get()).data;
-        this.setOrganizationsHelper(results)
+        this.loadOrganizationsHelper(results)
       }
       catch (error) {
         this.handleError("organization search failed", error);
-      } 
-    finally {
-      this.userSearchLoadingStatus = false;
-    }
+      }
     },
-    setOrganizationsHelper : function (results){
+    loadOrganizationsHelper : function (results){
         const maxRes = this.maxResults;
       if (results.length > maxRes) {
         this.searchResults = results.slice(0, maxRes);

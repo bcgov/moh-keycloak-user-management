@@ -7,7 +7,6 @@
 </template>
 
 <script>
-// import UsersRepository from "@/api/UsersRepository";
 import OrganizationRepository from "@/api/OrganizationsRepository";
 import OrganizationDetails from "@/components/OrganizationDetails.vue";
 
@@ -18,7 +17,6 @@ export default {
   },
   methods: {
     createOrganization: function(organizationDetails) {
-        console.log("org create here");
         OrganizationRepository.createOrganization(organizationDetails)
             .then(() => {
           this.$store.commit("alert/setAlert", {
@@ -28,7 +26,7 @@ export default {
         })
           .catch(error => {
           this.$store.commit("alert/setAlert", {
-            message: "Error updating user: " + error,
+            message: "Error updating organization: " + error,
             type: "error"
           });
         })

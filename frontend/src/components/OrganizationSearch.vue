@@ -20,14 +20,14 @@
           dense
           v-model="organizationSearchInput"
           placeholder="Organization or ID"    
-          @keyup.enter="searchOrganization('&search='+userSearchInput.replaceAll('\\','%5C'))"     
+          @keyup.enter="searchOrganization('&search='+organizationSearchInput.replaceAll('\\','%5C'))"     
         />
       </v-col>
       <v-col class="col-4">
-            <v-btn id="search-button" class="primary" medium @click.native="searchOrganization('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Organizations</v-btn>
+          <v-btn id="search-button" class="primary" medium @click.native="searchOrganization('&search='+organizationSearchInput.replaceAll('\\','%5C'))">Search Organizations</v-btn>
       </v-col>
       <v-col class="col-2">
-        <v-btn v-if="hasCreateOrganizationRole" id="create-organization-button" class="success" medium @click.native="goToCreateOrganization">Create New organization</v-btn>
+        <v-btn id="create-organization-button" class="success" medium @click.native="goToCreateOrganization">Create New organization</v-btn>
       </v-col>
     </v-row>
 
@@ -71,7 +71,6 @@
 </template>
 
 <script>
-// import organizations from "@/assets/organizations"
 import OrganizationsRepository from "@/api/OrganizationsRepository";
 import app_config from '@/loadconfig';
     
@@ -85,18 +84,16 @@ export default {
       ],
       footerProps: { "items-per-page-options": [15] },
       searchResults: [],
-      userSearchInput: "",
-      organizationSearchInput : "",
+      organizationSearchInput: "",
       organizationSearchLoadingStatus: false,
       newTab: false,
     };
   },
-
   computed: {
     maxResults() {
       return app_config.config.max_results ? app_config.config.max_results : 100;
     },
-    // todo: this looks for userRole access, not org. access
+    // todo: note: this checks to see if user has permission to create users, not create orgs
     hasCreateOrganizationRole: function() {
       const umsClientId = "USER-MANAGEMENT-SERVICE";
       const createUserRoleName = "create-user";
@@ -124,7 +121,7 @@ export default {
             this.handleError("organization search failed", error);
         }
         finally {
-        this.userSearchLoadingStatus = false;
+        this.organizationSearchLoadingStatus = false;
       }
     },
     setSearchResults: function (results) {
@@ -142,9 +139,6 @@ export default {
         this.searchResults = results;
       }
     }, 
-    loadOrganizations: function () {
-        console.log("lodading the orgs");
-    },
     goToCreateOrganization: function() {
       this.$store.commit("alert/dismissAlert");
       this.$router.push({ name: "OrganizationCreate"});

@@ -5,9 +5,12 @@ import UserSearch from '../components/UserSearch.vue'
 import UserUpdate from '../components/UserUpdate.vue'
 import UserCreate from '../components/UserCreate.vue'
 
+
 import Organizations from '../views/Organizations.vue'
 import OrganizationSearch from '../components/OrganizationSearch.vue'
+import OrganizationUpdate from '../components/OrganizationUpdate.vue'
 import OrganizationCreate from '../components/OrganizationCreate.vue'
+
 
 import EventLog from '../views/EventLog.vue'
 import AdminEventLog from '../views/AdminEventLog.vue'
@@ -50,6 +53,11 @@ const routes = [
         component: OrganizationCreate,
         name: 'OrganizationCreate'
       },
+      {
+        path: ':organizationId',
+        component: OrganizationUpdate,
+        name: 'OrganizationUpdate'
+      }    
     ]
   },
   {

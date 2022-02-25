@@ -6,10 +6,10 @@
       <v-row no-gutters>
         <v-col class="col-7">
           <v-form ref="form">
-            <label for="id" :disabled="!!id || !editUserDetailsPermission" class="required">Organization ID</label>
+            <label for="id" :disabled=" !!organizationId || !editUserDetailsPermission" class="required">Organization ID</label>
             <v-text-field
               dense
-              :disabled="!editUserDetailsPermission"
+              :disabled="!!organizationId ||!editUserDetailsPermission"
               outlined
               id="ID"
               v-model="organization.id"
@@ -33,18 +33,18 @@
           </v-form>
         </v-col>
       </v-row>
-      <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateOrganization">{{ updateOrCreate }} Organization</v-btn>
+      <v-btn id="submit-button"  v-if="editUserDetailsPermission && !organizationId" class="primary" medium @click="updateOrganization">{{ updateOrCreate }} Organization</v-btn>
     </v-card>
   </div>
 </template>
 
 <script>
-import organizations from "@/assets/organizations";
+import OrganizationsRepository from "@/api/OrganizationsRepository";
 
 
 export default {
   name: "OrganizationDetails",
-  props: ['id', 'updateOrCreate'],
+  props: ['organizationId', 'updateOrCreate'],
   data() {
     return {
 
@@ -52,19 +52,15 @@ export default {
         id: '',
         name: '',
       },
-      organizations :organizations,
     };
   },
   async created() {
-    //Create global ref to allow role update from UserUpdateRoles
-    this.$root.$refs.UserDetails = this;
-    // TODO error handling
-    this.$store.commit("user/resetState");
-    if (this.id) {
+    if(this.organizationId){
       await this.getOrganization();
-    }
+      }
   },
   computed: {
+    // todo: this checks permission to edit users, not orgs
     editUserDetailsPermission: function() {
       const onCreateUserPage = !this.id;
 
@@ -85,10 +81,17 @@ export default {
   },
   methods: {
     getOrganization: function() {
-      console.log("getting Org");
+      OrganizationsRepository.getOrganization(this.organizationId)
+        .then(response => {
+          console.log(response.data);
+          this.organization = response.data;
+        })
+        .catch(e => {
+          console.log(e);
+        });
     },
     updateOrganization: function() {
-      // Validate the User Details
+      // Validate the Organization Details
       if (!this.$refs.form.validate()) {
         this.$store.commit("alert/setAlert", {
           message: "Please correct errors before submitting",
@@ -104,7 +107,4 @@ export default {
 </script>
 
 <style scoped>
-#user-name-tooltip-icon {
-  margin-left: 10px;
-}
 </style>

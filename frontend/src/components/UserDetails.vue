@@ -109,7 +109,6 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-// import organizations from "@/assets/organizations";
 import OrganizationsRepository from "@/api/OrganizationsRepository";
 
 import clients from "@/api/ClientsRepository";
@@ -232,10 +231,7 @@ export default {
       }
       catch (error) {
         this.handleError("organization search failed", error);
-      } 
-      finally {
-        this.userSearchLoadingStatus = false;
-    }
+      }
   },
   loadOrganizationsHelper : function (results){
         const maxRes = this.maxResults;
