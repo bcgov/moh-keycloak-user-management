@@ -35,8 +35,7 @@ public class OrganizationsController {
     }
 
     @GetMapping("/organizations")
-    public Collection<JSONObject> getOrganizations(
-    ) {
+    public Collection<JSONObject> getOrganizations() {
         return organizations.values();
     }
 
