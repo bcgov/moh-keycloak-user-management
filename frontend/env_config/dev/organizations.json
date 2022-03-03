@@ -2,6 +2,7 @@
     {"id" : "00000010", "name" :  "Ministry of Health"},
     {"id" : "00000025", "name" :  "Government of Yukon - Dept of Health"},
     {"id" : "00000032", "name" :  "Providence Health Care"},
+    {"id" : "00000101", "name" :  "R W Large Memorial Hospital - Bella Bella"},
     {"id" : "00001480", "name" :  "TimberWest Forest Company"},
     {"id" : "00001762", "name" :  "Northern Health Authority"},
     {"id" : "00001763", "name" :  "Interior Health Authority"},
@@ -10,7 +11,13 @@
     {"id" : "00001766", "name" :  "Fraser Health Authority"},
     {"id" : "00001767", "name" :  "Provincial Health Services Authority"},
     {"id" : "00002158", "name" :  "Provider Registry Project"},
+    {"id" : "00002855", "name" :  "PRS BCMOH - Registry Administrator"},
+    {"id" : "00002878", "name" :  "PRS BC College of Doctors and Surgeons"},
+    {"id" : "00002881", "name" :  "PRS BC Registered Nursing Association"},
+    {"id" : "00002884", "name" :  "PRS Female's and Youth's Hospital"},
+    {"id" : "00003870", "name" :  "PRS Sierra Test-INACTIVE"},
     {"id" : "00005502", "name" :  "ICBC - Head Office"},
     {"id" : "00006501", "name" :  "Belkorp Industries Inc - Parent"},
+    {"id" : "00008888", "name" :  "VIHA - Human Resources"},
     {"id" : "00015824", "name" :  "First Nations Health Authority - Employees"}
 ]

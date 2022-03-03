@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
 
 @RestController
 public class UsersController {
@@ -269,6 +270,27 @@ public class UsersController {
         }
     }
 
+    @GetMapping("/users/{userId}/last-logins")
+    public ResponseEntity<Object> getUserLogins(@PathVariable String userId){
+        int maxRecords = 5000;
+        LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
+        Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        
+        MultiValueMap<String, String> params = buildQueryEventsByUser(userId,0,maxRecords,oneYearAgoParam,Optional.empty());
+        List<Map<String,Object>> logins = (List<Map<String, Object>>)webClientService.getEvents(params).getBody();
+        
+        Map<String,Long> mostRecentLogins = new HashMap<>();
+        for (Map<String,Object> login: logins){
+            String clientId = (String)login.get("clientId");
+            Long time = (Long)login.get("time");
+            if (!mostRecentLogins.containsKey(clientId) || time > mostRecentLogins.get(clientId)){
+                mostRecentLogins.put(clientId, time);
+            }
+        }
+        
+        return ResponseEntity.status(HttpStatus.OK).body(mostRecentLogins);
+    }
+    
     @GetMapping("/users/{userId}/groups")
     public ResponseEntity<Object> getUserGroups(@PathVariable String userId) {
         return webClientService.getUserGroups(userId);
@@ -346,4 +368,16 @@ public class UsersController {
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
     }
+    
+    private MultiValueMap<String, String> buildQueryEventsByUser (String userId, int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+
+        MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
+        queryEventParams.add("type", "LOGIN");
+        queryEventParams.add("user", String.valueOf(userId));
+        queryEventParams.add("first", String.valueOf(start));
+        queryEventParams.add("max", String.valueOf(nbElementMax));
+        dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
+        dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
+        return queryEventParams;
+    }    
 }

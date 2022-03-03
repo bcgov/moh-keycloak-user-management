@@ -30,6 +30,7 @@
       <v-col class="col-4">
           <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Users</v-btn>
       </v-col>
+         
       <v-col class="col-2">
         <v-btn v-if="hasCreateUserRole" id="create-user-button" class="success" medium @click.native="goToCreateUser">Create New User</v-btn>
       </v-col>
@@ -143,6 +144,7 @@
                   v-on="on"
                   hint="YYYY-MM-DD format"
                   prepend-inner-icon="mdi-calendar"
+                  :disabled="!(radios == 'Before'||radios == 'After')"
                   outlined
                   dense
                   clearable
@@ -181,8 +183,12 @@
             ></v-autocomplete>
         </v-col>
       </v-row>
-
-      <div v-if="selectedClientId">
+      <v-skeleton-loader
+          ref="roleSkeleton"
+          v-show="!rolesLoaded && selectedClientId"
+          type="list-item@3">
+      </v-skeleton-loader>
+      <div v-if="selectedClientId" v-show="rolesLoaded">
         <v-row no-gutters>
           <v-col class="col-4">
             <v-row no-gutters>
@@ -213,8 +219,10 @@
     </v-card>
       
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
-      <v-col class="col-4" style="margin-bottom: 30px">
+      <v-col class="col-6" style="margin-bottom: 30px">
         <v-btn id="adv-search-button" class="primary" medium @click.native="searchUser(advancedSearchParams)">Search Users</v-btn>
+        &nbsp;
+        <v-btn id="clear-search-button" class="BC-Gov-SecondaryButton" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
       </v-col>
     </v-row>
 
@@ -258,7 +266,6 @@
 <script>
 import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
-import organizations from "@/assets/organizations"
 import app_config from '@/loadconfig';
 
 const options = {dateStyle: 'short'};
@@ -268,15 +275,12 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      headers: [
-        { text: "Username", value: "username", class: "table-header" },
-        { text: "First name", value: "firstName", class: "table-header" },
-        { text: "Last name", value: "lastName", class: "table-header" },
-        { text: "Email", value: "email", class: "table-header" },
-        { text: "Last Log Date", value: "lastLogDate", class: "table-header" },
-        { text: "Role", value: "role", class: "table-header" }
-      ],
-      organizations: organizations,
+      organizations: app_config.organizations
+          .map((item) => {
+            item.value = `{"id":"${item.id}","name":"${item.name}"}`
+            item.text = `${item.id} - ${item.name}`;
+            return item;
+          }),
       clients: [ "" ],
       selectedClientId: null,
       clientRoles: [],
@@ -293,7 +297,8 @@ export default {
       advancedSearchSelected: false,
       newTab: false,
       radios: "",
-      lastLogDate: ""
+      lastLogDate: "",
+      rolesLoaded: false
     };
   },
   async created() {
@@ -307,9 +312,9 @@ export default {
       params = this.addQueryParameter(params, "username", this.usernameInput.replaceAll("\\","%5C"));
       params = this.addQueryParameter(params, "email", this.emailInput);
       params = this.addQueryParameter(params, "org", this.organizationInput);
-      if (this.radios == "Before") {
+      if (this.radios == "Before" && this.lastLogDate) {
         params = this.addQueryParameter(params, "lastLogBefore", this.lastLogDate);
-      } else {
+      } else if (this.radios == "After" && this.lastLogDate) {
         params = this.addQueryParameter(params, "lastLogAfter", this.lastLogDate);
       }
       if (this.selectedClientId){
@@ -326,6 +331,23 @@ export default {
       }
       
       return params;
+    },
+    headers(){
+      let hdrs = [
+        { text: "Username", value: "username", class: "table-header" },
+        { text: "First name", value: "firstName", class: "table-header" },
+        { text: "Last name", value: "lastName", class: "table-header" },
+        { text: "Email", value: "email", class: "table-header" }
+      ];
+      let showLogins = (this.radios!=null && this.radios!="") && (this.lastLogDate!=null && this.lastLogDate!="");
+      let showRoles = (this.selectedClientId!=null && this.selectedClientId!="");
+      if (showLogins){
+        hdrs.push({ text: "Last Log Date", value: "lastLogDate", class: "table-header" });
+      }
+      if (showRoles){
+        hdrs.push({ text: "Role", value: "role", class: "table-header" });
+      }
+      return hdrs;
     },
     itemsInColumn() {
       return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
@@ -405,6 +427,7 @@ export default {
         });
     },
     loadUserClientRoles: async function() {
+      this.rolesLoaded = false;
       this.clientRoles = [];
       this.selectedRoles = [];
       if (this.selectedClientId) {
@@ -417,6 +440,7 @@ export default {
             this.handleError("Client Role search failed", error);
           });
         this.clientRoles.push(...loadedRoles);
+        this.rolesLoaded = true;
       }
     },
     appendClientInfo: function(role) {
@@ -446,6 +470,18 @@ export default {
         type: "error"
       });
       window.scrollTo(0, 0);
+    },
+    clearSearchCriteria(){
+      this.selectedRoles = []
+      this.userSearchInput = "";
+      this.lastNameInput = "";
+      this.firstNameInput = "";
+      this.usernameInput = "";
+      this.emailInput = "";
+      this.organizationInput = "";
+      this.selectedClientId = null;
+      this.lastLogDate = "";
+      this.radios = "";
     }
   }
 };
