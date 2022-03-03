@@ -35,6 +35,11 @@ spring:
           keycloak:
             authorization-url: ${keycloak.base-oauth-url}/protocol/openid-connect/auth
             token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
+  datasource:
+    url: jdbc:postgresql://localhost/postgres
+    user: postgres
+    password: ${POSTGRES_PASSWORD}
+    database : organizations
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
@@ -42,6 +47,7 @@ springdoc:
     path: /docs/api-docs
 server:
   port: 9090
+
 # If you need to test SSL locally, use settings like this.
 # The key will need to be installed in your browser truststore.
 #  ssl:
