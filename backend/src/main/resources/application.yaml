@@ -37,9 +37,10 @@ spring:
             token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
   datasource:
     url: jdbc:postgresql://localhost/postgres
-    user: postgres
+    username: postgres
     password: ${POSTGRES_PASSWORD}
     database : organizations
+    password_encryption : md5
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
