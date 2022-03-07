@@ -86,7 +86,7 @@
 
           </v-form>
         </v-col>
-        <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef">
+        <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef" v-if="this.userId">
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
