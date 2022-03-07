@@ -70,3 +70,14 @@ input {
 .select-table tr.v-data-table__empty-wrapper {
     cursor: default;
 }
+
+.theme--light.v-btn.BC-Gov-SecondaryButton {
+    background: none;
+    border: 2px solid #003366;
+    color: #003366;
+    }
+.theme--light.v-btn.BC-Gov-SecondaryButton:hover {
+    opacity: 0.80;
+    background-color: #003366;
+    color: #FFFFFF;
+}

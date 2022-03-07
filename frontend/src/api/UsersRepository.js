@@ -41,6 +41,11 @@ export default {
         return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}/${clientRoleMappings}/${clientId}/composite`));
     },
 
+    /* Get the last login date for each client for a user*/
+    getUserLogins(userId){
+        return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}/last-logins`));
+    },
+
     addUserClientRoles(userId, clientId, content) {
         return umsRequest().then(axiosInstance => axiosInstance.post(`${resource}/${userId}/${clientRoleMappings}/${clientId}/`, content));
     },

@@ -24,9 +24,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -55,12 +55,12 @@ public class MoHUmsIntegrationTests {
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
         jwt = getKcAccessToken();
-        
-                 webTestClient = webTestClient
-                            .mutate()
-                            .responseTimeout(Duration.ofSeconds(60))
-                            .build();
-                 
+
+        webTestClient = webTestClient
+                .mutate()
+                .responseTimeout(Duration.ofSeconds(90))
+                .build();
+
     }
 
     private String getKcAccessToken() throws IOException, InterruptedException, ParseException {
@@ -88,7 +88,7 @@ public class MoHUmsIntegrationTests {
                 .uri("/groups")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isOk(); //HTTP 200
     }
 
     @Test
@@ -176,8 +176,8 @@ public class MoHUmsIntegrationTests {
                         uriBuilder -> uriBuilder
                                 .path("/users")
                                 .queryParam("org", "00000010")
-                                .queryParam("first", "0")
-                                .queryParam("max", "10000")
+                                .queryParam("first", 0)
+                                .queryParam("max", 5000)
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -266,10 +266,10 @@ public class MoHUmsIntegrationTests {
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("first", "0")
-                                .queryParam("max", "2000")
-//                                .queryParam("lastLogAfter", "2021-04-16")
-                                .queryParam("lastLogBefore", "2021-04-30")
+                                .queryParam("first", 0)
+                                .queryParam("max", 2000)
+                                .queryParam("lastLogBefore",
+                                        LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -283,9 +283,8 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(filteredUsers).isNotEmpty();
         Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
     }
-    
-    
-        @Test
+
+    @Test
     public void searchUsersByNameAndLastLogAfter() throws Exception {
         final List<Object> allUsers = getAll("users");
 
@@ -294,12 +293,11 @@ public class MoHUmsIntegrationTests {
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("first", "0")
-                                .queryParam("max", "2000")
-                                .queryParam("firstName", "Camille")
-//                                .queryParam("firstName", "Trevor")
-                                .queryParam("lastLogAfter", "2021-05-18")
-//                                .queryParam("lastLogBefore", "2021-04-14")
+                                .queryParam("first", 0)
+                                .queryParam("max", 2000)
+                                .queryParam("firstName", "Trevor")
+                                .queryParam("lastLogAfter",
+                                        LocalDate.now().minusMonths(1).format(DateTimeFormatter.ISO_DATE))
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -313,7 +311,7 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(filteredUsers).isNotEmpty();
         Assertions.assertThat(allUsers.size()).isGreaterThan(filteredUsers.size());
     }
-    
+
     @Test
     public void lookupUserAuthorized() throws Exception {
         webTestClient
@@ -333,28 +331,28 @@ public class MoHUmsIntegrationTests {
                 .bodyValue("{\"enabled\":true,\"attributes\":{},\"username\":\"bingo\",\"emailVerified\":\"\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
-        // We expect a 409 (Conflict) because the user already exists.
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT); //HTTP 409 (Conflict); user already exists
     }
 
     @Test
     public void updateUser() throws Exception {
         webTestClient
                 .put()
+                // 123-tschiavo user
                 .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT);
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
 
     @Test
     public void addUserClientRole() {
-        //FMDB Client
-        //123-tschiavo user
         webTestClient
                 .post()
+                // 123-tschiavo user
+                // FMDB client
                 .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
@@ -368,15 +366,15 @@ public class MoHUmsIntegrationTests {
                         + "]")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
 
     @Test
     public void deleteUserClientRole() {
-        //FMDB Client
-        //123-tschiavo user
         webTestClient
                 .method(HttpMethod.DELETE)
+                // 123-tschiavo user
+                // FMDB client
                 .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
@@ -390,7 +388,7 @@ public class MoHUmsIntegrationTests {
                         + "]")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
 
     @Test
@@ -409,10 +407,11 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .put()
                 // 123-tschiavo user
+                // CGI QA group
                 .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
 
     @Test
@@ -420,10 +419,11 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .delete()
                 // 123-tschiavo user
+                // CGI QA group
                 .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //204 indicates success
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
 
     @Test
@@ -433,7 +433,7 @@ public class MoHUmsIntegrationTests {
                 .uri("events")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isOk(); //HTTP 200
     }
 
     @Test
@@ -477,7 +477,7 @@ public class MoHUmsIntegrationTests {
                 .uri("admin-events")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus().isOk(); //HTTP 200
     }
 
     @Test
@@ -518,6 +518,7 @@ public class MoHUmsIntegrationTests {
     public void assignedUserClientRoleMappingUnauthorized() throws Exception {
         webTestClient
                 .get()
+                // 123-tschiavo user
                 // 1b2ce61a-1235-4a0e-8334-1ac557151757 is the realm-management client, which is not in the list of USER-MANAGEMENT-SERVICE roles.
                 .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
                 .header("Authorization", "Bearer " + jwt)
@@ -529,6 +530,7 @@ public class MoHUmsIntegrationTests {
     public void assignedUserClientRoleMappingAuthorized() throws Exception {
         webTestClient
                 .get()
+                // 123-tschiavo user
                 // a425bf07-a2bd-403f-a605-afc2b4898c3f is GIS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-gis"
                 .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/a425bf07-a2bd-403f-a605-afc2b4898c3f")
                 .header("Authorization", "Bearer " + jwt)
@@ -615,7 +617,7 @@ public class MoHUmsIntegrationTests {
                         uriBuilder -> uriBuilder
                                 .path("/" + resource)
                                 .queryParam("first", 0)
-                                .queryParam("max", 10_000)
+                                .queryParam("max", 5000)
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)

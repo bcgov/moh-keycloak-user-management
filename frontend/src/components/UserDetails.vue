@@ -86,7 +86,7 @@
 
           </v-form>
         </v-col>
-        <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef">
+        <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef" v-if="this.userId">
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
@@ -94,12 +94,19 @@
             </li>
           </ul>
           <br/><br/>
-          <label for="all-roles">Application Roles</label>
-          <ul id="all-roles" style="margin-top: 5px; list-style: square">
+          <label for="all-roles">Application Roles and Last Login</label>
+          <v-skeleton-loader
+              ref="roleSkeleton"
+              v-show="!rolesLoaded"
+              type="list-item@5">
+          </v-skeleton-loader>
+          <div id="user-roles" v-show="rolesLoaded">          
+            <ul id="all-roles" style="margin-top: 5px; list-style: square">
               <li v-for="client in allRoles" :key="client.clientName">
-                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}]
+                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}] {{client.lastLogin}}
               </li>
-          </ul>
+            </ul>
+          </div>
         </v-col>
       </v-row>
       <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
@@ -138,7 +145,8 @@ export default {
         
         federatedIdentities: null
       },
-      allRoles: null
+      allRoles: null,
+      rolesLoaded: false
     };
   },
   async created() {
@@ -191,25 +199,40 @@ export default {
           console.log(e);
         });
     },
-    loadUserRoles: function(){    
+    loadUserRoles: function() {    
       this.allRoles = [];
+      this.rolesLoaded = false;
+      let vueObj = this;
+      let lastLoginMap = [];
+      UsersRepository.getUserLogins(this.userId).then(lastLogins => {
+        lastLoginMap = lastLogins.data;
+      });
       /*
       No API call exists to load all roles for a user, so we need to first query
       for a list of clients, then load the roles for each client one by one
-      */     
-      clients.get().then(allClients => {        
-        allClients.data.forEach(client => {
-            UsersRepository.getUserEffectiveClientRoles(this.userId,client.id).then(clientRoles => {
-              if (clientRoles.data.length>0){
-                let roleCollection = {};
-                roleCollection.clientName = client.name;
-                roleCollection.effectiveRoles = clientRoles.data;
-                this.allRoles.push(roleCollection);
-                //Sort results by client name every time a new result comes in
-                this.allRoles.sort((a, b) => a.clientName.localeCompare(b.clientName, undefined, {sensitivity: 'base'}))
-              }
-            }); 
-          });            
+      */          
+      clients.get().then(allClients => {  
+        Promise.all(      
+          allClients.data.map(client => {
+              return UsersRepository.getUserEffectiveClientRoles(this.userId,client.id)
+                     .then(clientRoles =>{
+                        clientRoles["clientName"] = client.name; 
+                        return clientRoles;
+                      });
+            })
+          ).then(function(rolesArray) {
+            rolesArray.forEach(clientRoles =>{
+                if (clientRoles.data.length>0){
+                  let lastLoginStr = "- N/A";
+                  if (lastLoginMap[clientRoles.clientName]){
+                    lastLoginStr = "- "+new Date(lastLoginMap[clientRoles.clientName]).toLocaleDateString("en-CA");
+                  }
+                  vueObj.allRoles.push({clientName: clientRoles.clientName, effectiveRoles:clientRoles.data, lastLogin: lastLoginStr});                
+                }
+            });            
+            vueObj.allRoles.sort((a, b) => a.clientName.localeCompare(b.clientName, undefined, {sensitivity: 'base'}))
+            vueObj.rolesLoaded = true;
+          });           
         });
     },
     updateUser: function() {
