@@ -466,31 +466,14 @@ export default {
     loadOrganizations: async function () {
       try {
         let results = (await OrganizationsRepository.get()).data;
-        this.loadOrganizationsHelper(results)
+        for(var i = 0; i < results.length; i++){
+          this.organizations.push(results[i]["id"] + " - " + results[i]["name"]);
+        }
       }
       catch (error) {
         this.handleError("organization search failed", error);
       }
     },
-    loadOrganizationsHelper : function (results){
-        const maxRes = this.maxResults;
-      if (results.length > maxRes) {
-        this.searchResults = results.slice(0, maxRes);
-        this.$store.commit("alert/setAlert", {
-          message: "Your search returned more than the maximum number of results ("
-                  + maxRes + "). Please consider refining the search criteria.",
-          type: "warning"
-        });
-        window.scrollTo(0, 0);
-      }
-      else {
-        // text: "00000010 - Ministry of Health"
-        for(var i = 0; i < results.length; i++){
-            this.organizations.push(results[i]["id"] + " - " + results[i]["name"]);
-        }
-        this.organizations.sort((a, b) => (a > b ? 1 : -1));
-      }
-    }, 
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
         message: message + ": " + error,
