@@ -24,6 +24,8 @@ public class OrganizationsController {
     private String user;
     @Value("${spring.datasource.password}")
     private String password;
+    @Value("${spring.datasource.database}")
+    private String database;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -37,14 +39,14 @@ public class OrganizationsController {
 
     @GetMapping("/organizations")
     public Collection<Object> getOrganizations() throws SQLException {
-        return jdbcTemplate.query("SELECT * FROM organizations ORDER BY organization_id",
+        return jdbcTemplate.query("SELECT * FROM " + database + " ORDER BY organization_id",
                 (rs, rowNum) -> Map.of("id", rs.getString("organization_id"),
                         "name", rs.getString("organization_name")));
     }
 
     @GetMapping("/organizations/{organizationId}")
     public Object getOrganization(@PathVariable String organizationId) throws SQLException {
-        return jdbcTemplate.queryForObject("SELECT * FROM organizations WHERE organization_id = ?", new Object[]{organizationId},
+        return jdbcTemplate.queryForObject("SELECT * FROM " + database + " WHERE organization_id = ?", new Object[]{organizationId},
                 (rs, rowNum) -> Map.of("id", rs.getString("organization_id"), "name", rs.getString("organization_name"))
         );
     }
@@ -52,7 +54,7 @@ public class OrganizationsController {
 
     @PostMapping("/organizations")
     public void createOrganization(@RequestBody JSONObject body) throws SQLException {
-        jdbcTemplate.update("insert into organizations (organization_id, organization_name) values (?,?)",
+        jdbcTemplate.update("insert into " + database + " (organization_id, organization_name) values (?,?)",
                 body.get("id"), body.get("name"));
     }
 

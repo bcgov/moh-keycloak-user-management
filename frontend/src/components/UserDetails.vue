@@ -250,9 +250,7 @@ export default {
     loadOrganizations: async function () {
       try {
         let results = (await OrganizationsRepository.get()).data;
-        for(var i = 0; i < results.length; i++){
-          this.organizations.push(results[i]["id"] + " - " + results[i]["name"]);
-        }
+        this.organizations = results.map(org => org.id + " - "+ org.name);
       }
       catch (error) {
         this.handleError("organization search failed", error);
