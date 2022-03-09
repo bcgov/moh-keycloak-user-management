@@ -14,7 +14,7 @@
               <span>Username should include the corresponding prefix or suffix in alignment with the id type.
                 <ul>
                   <li>IDIR: username<strong>@idir</strong></li>
-                  <li>Business BCeID: username<strong>@business_bceid</strong></li>
+                  <li>Business BCeID: username<strong>@bceid_business</strong></li>
                   <li>Fraser Health: <strong>sfhr\</strong>username</li>
                   <li>Interior Health: <strong>iha\</strong>username</li>
                   <li>Northern Health: <strong>nirhb\</strong>username</li>
