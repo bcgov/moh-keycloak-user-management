@@ -17,7 +17,7 @@
         <a id="advancedSearchLink" style="float:right" v-on:click="advancedSearchSelected=true">
           Advanced Search
         </a>
-
+        
         <v-text-field
           id="user-search"
           outlined
@@ -29,6 +29,7 @@
       </v-col>
       <v-col class="col-4">
           <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Users</v-btn>
+          <v-btn id="clear-search-button-basic" class="clear-search-button-basic" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
       </v-col>
          
       <v-col class="col-2">
@@ -512,5 +513,9 @@ export default {
 }
 .row.right-gutters {
   margin: 0;
+}
+#clear-search-button-basic{
+  margin-top: 25px;
+  margin-left: 20px;
 }
 </style>
