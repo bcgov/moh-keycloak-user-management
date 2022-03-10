@@ -39,10 +39,9 @@ spring:
     url: jdbc:postgresql:postgres
     username: postgres
     password: ${POSTGRES_PASSWORD}
-    database : organizations
-    organization_id : organization_id
-    organization_name : organization_name
-    password_encryption : md5
+    database: organizations
+    organization_id: organization_id
+    organization_name: organization_name
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html

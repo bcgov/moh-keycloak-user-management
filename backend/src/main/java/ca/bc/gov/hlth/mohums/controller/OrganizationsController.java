@@ -17,7 +17,6 @@ import java.util.Map;
 @RestController
 public class OrganizationsController {
 
-    //todo: write the url, user and password somewhere else
     @Value("${spring.datasource.url}")
     private String url;
     @Value("${spring.datasource.username}")
@@ -34,9 +33,6 @@ public class OrganizationsController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public OrganizationsController(WebClientService webClientService, @Value("${config.vanity-hostname}") String vanityHostname) {
-    }
-
     public PreparedStatement connectAndPrepareStatement(String sql) throws SQLException {
         return DriverManager.getConnection(url, user, password).prepareStatement(sql);
     }
@@ -47,14 +43,6 @@ public class OrganizationsController {
                 (rs, rowNum) -> Map.of("id", rs.getString(organization_id),
                         "name", rs.getString(organization_name)));
     }
-
-    @GetMapping("/organizations/{organizationId}")
-    public Object getOrganization(@PathVariable String organizationId) throws SQLException {
-        return jdbcTemplate.queryForObject("SELECT * FROM " + database + " WHERE " + organization_id + " = ?", new Object[]{organizationId},
-                (rs, rowNum) -> Map.of("id", rs.getString(organization_id), "name", rs.getString(organization_name))
-        );
-    }
-
 
     @PostMapping("/organizations")
     public void createOrganization(@RequestBody JSONObject body) throws SQLException {
