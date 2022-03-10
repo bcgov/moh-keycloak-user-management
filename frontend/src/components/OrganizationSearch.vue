@@ -23,10 +23,7 @@
           @keyup.enter="searchOrganization('&search='+organizationSearchInput.replaceAll('\\','%5C'))"     
         />
       </v-col>
-      <v-col class="col-4">
-          <v-btn id="search-button" class="primary" medium @click.native="searchOrganization('&search='+organizationSearchInput.replaceAll('\\','%5C'))">Search Organizations</v-btn>
-      </v-col>
-      <v-col class="col-2">
+      <v-col class="col-6">
         <v-btn id="create-organization-button" class="success" medium @click.native="goToCreateOrganization">Create New organization</v-btn>
       </v-col>
     </v-row>
@@ -43,25 +40,10 @@
           :footer-props="footerProps"
           :loading="organizationSearchLoadingStatus"
           loading-text="Searching for organizations"
-          v-on:click:row="selectOrganization"
         >
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
           <template #item.id="{ item }">
-            <a target="_blank" :href="`#/organizations/${item.id}`" v-on:click="openNewTab">
               {{ item.id }}
-            </a>
-            <v-icon small>mdi-open-in-new</v-icon>
-          </template>
-          <template v-slot:footer>
-            <v-toolbar flat>
-              <v-spacer/>
-              <download-csv
-                  :data="searchResults"
-                  :fields="['id','name']"
-              >
-                <v-btn id="csv-button" class="primary" small>Download results</v-btn>
-              </download-csv>
-            </v-toolbar>
           </template>
         </v-data-table>
       </v-col>
@@ -89,6 +71,9 @@ export default {
       newTab: false,
     };
   },
+  async created() {
+    this.searchOrganization();
+  },
   computed: {
     maxResults() {
       return app_config.config.max_results ? app_config.config.max_results : 100;
@@ -101,17 +86,6 @@ export default {
     }
   },
   methods: {
-    openNewTab: function() {
-      this.newTab = true;
-    },
-    selectOrganization: function(organization) {
-      if (this.newTab) {
-        this.newTab = false;
-        return;
-      }
-      this.$store.commit("alert/dismissAlert");
-      this.$router.push({ name: "OrganizationUpdate", params: { organizationid: organization.id } });
-    },
     searchOrganization : async function() {
         try {
             let results = (await OrganizationsRepository.get()).data;

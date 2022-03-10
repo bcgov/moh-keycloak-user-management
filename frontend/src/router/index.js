@@ -8,7 +8,6 @@ import UserCreate from '../components/UserCreate.vue'
 
 import Organizations from '../views/Organizations.vue'
 import OrganizationSearch from '../components/OrganizationSearch.vue'
-import OrganizationUpdate from '../components/OrganizationUpdate.vue'
 import OrganizationCreate from '../components/OrganizationCreate.vue'
 
 
@@ -53,11 +52,6 @@ const routes = [
         component: OrganizationCreate,
         name: 'OrganizationCreate'
       },
-      {
-        path: ':organizationId',
-        component: OrganizationUpdate,
-        name: 'OrganizationUpdate'
-      }    
     ]
   },
   {
