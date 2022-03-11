@@ -1,32 +1,77 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div id="organization">
-    <h1>Create New Organization</h1>
-    <organization-details ref="organizationDetails" update-or-create="Create" @submit-organization-updates="createOrganization"></organization-details>
+    <v-card outlined class="subgroup">
+      <h2>Organization Create</h2>
+      <v-row no-gutters>
+        <v-col class="col-7">
+          <v-form ref="form">
+            <label for="id" class="required">Organization ID</label>
+            <v-text-field
+              dense
+              outlined
+              id="ID"
+              v-model="organization.id"
+              required
+              :rules="[
+              v => !!v || 'ID is required',
+              v => /^\d{8}$/.test(v) || 'ID must be made of 8 numerical characters',
+              ]"
+            />
+
+            <label for="first-name" class="required">Organization Name</label>
+            <v-text-field
+              dense
+              outlined
+              id="first-name"
+              v-model="organization.name"
+              required
+              :rules="[v => !!v || 'Organization Name is required']"
+            />
+          </v-form>
+        </v-col>
+      </v-row>
+      <v-btn id="submit-button" class="primary" medium @click="validateOrganization"> Create Organization</v-btn>
+    </v-card>
   </div>
 </template>
 
 <script>
 import OrganizationRepository from "@/api/OrganizationsRepository";
-import OrganizationDetails from "@/components/OrganizationDetails.vue";
 
 export default {
   name: "OrganizationCreate",
-  components: {
-    OrganizationDetails
+  data() {
+    return {
+      organization: {
+        id: '',
+        name: '',
+      },
+    };
   },
   methods: {
-    createOrganization: function(organizationDetails) {
-        OrganizationRepository.createOrganization(organizationDetails)
+    validateOrganization: function() {
+      if (!this.$refs.form.validate()) {
+        this.$store.commit("alert/setAlert", {
+          message: "Please correct errors before submitting",
+          type: "error"
+        });
+        window.scrollTo(0, 0);
+        return;
+      }
+      this.createOrganization();
+    },
+    createOrganization: function() {
+        OrganizationRepository.createOrganization(this.organization)
             .then(() => {
           this.$store.commit("alert/setAlert", {
-            message: "Organization updated successfully",
+            message: "Organization created successfully",
             type: "success"
           });
         })
           .catch(error => {
           this.$store.commit("alert/setAlert", {
-            message: "Error updating organization: " + error,
+            message: "Error creating organization: " + error,
             type: "error"
           });
         })
