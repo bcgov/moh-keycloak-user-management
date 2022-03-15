@@ -29,7 +29,7 @@
       </v-col>
       <v-col class="col-4">
           <v-btn id="search-button" class="primary" medium @click.native="searchUser('&search='+userSearchInput.replaceAll('\\','%5C'))">Search Users</v-btn>
-          <v-btn id="clear-search-button-basic" class="clear-search-button-basic" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
+          <v-btn id="clear-search-button-basic" class="BC-Gov-SecondaryButton" medium @click.native="clearSearchCriteria">Clear Search</v-btn>
       </v-col>
          
       <v-col class="col-2">
