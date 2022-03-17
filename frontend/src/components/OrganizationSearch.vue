@@ -72,17 +72,11 @@ export default {
     };
   },
   async created() {
-    this.searchOrganization();
+    await this.searchOrganization();
   },
   computed: {
     maxResults() {
       return app_config.config.max_results ? app_config.config.max_results : 100;
-    },
-    // todo: note: this checks to see if user has permission to create users, not create orgs
-    hasCreateOrganizationRole: function() {
-      const umsClientId = "USER-MANAGEMENT-SERVICE";
-      const createUserRoleName = "create-user";
-      return !!this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName)
     }
   },
   methods: {
@@ -129,10 +123,6 @@ export default {
 </script>
 
 <style scoped>
-#search-button {
-  margin-top: 25px;
-  margin-left: 20px;
-}
 #create-organization-button {
   float: right;
   margin-top: 25px;

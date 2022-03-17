@@ -1,14 +1,11 @@
 package ca.bc.gov.hlth.mohums.controller;
 
-import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
@@ -32,10 +29,6 @@ public class OrganizationsController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    public PreparedStatement connectAndPrepareStatement(String sql) throws SQLException {
-        return DriverManager.getConnection(url, user, password).prepareStatement(sql);
-    }
 
     @GetMapping("/organizations")
     public Collection<Object> getOrganizations() throws SQLException {
