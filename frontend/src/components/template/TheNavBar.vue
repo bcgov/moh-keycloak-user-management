@@ -5,12 +5,6 @@
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">Users</router-link>
         </li>
-        <li id="admin-event-log-link" :class="$route.name == 'AdminEventLog' ? 'active' : 'inactive'">
-            <router-link @click.native="resetAlert" :to="{ name: 'AdminEventLog'}">User History</router-link>
-        </li>
-        <li id="event-log-link" :class="$route.name == 'EventLog' ? 'active' : 'inactive'">
-            <router-link @click.native="resetAlert" :to="{ name: 'EventLog'}">Login Events</router-link>
-        </li>
       </ul>
     </div>
   </nav>
