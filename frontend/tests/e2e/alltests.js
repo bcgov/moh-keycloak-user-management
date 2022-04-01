@@ -62,14 +62,5 @@ test('Test update user role', async t => {
         .contains('Roles updated successfully');
 });
 
-test('Test search by administrator', async t => {
-    await t
-        .click('#admin-event-log-link')
-      .typeText('#admin-id', TEST_CAFE_USER_ID)
-        .pressKey('enter')
-        .expect(Selector('#search-results').textContent)
-        .contains('Test Cafe');
-});
-
 
 
