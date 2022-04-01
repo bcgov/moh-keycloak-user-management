@@ -162,7 +162,9 @@ public class UsersController {
             roles = selectedRoles.get();
         }
         for (String role:roles){
-            ResponseEntity res = webClientService.getUsersInRole(clientId,role,null);
+            MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+            queryParams.add("max", "-1");
+            ResponseEntity res = webClientService.getUsersInRole(clientId,role,queryParams);
             List<Map> usersInRole = (List)res.getBody();
             for(Map u: usersInRole){
                 String key = (String)u.get("id");
