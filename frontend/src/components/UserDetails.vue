@@ -116,19 +116,17 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import app_config from '@/loadconfig';
+import OrganizationsRepository from "@/api/OrganizationsRepository";
+
 import clients from "@/api/ClientsRepository";
 
 export default {
   name: "UserDetails",
   props: ['userId', 'updateOrCreate'],
+
   data() {
     return {
-      organizations: app_config.organizations.map((item) => {
-        item.value = `{"id":"${item.id}","name":"${item.name}"}`
-        item.text = `${item.id} - ${item.name}`;
-        return item;
-      }),
+      organizations: [],
       emailRules: [
         v => !!v || "Email is required",
         v => /^\S+@\S+$/.test(v) || "Email is not valid"
@@ -154,6 +152,7 @@ export default {
   async created() {
     //Create global ref to allow role update from UserUpdateRoles
     this.$root.$refs.UserDetails = this;
+    await this.loadOrganizations();
     // TODO error handling
     this.$store.commit("user/resetState");
     if (this.userId) {
@@ -247,7 +246,20 @@ export default {
         return;
       }
       this.$emit('submit-user-updates', this.user)
-    }
+    },
+    loadOrganizations: async function () {
+      try {
+        let results = (await OrganizationsRepository.get()).data;
+        this.organizations = results.map(org => {
+          org.text = `${org.id} - ${org.name}`;
+          org.value = `{"id":"${org.id}","name":"${org.name}"}`
+          return org
+        });
+      }
+      catch (error) {
+        this.handleError("organization search failed", error);
+      }
+    },
   },
   filters: {
     // The IDP alias in keycloak doesn't always match what's known by users

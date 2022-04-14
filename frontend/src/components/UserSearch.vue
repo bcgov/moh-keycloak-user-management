@@ -265,9 +265,10 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
+import OrganizationsRepository from "@/api/OrganizationsRepository";
+
 import ClientsRepository from "@/api/ClientsRepository";
 import app_config from '@/loadconfig';
-
 const options = {dateStyle: 'short'};
 const formatDate = new Intl.DateTimeFormat(undefined, options).format;
     
@@ -275,12 +276,7 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      organizations: app_config.organizations
-          .map((item) => {
-            item.value = `{"id":"${item.id}","name":"${item.name}"}`
-            item.text = `${item.id} - ${item.name}`;
-            return item;
-          }),
+      organizations:[],
       clients: [ "" ],
       selectedClientId: null,
       clientRoles: [],
@@ -303,6 +299,7 @@ export default {
   },
   async created() {
     await this.loadClients();
+    await this.loadOrganizations();
   },
   computed: {
     advancedSearchParams() {
@@ -462,6 +459,19 @@ export default {
       }
       else {
         this.searchResults = results;
+      }
+    },
+    loadOrganizations: async function () {
+      try {
+        let results = (await OrganizationsRepository.get()).data;
+        this.organizations = results.map(org => {
+          org.text = `${org.id} - ${org.name}`;
+          org.value = `{"id":"${org.id}","name":"${org.name}"}`
+          return org
+        });
+      }
+      catch (error) {
+        this.handleError("organization search failed", error);
       }
     },
     handleError(message, error) {

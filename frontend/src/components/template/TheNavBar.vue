@@ -5,6 +5,9 @@
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">Users</router-link>
         </li>
+        <li id="organizations-link" :class="($route.name == 'OrganizationSearch' || $route.name == 'OrganizationCreate') ? 'active' : 'inactive'">
+            <router-link @click.native="resetAlert" :to="{ name: 'OrganizationSearch'}">Organizations</router-link>
+        </li>
         <li id="admin-event-log-link" :class="$route.name == 'AdminEventLog' ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'AdminEventLog'}">User History</router-link>
         </li>
