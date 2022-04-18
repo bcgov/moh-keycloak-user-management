@@ -3,7 +3,7 @@
     <div class="container">
       <ul>
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
-            <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">Users</router-link>
+            <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">User Search</router-link>
         </li>
       </ul>
     </div>
