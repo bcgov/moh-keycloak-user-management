@@ -4,8 +4,6 @@ import Users from '../views/Users.vue'
 import UserSearch from '../components/UserSearch.vue'
 import UserUpdate from '../components/UserUpdate.vue'
 import UserCreate from '../components/UserCreate.vue'
-import EventLog from '../views/EventLog.vue'
-import AdminEventLog from '../views/AdminEventLog.vue'
 
 Vue.use(VueRouter)
 
@@ -32,16 +30,6 @@ const routes = [
       }    
     ]
   },
-  {
-    path: '/event-log',
-    name: 'EventLog',
-    component: EventLog
-  },
-  {
-    path: '/admin-event-log',
-    name: 'AdminEventLog',
-    component: AdminEventLog
-  }
 ]
 
 const router = new VueRouter({
