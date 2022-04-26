@@ -4,7 +4,7 @@
       <section class="container">
         <section class="identity">
           <img src="../../assets/images/logo.png" width="154" class="logo" alt="BC Government Logo" />
-          <div class="sitename">MoH User Management</div>
+          <div class="sitename">{{ title }}</div>
         </section>
         <section class="options user-select-off">
           <a id="logoutLink" class="sign-out" v-on:click="logout">Sign Out</a>
@@ -17,6 +17,11 @@
 <script>
 export default {
     name: "TheHeader",
+    data() {
+      return {
+        title: this.$config.app_title,
+      }
+    },
     methods: {
     logout: function () {
       if(confirm("Please confirm you want to sign out. " +

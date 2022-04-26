@@ -36,7 +36,10 @@ export default {
       vueCliMode: process.env.NODE_ENV,
       showKeycloakTools: false
     };
-  }
+  },
+  mounted() {
+    document.title = this.$config.app_title;
+  },
 };
 </script>
 
