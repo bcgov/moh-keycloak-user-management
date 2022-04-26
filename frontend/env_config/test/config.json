@@ -3,5 +3,6 @@
   "max_results": 1000,
   "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://user-management-test.hlth.gov.bc.ca",
   "service_url": "https://user-management-test.api.hlth.gov.bc.ca",
-  "sfds_url": "https://sfdstst.hlth.gov.bc.ca/sfds-api"
+  "sfds_url": "https://sfdstst.hlth.gov.bc.ca/sfds-api",
+  "app_title": "MoH User Management (Test)"
 }
