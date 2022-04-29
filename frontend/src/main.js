@@ -13,8 +13,8 @@ Vue.config.productionTip = false
 Vue.prototype.$keycloak = keycloak;
 Vue.component('downloadCsv', JsonCSV)
 
-keycloak.onAuthSuccess = function () {
-    Vue.prototype.$config = app_config.config;
+keycloak.onAuthSuccess = async function () {
+    Vue.prototype.$config = await app_config.config;
     new Vue({
         vuetify,
         router,
