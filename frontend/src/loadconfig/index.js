@@ -1,4 +1,4 @@
-let app_config = new Object();
+let app_config = new Object({config: '', organizations: ''});
 
 fetch(process.env.BASE_URL + "config.json")
     .then((response) => {
