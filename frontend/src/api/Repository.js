@@ -12,7 +12,10 @@ function kcRequest() {
             headers: {Authorization: 'Bearer ' + keycloak.token}
         });
     }
-    return keycloak.updateToken(0).then(createAxios);
+    if(keycloak.isTokenExpired(0)) {
+        return keycloak.logout({redirectUri: app_config.config.siteminder_logout});
+    }
+        return keycloak.updateToken(0).then(createAxios);
 }
 
 function umsRequest() {
@@ -23,7 +26,10 @@ function umsRequest() {
             headers: {Authorization: 'Bearer ' + keycloak.token}
         });
     }
-    return keycloak.updateToken(0).then(createAxios);
+    if(keycloak.isTokenExpired(0)) {
+        return keycloak.logout({redirectUri: app_config.config.siteminder_logout});
+    }
+        return keycloak.updateToken(0).then(createAxios);
 }
 
 function sfdsRequest() {
@@ -33,7 +39,10 @@ function sfdsRequest() {
             baseURL: baseURL
         });
     }
-    return keycloak.updateToken(0).then(createAxios);
+    if(keycloak.isTokenExpired(0)) {
+        return keycloak.logout({redirectUri: app_config.config.siteminder_logout});
+    }
+        return keycloak.updateToken(0).then(createAxios);
 }
 
 export {kcRequest, umsRequest, sfdsRequest}
