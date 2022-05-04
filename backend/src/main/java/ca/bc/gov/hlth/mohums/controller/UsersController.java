@@ -81,23 +81,22 @@ public class UsersController {
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
         }
 
+                    // (april 6 wed has 73)
+
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
 
-            List<LinkedHashMap<String, Object>> allEventsLastLog= new ArrayList <> ();
+            // get 1 year from now
             LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
             Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            // create the query parameters. 
+            //  lastlogbefore present?dateTo=lastLogbefore:blank
+            //  lastLogAfter present? dateFrom=lastLogAfter:oneYearAgo
+            MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(0, -1, 
+                                       lastLogAfter.isPresent()? lastLogAfter:oneYearAgoParam, 
+                                       lastLogBefore.isPresent()? lastLogBefore:Optional.empty());
+            List<LinkedHashMap<String, Object>> allEventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody(); 
 
-            int start = 0;
-            int maxEvents = 100;
-            List<LinkedHashMap<String, Object>> eventsLastLog;
-            do {
-                MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
-                eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
-                allEventsLastLog.addAll(eventsLastLog);
-                start += maxEvents;
-            } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
-
-            //Filter login events to just the specified clientId
+            // Filter login events to just the specified client name
             if (clientName.isPresent()){
                 allEventsLastLog = allEventsLastLog.stream().filter(event -> event.get("clientId").equals(clientName.get())).collect(Collectors.toList());
             }
@@ -360,7 +359,8 @@ public class UsersController {
 
     }
 
-    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax,
+    Optional<String> dateFrom, Optional<String> dateTo){
 
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
