@@ -24,6 +24,9 @@ public class WebClientConfig {
 
     @Value("${keycloak.admin-api-url}")
     private String keycloakAdminBaseUrl;
+    
+    @Value("${spring.codec.max-in-memory-size-mb}")
+    int maxInMemorySize;
 
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
@@ -59,7 +62,7 @@ public class WebClientConfig {
                 .exchangeStrategies(ExchangeStrategies.builder()
                     .codecs(configurer -> configurer
                         .defaultCodecs()
-                        .maxInMemorySize(20 * 1024 * 1024))
+                        .maxInMemorySize(maxInMemorySize * 1024 * 1024))
                     .build())
                 .build();
     }
