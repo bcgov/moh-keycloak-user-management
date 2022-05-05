@@ -357,7 +357,7 @@ public class UsersController {
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
         queryEventParams.add("first", String.valueOf(start));
-        clientName.ifPresent(clientNameValue -> queryEventParams.add("dateTo", clientNameValue));
+        clientName.ifPresent(clientNameValue -> queryEventParams.add("client", clientNameValue));
         queryEventParams.add("max", String.valueOf(nbElementMax));
         dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
