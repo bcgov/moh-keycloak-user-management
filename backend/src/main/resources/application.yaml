@@ -18,7 +18,7 @@ config:
   allowed-origins: "http://localhost:8080"
 spring:
   codec:
-    max-in-memory-size-mb: 20
+    web-client-max-memory-mb: 20
   security:
     oauth2:
       resourceserver:
