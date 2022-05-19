@@ -46,6 +46,17 @@
             <version>3.0.3</version>
         </dependency>
 
+        <!-- jdbc for oracle db connection -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>19.6.0.0</version>
+        </dependency>
+
         <!-- open api and swagger documentation -->
         <dependency>
             <groupId>org.springdoc</groupId>

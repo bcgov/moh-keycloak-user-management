@@ -17,6 +17,11 @@ config:
   # CORS header, should be the User Management Console:
   allowed-origins: "http://localhost:8080"
 spring:
+  datasource:
+    url: ${oracle.dev-url}
+    username: ${oracle.dev-username} 
+    password: ${oracle.dev-password}
+    driver-class-name: oracle.jdbc.driver.OracleDriver
   security:
     oauth2:
       resourceserver:

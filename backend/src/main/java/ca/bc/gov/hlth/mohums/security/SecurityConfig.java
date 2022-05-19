@@ -23,6 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.view-clients}")
     private String viewClientsRole;
 
+    @Value("${user-management-client.roles.view-metrics}")
+    private String viewMetricsRole;
+
     @Value("${user-management-client.roles.view-groups}")
     private String viewGroupsRole;
 
@@ -53,10 +56,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         final JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakClientRoleConverter());
 
+    
         http
                 .cors(Customizer.withDefaults())
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
+                .mvcMatchers(HttpMethod.GET, "/dashboard/**").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET,"/events/**").hasRole(viewEventsRole)
                 .mvcMatchers(HttpMethod.GET,"/admin-events/**").hasRole(viewEventsRole)
                 .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
