@@ -4,6 +4,7 @@ keycloak:
 user-management-client:
   roles:
     view-clients: view-clients
+    view-metrics: view-metrics
     view-groups: view-groups
     view-users: view-users
     view-events: view-events
@@ -21,7 +22,7 @@ spring:
     url: ${oracle.dev-url}
     username: ${oracle.dev-username} 
     password: ${oracle.dev-password}
-    driver-class-name: oracle.jdbc.driver.OracleDriver
+    driver-class-name: oracle.jdbc.OracleDriver
   security:
     oauth2:
       resourceserver:

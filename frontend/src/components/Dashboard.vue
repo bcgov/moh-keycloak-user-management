@@ -69,7 +69,7 @@
 
 
 <script>
-import DashboardRepository from "@/api/DashboardRepository";
+import MetricsRepository from "@/api/MetricsRepository";
 
 export default {
   data() {
@@ -105,21 +105,21 @@ export default {
   },
   methods: {
     async loadActiveUserCount() {
-      const response = await DashboardRepository.get("active-user-count");
+      const response = await MetricsRepository.get("active-user-count");
       this.activeUserCount = response.data;
     },
     async loadTotalNumberOfUsers() {
-      const response = await DashboardRepository.get("total-number-of-users");
+      const response = await MetricsRepository.get("total-number-of-users");
       this.totalNumberOfUsers = response.data;
     },
     async loadUniqueUserCountByIDP() {
-      const response = await DashboardRepository.get(
+      const response = await MetricsRepository.get(
         "unique-user-count-by-idp"
       );
       this.uniqueUserCountByIDP = response.data;
     },
     async loadUniqueUserCountByRealm() {
-      const response = await DashboardRepository.get(
+      const response = await MetricsRepository.get(
         "unique-user-count-by-realm");
       this.uniqueUserCountByRealm = response.data;
     },

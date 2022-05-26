@@ -1,6 +1,6 @@
 import { umsRequest } from "./Repository";
 
-const resource = "/dashboard";
+const resource = "/metrics";
 
 export default {
     get(queryParams) {
