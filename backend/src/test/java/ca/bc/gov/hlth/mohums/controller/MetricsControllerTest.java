@@ -42,14 +42,19 @@ class MetricsControllerTest {
             Assertions.fail("failed to connect with database");
         }
     }
-
+    
     @Test
-    void testJdbcCanQuery() {
+    void testAccessToTables() {
         try {
-            String sql = "SELECT DISTINCT id, realm_id FROM user_entity";
-            jdbcTemplate.queryForList(sql);
+            jdbcTemplate.queryForList("SELECT * FROM keycloak.user_entity FETCH NEXT 1 ROWS ONLY");
+            jdbcTemplate.queryForList("SELECT * FROM keycloak.event_entity FETCH NEXT 1 ROWS ONLY");
+            jdbcTemplate.queryForList("SELECT * FROM keycloak.client FETCH NEXT 1 ROWS ONLY");
+            jdbcTemplate.queryForList("SELECT * FROM keycloak.keycloak_role FETCH NEXT 1 ROWS ONLY");
+            jdbcTemplate.queryForList("SELECT * FROM keycloak.user_role_mapping FETCH NEXT 1 ROWS ONLY");
         } catch (DataAccessException e) {
-            Assertions.fail("failed to query");
+            e.printStackTrace();
+            Assertions.fail("failed to access tables");
         }
     }
+
 }
