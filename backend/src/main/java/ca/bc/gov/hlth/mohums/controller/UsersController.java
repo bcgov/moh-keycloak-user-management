@@ -4,28 +4,35 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.Instant;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.zone.ZoneOffsetTransitionRule;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+
 import org.springframework.http.HttpStatus;
 
 @RestController
 public class UsersController {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private final WebClientService webClientService;
 
@@ -51,11 +58,11 @@ public class UsersController {
             @RequestParam Optional<String> lastLogBefore,
             @RequestParam Optional<String> clientName,
             @RequestParam Optional<String> clientId,
-            @RequestParam Optional<String[]> selectedRoles
-    ) {
+            @RequestParam Optional<String[]> selectedRoles) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
-        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
+        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
+                briefRepresentationValue.toString()));
         email.ifPresent(emailValue -> queryParams.add("email", emailValue));
         first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
         firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
@@ -82,59 +89,36 @@ public class UsersController {
         }
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
-
-            List<LinkedHashMap<String, Object>> allEventsLastLog= new ArrayList <> ();
-            LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
-            Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-
-            int start = 0;
-            int maxEvents = 100;
-            List<LinkedHashMap<String, Object>> eventsLastLog;
-            do {
-                MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
-                eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
-                allEventsLastLog.addAll(eventsLastLog);
-                start += maxEvents;
-            } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
-
-            //Filter login events to just the specified clientId
-            if (clientName.isPresent()){
-                allEventsLastLog = allEventsLastLog.stream().filter(event -> event.get("clientId").equals(clientName.get())).collect(Collectors.toList());
+            String customDateCriteria = " AND (EVENT_TIME >(SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
+            try {
+                if (lastLogAfter.isPresent()) {
+                    Long epoch = new SimpleDateFormat("yyyy-MM-dd").parse(lastLogAfter.get()).getTime();
+                    customDateCriteria = " AND (EVENT_TIME > " + epoch + ")";
+                } else {
+                    Long epoch = new SimpleDateFormat("yyyy-MM-dd").parse(lastLogBefore.get()).getTime();
+                    customDateCriteria = customDateCriteria + " AND (EVENT_TIME < " + epoch + ")";
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            
-            Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
-                    .filter(event -> event.get("userId") != null)
-                    .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));
+
+            String sql = "SELECT user_id, MAX (EVENT_TIME) FROM keycloak.event_entity WHERE ((TYPE='LOGIN') AND  USER_ID IS NOT NULL"
+                    + customDateCriteria + ") GROUP BY user_id";
+            List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
+
+            Map<String, Object> usersLastLogin = new HashMap<>();
+            for (Map<String, Object> o : queryResult) {
+                usersLastLogin.put(o.get("USER_ID").toString(), o.get("MAX(EVENT_TIME)"));
+            }
 
             List<Object> filteredUsersByLastLog = new ArrayList<>();
             for (Object user : users) {
                 String userId = ((LinkedHashMap) user).get("id").toString();
-                if (!userId.isEmpty()){
-
-                    if (!CollectionUtils.isEmpty(loginEventsByUser.get(userId))) {
-
-                        Object userLastLogTime = loginEventsByUser.get(userId).stream()
-                                .max(Comparator.comparing(o -> (Long) ((LinkedHashMap) o).get("time")))
-                                .map(o -> ((LinkedHashMap) o).get("time")).get();
-
-                        ((LinkedHashMap) user).put("lastLogDate", userLastLogTime);
-
-                        LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
-                        if (lastLogAfter.isPresent()) {
-                            LocalDate lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                            if (lastLogAfterDate.isBefore(userLastLogLocalDate)) {
-                                filteredUsersByLastLog.add(user);
-                            }
-                        } else if (lastLogBefore.isPresent()) {
-                            LocalDate lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                            if (lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
-                                filteredUsersByLastLog.add(user);
-                            }
-                        }
-                    }
+                if (!userId.isEmpty() && usersLastLogin.containsKey(userId)) {
+                    ((LinkedHashMap) user).put("lastLogDate", usersLastLogin.get(userId));
+                    filteredUsersByLastLog.add(user);
                 }
             }
-
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
         }
 
