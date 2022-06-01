@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedCli
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -24,9 +23,6 @@ public class WebClientConfig {
 
     @Value("${keycloak.admin-api-url}")
     private String keycloakAdminBaseUrl;
-    
-    @Value("${spring.codec.web-client-max-memory-mb}")
-    int maxInMemorySize;
 
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
@@ -59,11 +55,6 @@ public class WebClientConfig {
                 .baseUrl(keycloakAdminBaseUrl)
                 .filter(oauth)
                 .filter(logRequest())
-                .exchangeStrategies(ExchangeStrategies.builder()
-                    .codecs(configurer -> configurer
-                        .defaultCodecs()
-                        .maxInMemorySize(maxInMemorySize * 1024 * 1024))//Method takes a value in bytes multiply by 1024 twice to turn the config value into MB
-                    .build())
                 .build();
     }
 

@@ -83,16 +83,25 @@ public class UsersController {
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
 
+            List<LinkedHashMap<String, Object>> allEventsLastLog= new ArrayList <> ();
             LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
             Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
 
-            MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(0, -1,
-                    clientName.isPresent() ? clientName : Optional.empty(),
-                    lastLogAfter.isPresent() ? lastLogAfter : oneYearAgoParam,
-                    lastLogBefore.isPresent() ? lastLogBefore : Optional.empty());
-            List<LinkedHashMap<String, Object>> allEventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService
-                    .getEvents(queryEventLastLogParams).getBody();
+            int start = 0;
+            int maxEvents = 100;
+            List<LinkedHashMap<String, Object>> eventsLastLog;
+            do {
+                MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
+                eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
+                allEventsLastLog.addAll(eventsLastLog);
+                start += maxEvents;
+            } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
 
+            //Filter login events to just the specified clientId
+            if (clientName.isPresent()){
+                allEventsLastLog = allEventsLastLog.stream().filter(event -> event.get("clientId").equals(clientName.get())).collect(Collectors.toList());
+            }
+            
             Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
                     .filter(event -> event.get("userId") != null)
                     .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));
@@ -351,13 +360,11 @@ public class UsersController {
 
     }
 
-    private MultiValueMap<String, String> buildQueryEventActiveParam(int start, int nbElementMax,
-            Optional<String> clientName, Optional<String> dateFrom, Optional<String> dateTo) {
+    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
 
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
         queryEventParams.add("first", String.valueOf(start));
-        clientName.ifPresent(clientNameValue -> queryEventParams.add("client", clientNameValue));
         queryEventParams.add("max", String.valueOf(nbElementMax));
         dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));

@@ -17,8 +17,6 @@ config:
   # CORS header, should be the User Management Console:
   allowed-origins: "http://localhost:8080"
 spring:
-  codec:
-    web-client-max-memory-mb: 20
   security:
     oauth2:
       resourceserver:
