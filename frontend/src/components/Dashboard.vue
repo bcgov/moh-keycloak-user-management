@@ -165,7 +165,7 @@ export default {
 
 .tile .heading p {
   margin: 0 5px 0 0;
-  font-family: "BC Sans";
+  font-family: "BCSans";
   font-style: normal;
   font-weight: bold;
   font-size: 15px;
