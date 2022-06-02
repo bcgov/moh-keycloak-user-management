@@ -4,6 +4,7 @@ keycloak:
 user-management-client:
   roles:
     view-clients: view-clients
+    view-metrics: view-metrics
     view-groups: view-groups
     view-users: view-users
     view-events: view-events
@@ -18,9 +19,9 @@ config:
   allowed-origins: "http://localhost:8080"
 spring:
   datasource:
-    url: ${oracle.dev-url}
-    username: ${oracle.dev-username}
-    password: ENC(JBuvc/Zb08FRBuBUv805IDUg05ZYoqJ0Ue7P5zxjtXj69okrY++ZSM7Jw77ruX9TiI5bxPHjRYFososBZ9o5xQ==)
+    url: ${keycloak_db_url}
+    username: ${keycloak_db_username}
+    password: ${keycloak.db-password}
     driver-class-name: oracle.jdbc.OracleDriver
   security:
     oauth2:
