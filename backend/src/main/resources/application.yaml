@@ -19,9 +19,9 @@ config:
   allowed-origins: "http://localhost:8080"
 spring:
   datasource:
-    url: ${oracle.dev-url}
-    username: ${oracle.dev-username} 
-    password: ${oracle.dev-password}
+    url: ${keycloak_db_url}
+    username: ${keycloak_db_username}
+    password: ${keycloak.db-password}
     driver-class-name: oracle.jdbc.OracleDriver
   security:
     oauth2:
