@@ -4,6 +4,7 @@ keycloak:
 user-management-client:
   roles:
     view-clients: view-clients
+    view-metrics: view-metrics
     view-groups: view-groups
     view-users: view-users
     view-events: view-events
@@ -17,6 +18,11 @@ config:
   # CORS header, should be the User Management Console:
   allowed-origins: "http://localhost:8080"
 spring:
+  datasource:
+    url: ${keycloak_db_url}
+    username: ${keycloak_db_username}
+    password: ${keycloak.db-password}
+    driver-class-name: oracle.jdbc.OracleDriver
   security:
     oauth2:
       resourceserver:

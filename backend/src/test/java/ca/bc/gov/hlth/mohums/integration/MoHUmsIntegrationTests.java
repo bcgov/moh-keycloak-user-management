@@ -58,7 +58,7 @@ public class MoHUmsIntegrationTests {
 
         webTestClient = webTestClient
                 .mutate()
-                .responseTimeout(Duration.ofSeconds(90))
+                .responseTimeout(Duration.ofSeconds(120))
                 .build();
 
     }
