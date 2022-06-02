@@ -20,7 +20,7 @@ spring:
   datasource:
     url: ${oracle.dev-url}
     username: ${oracle.dev-username}
-    password: ${oracle.dev-password}
+    password: ENC(JBuvc/Zb08FRBuBUv805IDUg05ZYoqJ0Ue7P5zxjtXj69okrY++ZSM7Jw77ruX9TiI5bxPHjRYFososBZ9o5xQ==)
     driver-class-name: oracle.jdbc.OracleDriver
   security:
     oauth2:
@@ -40,6 +40,9 @@ spring:
           keycloak:
             authorization-url: ${keycloak.base-oauth-url}/protocol/openid-connect/auth
             token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
+jasypt:
+    encryptor:
+        password: ${ums_encryptor_password}
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
