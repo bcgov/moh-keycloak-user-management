@@ -2,7 +2,7 @@
   <div>
     <div class="dashboard">
       <div class="column">
-        <div class="tile" style="width: 600px">
+        <div class="tile" style="width: 620px">
           <div class="heading">
             <p>Active User Count (Login Event Within 365 Days)</p>
           </div>
@@ -15,6 +15,7 @@
             dense
             no-data-text=""
             :loading="activeUserCountLoadingStatus"
+            :items-per-page="-1"
           />
         </div>
 
@@ -53,6 +54,7 @@
             dense
             no-data-text=""
             :loading="uniqueUserCountByIDPLoadingStatus"
+            :items-per-page="-1"
           />
         </div>
 
@@ -70,6 +72,7 @@
             dense
             no-data-text=""
             :loading="uniqueUserCountByRealmLoadingStatus"
+            :items-per-page="-1"
           />
         </div>
       </div>
