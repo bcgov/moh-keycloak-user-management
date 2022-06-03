@@ -2,7 +2,7 @@
   <div>
     <div class="dashboard">
       <div class="column">
-        <div class="tile" style="width: 600px">
+        <div class="tile" style="width: 620px">
           <div class="heading">
             <p>Active User Count (Login Event Within 365 Days)</p>
           </div>
@@ -14,8 +14,11 @@
             hide-default-footer
             dense
             no-data-text=""
+            :loading="activeUserCountLoadingStatus"
+            :items-per-page="-1"
           />
         </div>
+
       </div>
       <div class="column">
         <div class="tile">
@@ -29,6 +32,12 @@
             </v-tooltip>
           </div>
           <p class="single-stat">{{ totalNumberOfUsers }}</p>
+          <v-skeleton-loader
+          v-if="totalNumberOfUsersLoadingStatus"
+          v-bind="attrs"
+          type="text"
+          max-width="60"
+        ></v-skeleton-loader>
         </div>
 
         <div class="tile">
@@ -44,6 +53,8 @@
             hide-default-footer
             dense
             no-data-text=""
+            :loading="uniqueUserCountByIDPLoadingStatus"
+            :items-per-page="-1"
           />
         </div>
 
@@ -60,6 +71,8 @@
             hide-default-footer
             dense
             no-data-text=""
+            :loading="uniqueUserCountByRealmLoadingStatus"
+            :items-per-page="-1"
           />
         </div>
       </div>
@@ -95,6 +108,10 @@ export default {
       activeUserCount: [],
       uniqueUserCountByIDP: [],
       uniqueUserCountByRealm: [],
+      totalNumberOfUsersLoadingStatus:true,
+      activeUserCountLoadingStatus: true,
+      uniqueUserCountByIDPLoadingStatus: true,
+      uniqueUserCountByRealmLoadingStatus: true,
     };
   },
   async created() {
@@ -107,21 +124,22 @@ export default {
     async loadActiveUserCount() {
       const response = await MetricsRepository.get("active-user-count");
       this.activeUserCount = response.data;
+      this.activeUserCountLoadingStatus = false;
     },
     async loadTotalNumberOfUsers() {
       const response = await MetricsRepository.get("total-number-of-users");
       this.totalNumberOfUsers = response.data;
+      this.totalNumberOfUsersLoadingStatus = false;
     },
     async loadUniqueUserCountByIDP() {
-      const response = await MetricsRepository.get(
-        "unique-user-count-by-idp"
-      );
+      const response = await MetricsRepository.get("unique-user-count-by-idp");
       this.uniqueUserCountByIDP = response.data;
+      this.uniqueUserCountByIDPLoadingStatus = false;
     },
     async loadUniqueUserCountByRealm() {
-      const response = await MetricsRepository.get(
-        "unique-user-count-by-realm");
+      const response = await MetricsRepository.get("unique-user-count-by-realm");
       this.uniqueUserCountByRealm = response.data;
+      this.uniqueUserCountByRealmLoadingStatus = false;
     },
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
@@ -130,13 +148,16 @@ export default {
       });
       window.scrollTo(0, 0);
     },
+    checkEmpty() {
+      return true;
+    }
   },
 };
 </script>
 
 
 
-<style>
+<style scoped>
 .dashboard {
   display: flex;
   flex-direction: row;

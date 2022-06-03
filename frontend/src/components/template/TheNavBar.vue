@@ -29,8 +29,6 @@ export default {
       this.$store.commit("alert/dismissAlert");
     },
     checkDashboardPermission: function() {
-      console.log(this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'].roles)
-
       if (this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'] && this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'].roles.includes('view-metrics')) {
         this.dashboardPermission = true;
       }
