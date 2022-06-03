@@ -25,11 +25,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
 import org.springframework.http.HttpStatus;
 
 @RestController
 public class UsersController {
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -80,10 +80,10 @@ public class UsersController {
 
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
-        
+
         //Filter based on selected client & roles
-        if (clientId.isPresent()){
-            users = filterUsersByRole(selectedRoles,clientId.get(),users);
+        if (clientId.isPresent()) {
+            users = filterUsersByRole(selectedRoles, clientId.get(), users);
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
         }
 
@@ -123,46 +123,47 @@ public class UsersController {
 
         return searchResults;
     }
-    
+
     /**
-     * Filter the results by the selected clientId, and optionally the list of selected roles
-     * If no roles selected, use all roles for that client.
+     * Filter the results by the selected clientId, and optionally the list of selected roles If no roles selected, use
+     * all roles for that client.
+     *
      * @param selectedRoles - Set of roles passed in as search parameters
      * @param clientId - cientId passed in as search parameter
      * @param users - Unfiltered search results
      * @return List
      */
-    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId,List users){
+    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId, List users) {
         List<Object> filteredUsers = new ArrayList<>();
         String[] roles = null;
-        Map<String,String> userRoleMap = new HashMap<>();
-        if (selectedRoles.isEmpty()){
+        Map<String, String> userRoleMap = new HashMap<>();
+        if (selectedRoles.isEmpty()) {
             //If no roles selected, grab all roles for the selected client
             ResponseEntity res = webClientService.getClientRoles(clientId);
-            List<Map> allRoles = (List)res.getBody();
-            roles = allRoles.stream().map(r -> (String)r.get("name")).toArray(size -> new String[size]);
-        }else{
+            List<Map> allRoles = (List) res.getBody();
+            roles = allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
+        } else {
             roles = selectedRoles.get();
         }
-        for (String role:roles){
+        for (String role : roles) {
             MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
             queryParams.add("max", "-1");
-            ResponseEntity res = webClientService.getUsersInRole(clientId,role,queryParams);
-            List<Map> usersInRole = (List)res.getBody();
-            for(Map u: usersInRole){
-                String key = (String)u.get("id");
-                if (userRoleMap.containsKey(key)){
-                    userRoleMap.put(key,userRoleMap.get(key)+", "+role);
-                }else{
-                    userRoleMap.put(key,role);
+            ResponseEntity res = webClientService.getUsersInRole(clientId, role, queryParams);
+            List<Map> usersInRole = (List) res.getBody();
+            for (Map u : usersInRole) {
+                String key = (String) u.get("id");
+                if (userRoleMap.containsKey(key)) {
+                    userRoleMap.put(key, userRoleMap.get(key) + ", " + role);
+                } else {
+                    userRoleMap.put(key, role);
                 }
             }
         }
-        for (Object user: users){
-            Map userMap = (Map)user;
-            if (userRoleMap.containsKey((String)userMap.get("id"))){
+        for (Object user : users) {
+            Map userMap = (Map) user;
+            if (userRoleMap.containsKey((String) userMap.get("id"))) {
                 //Store the role in the user object for frontend display
-                userMap.put("role", userRoleMap.get((String)userMap.get("id")));
+                userMap.put("role", userRoleMap.get((String) userMap.get("id")));
                 filteredUsers.add(user);
             }
         }
@@ -256,26 +257,26 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/last-logins")
-    public ResponseEntity<Object> getUserLogins(@PathVariable String userId){
+    public ResponseEntity<Object> getUserLogins(@PathVariable String userId) {
         int maxRecords = 5000;
         LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
         Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        
-        MultiValueMap<String, String> params = buildQueryEventsByUser(userId,0,maxRecords,oneYearAgoParam,Optional.empty());
-        List<Map<String,Object>> logins = (List<Map<String, Object>>)webClientService.getEvents(params).getBody();
-        
-        Map<String,Long> mostRecentLogins = new HashMap<>();
-        for (Map<String,Object> login: logins){
-            String clientId = (String)login.get("clientId");
-            Long time = (Long)login.get("time");
-            if (!mostRecentLogins.containsKey(clientId) || time > mostRecentLogins.get(clientId)){
+
+        MultiValueMap<String, String> params = buildQueryEventsByUser(userId, 0, maxRecords, oneYearAgoParam, Optional.empty());
+        List<Map<String, Object>> logins = (List<Map<String, Object>>) webClientService.getEvents(params).getBody();
+
+        Map<String, Long> mostRecentLogins = new HashMap<>();
+        for (Map<String, Object> login : logins) {
+            String clientId = (String) login.get("clientId");
+            Long time = (Long) login.get("time");
+            if (!mostRecentLogins.containsKey(clientId) || time > mostRecentLogins.get(clientId)) {
                 mostRecentLogins.put(clientId, time);
             }
         }
-        
+
         return ResponseEntity.status(HttpStatus.OK).body(mostRecentLogins);
     }
-    
+
     @GetMapping("/users/{userId}/groups")
     public ResponseEntity<Object> getUserGroups(@PathVariable String userId) {
         return webClientService.getUserGroups(userId);
@@ -283,21 +284,21 @@ public class UsersController {
 
     @PutMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> addUserGroups(@PathVariable String userId,
-                                                @PathVariable String groupId) {
+            @PathVariable String groupId) {
         return webClientService.addUserGroups(userId, groupId);
     }
 
     @DeleteMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
-                                                   @PathVariable String groupId) {
+            @PathVariable String groupId) {
         return webClientService.removeUserGroups(userId, groupId);
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
     /**
-     * Convert Keycloak's Location header to this service's Location header. Only handles Locations
-     * containing the "users" path.
+     * Convert Keycloak's Location header to this service's Location header. Only handles Locations containing the
+     * "users" path.
      *
      * e.g. https://common-logon.hlth.gov.bc.ca/users/lknlnlkn becomes https://servicename/users/lknlnlkn.
      * Other headers are left untouched.
@@ -326,8 +327,8 @@ public class UsersController {
     }
 
     /**
-     * Checks the client GUID from the request against the user's roles. Since the roles match by Client ID
-     * and the request uses the GUID, we need to do a lookup against Keycloak to get the Client ID.
+     * Checks the client GUID from the request against the user's roles. Since the roles match by Client ID and the
+     * request uses the GUID, we need to do a lookup against Keycloak to get the Client ID.
      */
     boolean isAuthorizedToViewClient(String token, String clientGuid) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
@@ -343,7 +344,7 @@ public class UsersController {
 
     }
 
-    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+    private MultiValueMap<String, String> buildQueryEventActiveParam(int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo) {
 
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
@@ -353,8 +354,8 @@ public class UsersController {
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
     }
-    
-    private MultiValueMap<String, String> buildQueryEventsByUser (String userId, int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+
+    private MultiValueMap<String, String> buildQueryEventsByUser(String userId, int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo) {
 
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
@@ -364,5 +365,5 @@ public class UsersController {
         dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
-    }    
+    }
 }
