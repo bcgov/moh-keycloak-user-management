@@ -16,11 +16,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.zone.ZoneOffsetTransitionRule;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,26 +88,26 @@ public class UsersController {
         }
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
-            String customDateCriteria = " AND (EVENT_TIME >(SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
-            try {
-                if (lastLogAfter.isPresent()) {
-                    Long epoch = new SimpleDateFormat("yyyy-MM-dd").parse(lastLogAfter.get()).getTime();
-                    customDateCriteria = " AND (EVENT_TIME > " + epoch + ")";
-                } else {
-                    Long epoch = new SimpleDateFormat("yyyy-MM-dd").parse(lastLogBefore.get()).getTime();
-                    customDateCriteria = customDateCriteria + " AND (EVENT_TIME < " + epoch + ")";
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
+            if (lastLogAfter.isPresent()) {
+                Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                customDateCriteria = " AND event_time > " + lastLogAfterEpoch;
+            } else {
+                Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                customDateCriteria = customDateCriteria + " AND event_time < " + lastLogBeforeEpoch;
             }
 
-            String sql = "SELECT user_id, MAX (EVENT_TIME) FROM keycloak.event_entity WHERE ((TYPE='LOGIN') AND  USER_ID IS NOT NULL"
-                    + customDateCriteria + ") GROUP BY user_id";
+            String sql
+                    = "SELECT user_id, MAX(event_time) AS last_login"
+                    + "  FROM keycloak.event_entity"
+                    + " WHERE type='LOGIN'"
+                    + "   AND user_id IS NOT NULL" + customDateCriteria
+                    + " GROUP BY user_id";
             List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
 
             Map<String, Object> usersLastLogin = new HashMap<>();
             for (Map<String, Object> o : queryResult) {
-                usersLastLogin.put(o.get("USER_ID").toString(), o.get("MAX(EVENT_TIME)"));
+                usersLastLogin.put(o.get("USER_ID").toString(), o.get("LAST_LOGIN"));
             }
 
             List<Object> filteredUsersByLastLog = new ArrayList<>();
