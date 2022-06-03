@@ -41,6 +41,9 @@ spring:
           keycloak:
             authorization-url: ${keycloak.base-oauth-url}/protocol/openid-connect/auth
             token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
+jasypt:
+    encryptor:
+        password: ${ums_encryptor_password}
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
