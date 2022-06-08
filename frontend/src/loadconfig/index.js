@@ -1,4 +1,4 @@
-let app_config = {};
+let app_config = { config: '', organizations: '' };
 
 fetch(process.env.BASE_URL + "config.json")
     .then(async response => {
