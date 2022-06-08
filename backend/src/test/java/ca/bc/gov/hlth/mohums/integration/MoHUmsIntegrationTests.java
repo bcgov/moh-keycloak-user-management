@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -47,6 +48,15 @@ public class MoHUmsIntegrationTests {
     @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
     String clientSecret;
 
+    @Value("${spring.datasource.url}")
+    private String url;
+
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
     @Autowired
     private WebTestClient webTestClient;
 
@@ -58,7 +68,7 @@ public class MoHUmsIntegrationTests {
 
         webTestClient = webTestClient
                 .mutate()
-                .responseTimeout(Duration.ofSeconds(90))
+                .responseTimeout(Duration.ofSeconds(120))
                 .build();
 
     }
@@ -626,6 +636,51 @@ public class MoHUmsIntegrationTests {
                 .expectBodyList(Object.class)
                 .returnResult()
                 .getResponseBody();
+    }
+
+    @Test
+    public void getDB_connection() throws Exception {
+        DriverManager.getConnection(url, username, password);
+    }
+
+    @Test
+    public void getMetrics_active_user_count_smokeTest() throws Exception {
+        webTestClient
+                .get()
+                .uri("metrics/active-user-count")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk(); //HTTP 200
+    }
+
+    @Test
+    public void getMetrics_total_number_of_users_smokeTest() throws Exception {
+        webTestClient
+                .get()
+                .uri("metrics/total-number-of-users")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk(); //HTTP 200
+    }
+
+    @Test
+    public void getMetrics_unique_user_count_by_idp_smokeTest() throws Exception {
+        webTestClient
+                .get()
+                .uri("metrics/unique-user-count-by-idp")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk(); //HTTP 200
+    }
+
+    @Test
+    public void getMetrics_unique_user_count_by_realm_smokeTest() throws Exception {
+        webTestClient
+                .get()
+                .uri("metrics/unique-user-count-by-realm")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk(); //HTTP 200
     }
 
 }

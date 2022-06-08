@@ -4,6 +4,7 @@ import Users from '../views/Users.vue'
 import UserSearch from '../components/UserSearch.vue'
 import UserUpdate from '../components/UserUpdate.vue'
 import UserCreate from '../components/UserCreate.vue'
+import Dashboard from '../components/Dashboard.vue'
 
 Vue.use(VueRouter)
 
@@ -30,6 +31,11 @@ const routes = [
       }    
     ]
   },
+  {
+    path: '/dashboard',
+    component: Dashboard,
+    name: 'Dashboard'
+  }
 ]
 
 const router = new VueRouter({

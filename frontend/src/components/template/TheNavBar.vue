@@ -5,6 +5,9 @@
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">User Search</router-link>
         </li>
+        <li v-if=!!dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
+            <router-link @click.native="resetAlert" :to="{ name: 'Dashboard'}">Dashboard</router-link>
+        </li>
       </ul>
     </div>
   </nav>
@@ -13,10 +16,23 @@
 <script>
 export default {
   name: 'TheNavBar',
+  data() {
+    return{
+      dashboardPermission:false,
+      }
+  },
+  async created() {
+    this.checkDashboardPermission();
+  },
   methods: {
     resetAlert: function () {
       this.$store.commit("alert/dismissAlert");
-    }
+    },
+    checkDashboardPermission: function() {
+      if (this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'] && this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'].roles.includes('view-metrics')) {
+        this.dashboardPermission = true;
+      }
+    },
   }
 }
 </script>

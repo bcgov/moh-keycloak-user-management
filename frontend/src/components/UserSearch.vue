@@ -270,8 +270,8 @@ import ClientsRepository from "@/api/ClientsRepository";
 import app_config from '@/loadconfig';
 
 const options = {dateStyle: 'short'};
-const formatDate = new Intl.DateTimeFormat(undefined, options).format;
-    
+const formatDate = new Intl.DateTimeFormat('en-CA', options).format;
+
 export default {
   name: "UserSearch",
   data() {

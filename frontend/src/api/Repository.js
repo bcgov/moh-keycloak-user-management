@@ -9,8 +9,11 @@ function kcRequest() {
         const baseURL = keycloak.authServerUrl + "admin/realms/" + keycloak.realm;
         return axios.create({
             baseURL: baseURL,
-            headers: {Authorization: 'Bearer ' + keycloak.token}
+            headers: { Authorization: 'Bearer ' + keycloak.token }
         });
+    }
+    if (keycloak.isTokenExpired(0)) {
+        return keycloak.logout();
     }
     return keycloak.updateToken(0).then(createAxios);
 }
@@ -20,8 +23,12 @@ function umsRequest() {
         const baseURL = app_config.config.service_url;
         return axios.create({
             baseURL: baseURL,
-            headers: {Authorization: 'Bearer ' + keycloak.token}
+            headers: { Authorization: 'Bearer ' + keycloak.token }
         });
+    }
+    if (keycloak.isTokenExpired(0)) {
+        return keycloak.logout();
+
     }
     return keycloak.updateToken(0).then(createAxios);
 }
@@ -33,7 +40,10 @@ function sfdsRequest() {
             baseURL: baseURL
         });
     }
+    if (keycloak.isTokenExpired(0)) {
+        return keycloak.logout();
+    }
     return keycloak.updateToken(0).then(createAxios);
 }
 
-export {kcRequest, umsRequest, sfdsRequest}
+export { kcRequest, umsRequest, sfdsRequest }

@@ -4,16 +4,18 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -22,10 +24,14 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 
 @RestController
 public class UsersController {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private final WebClientService webClientService;
 
@@ -51,11 +57,11 @@ public class UsersController {
             @RequestParam Optional<String> lastLogBefore,
             @RequestParam Optional<String> clientName,
             @RequestParam Optional<String> clientId,
-            @RequestParam Optional<String[]> selectedRoles
-    ) {
+            @RequestParam Optional<String[]> selectedRoles) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
-        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
+        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
+                briefRepresentationValue.toString()));
         email.ifPresent(emailValue -> queryParams.add("email", emailValue));
         first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
         firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
@@ -74,112 +80,90 @@ public class UsersController {
 
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
         }
-        
+
         //Filter based on selected client & roles
-        if (clientId.isPresent()){
-            users = filterUsersByRole(selectedRoles,clientId.get(),users);
+        if (clientId.isPresent()) {
+            users = filterUsersByRole(selectedRoles, clientId.get(), users);
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
         }
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
-
-            List<LinkedHashMap<String, Object>> allEventsLastLog= new ArrayList <> ();
-            LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
-            Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-
-            int start = 0;
-            int maxEvents = 100;
-            List<LinkedHashMap<String, Object>> eventsLastLog;
-            do {
-                MultiValueMap<String, String> queryEventLastLogParams = buildQueryEventActiveParam(start, maxEvents, oneYearAgoParam, Optional.empty());
-                eventsLastLog = (List<LinkedHashMap<String, Object>>) webClientService.getEvents(queryEventLastLogParams).getBody();
-                allEventsLastLog.addAll(eventsLastLog);
-                start += maxEvents;
-            } while (!CollectionUtils.isEmpty(eventsLastLog) && eventsLastLog.size() == maxEvents);
-
-            //Filter login events to just the specified clientId
-            if (clientName.isPresent()){
-                allEventsLastLog = allEventsLastLog.stream().filter(event -> event.get("clientId").equals(clientName.get())).collect(Collectors.toList());
+            String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
+            if (lastLogAfter.isPresent()) {
+                Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                customDateCriteria = " AND event_time > " + lastLogAfterEpoch;
+            } else {
+                Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                customDateCriteria = customDateCriteria + " AND event_time < " + lastLogBeforeEpoch;
             }
-            
-            Map<Object, List<Object>> loginEventsByUser = allEventsLastLog.stream()
-                    .filter(event -> event.get("userId") != null)
-                    .collect(Collectors.groupingBy(o -> ((LinkedHashMap) o).get("userId")));
+
+            String sql
+                    = "SELECT user_id, MAX(event_time) AS last_login"
+                    + "  FROM keycloak.event_entity"
+                    + " WHERE type='LOGIN'"
+                    + "   AND user_id IS NOT NULL" + customDateCriteria
+                    + " GROUP BY user_id";
+            List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
+
+            Map<String, Object> usersLastLogin = new HashMap<>();
+            for (Map<String, Object> o : queryResult) {
+                usersLastLogin.put(o.get("USER_ID").toString(), o.get("LAST_LOGIN"));
+            }
 
             List<Object> filteredUsersByLastLog = new ArrayList<>();
             for (Object user : users) {
                 String userId = ((LinkedHashMap) user).get("id").toString();
-                if (!userId.isEmpty()){
-
-                    if (!CollectionUtils.isEmpty(loginEventsByUser.get(userId))) {
-
-                        Object userLastLogTime = loginEventsByUser.get(userId).stream()
-                                .max(Comparator.comparing(o -> (Long) ((LinkedHashMap) o).get("time")))
-                                .map(o -> ((LinkedHashMap) o).get("time")).get();
-
-                        ((LinkedHashMap) user).put("lastLogDate", userLastLogTime);
-
-                        LocalDate userLastLogLocalDate = LocalDate.ofInstant(Instant.ofEpochMilli((Long) userLastLogTime),  ZoneId.of("America/Los_Angeles"));
-                        if (lastLogAfter.isPresent()) {
-                            LocalDate lastLogAfterDate = LocalDate.parse(lastLogAfter.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                            if (lastLogAfterDate.isBefore(userLastLogLocalDate)) {
-                                filteredUsersByLastLog.add(user);
-                            }
-                        } else if (lastLogBefore.isPresent()) {
-                            LocalDate lastLogBeforeDate = LocalDate.parse(lastLogBefore.get(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                            if (lastLogBeforeDate.isAfter(userLastLogLocalDate)) {
-                                filteredUsersByLastLog.add(user);
-                            }
-                        }
-                    }
+                if (!userId.isEmpty() && usersLastLogin.containsKey(userId)) {
+                    ((LinkedHashMap) user).put("lastLogDate", usersLastLogin.get(userId));
+                    filteredUsersByLastLog.add(user);
                 }
             }
-
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
         }
 
         return searchResults;
     }
-    
+
     /**
-     * Filter the results by the selected clientId, and optionally the list of selected roles
-     * If no roles selected, use all roles for that client.
+     * Filter the results by the selected clientId, and optionally the list of selected roles If no roles selected, use
+     * all roles for that client.
+     *
      * @param selectedRoles - Set of roles passed in as search parameters
      * @param clientId - cientId passed in as search parameter
      * @param users - Unfiltered search results
      * @return List
      */
-    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId,List users){
+    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId, List users) {
         List<Object> filteredUsers = new ArrayList<>();
         String[] roles = null;
-        Map<String,String> userRoleMap = new HashMap<>();
-        if (selectedRoles.isEmpty()){
+        Map<String, String> userRoleMap = new HashMap<>();
+        if (selectedRoles.isEmpty()) {
             //If no roles selected, grab all roles for the selected client
             ResponseEntity res = webClientService.getClientRoles(clientId);
-            List<Map> allRoles = (List)res.getBody();
-            roles = allRoles.stream().map(r -> (String)r.get("name")).toArray(size -> new String[size]);
-        }else{
+            List<Map> allRoles = (List) res.getBody();
+            roles = allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
+        } else {
             roles = selectedRoles.get();
         }
-        for (String role:roles){
+        for (String role : roles) {
             MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
             queryParams.add("max", "-1");
-            ResponseEntity res = webClientService.getUsersInRole(clientId,role,queryParams);
-            List<Map> usersInRole = (List)res.getBody();
-            for(Map u: usersInRole){
-                String key = (String)u.get("id");
-                if (userRoleMap.containsKey(key)){
-                    userRoleMap.put(key,userRoleMap.get(key)+", "+role);
-                }else{
-                    userRoleMap.put(key,role);
+            ResponseEntity res = webClientService.getUsersInRole(clientId, role, queryParams);
+            List<Map> usersInRole = (List) res.getBody();
+            for (Map u : usersInRole) {
+                String key = (String) u.get("id");
+                if (userRoleMap.containsKey(key)) {
+                    userRoleMap.put(key, userRoleMap.get(key) + ", " + role);
+                } else {
+                    userRoleMap.put(key, role);
                 }
             }
         }
-        for (Object user: users){
-            Map userMap = (Map)user;
-            if (userRoleMap.containsKey((String)userMap.get("id"))){
+        for (Object user : users) {
+            Map userMap = (Map) user;
+            if (userRoleMap.containsKey((String) userMap.get("id"))) {
                 //Store the role in the user object for frontend display
-                userMap.put("role", userRoleMap.get((String)userMap.get("id")));
+                userMap.put("role", userRoleMap.get((String) userMap.get("id")));
                 filteredUsers.add(user);
             }
         }
@@ -273,26 +257,26 @@ public class UsersController {
     }
 
     @GetMapping("/users/{userId}/last-logins")
-    public ResponseEntity<Object> getUserLogins(@PathVariable String userId){
+    public ResponseEntity<Object> getUserLogins(@PathVariable String userId) {
         int maxRecords = 5000;
         LocalDate oneYearAgo = LocalDate.now().minus(1, ChronoUnit.YEARS);
         Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        
-        MultiValueMap<String, String> params = buildQueryEventsByUser(userId,0,maxRecords,oneYearAgoParam,Optional.empty());
-        List<Map<String,Object>> logins = (List<Map<String, Object>>)webClientService.getEvents(params).getBody();
-        
-        Map<String,Long> mostRecentLogins = new HashMap<>();
-        for (Map<String,Object> login: logins){
-            String clientId = (String)login.get("clientId");
-            Long time = (Long)login.get("time");
-            if (!mostRecentLogins.containsKey(clientId) || time > mostRecentLogins.get(clientId)){
+
+        MultiValueMap<String, String> params = buildQueryEventsByUser(userId, 0, maxRecords, oneYearAgoParam, Optional.empty());
+        List<Map<String, Object>> logins = (List<Map<String, Object>>) webClientService.getEvents(params).getBody();
+
+        Map<String, Long> mostRecentLogins = new HashMap<>();
+        for (Map<String, Object> login : logins) {
+            String clientId = (String) login.get("clientId");
+            Long time = (Long) login.get("time");
+            if (!mostRecentLogins.containsKey(clientId) || time > mostRecentLogins.get(clientId)) {
                 mostRecentLogins.put(clientId, time);
             }
         }
-        
+
         return ResponseEntity.status(HttpStatus.OK).body(mostRecentLogins);
     }
-    
+
     @GetMapping("/users/{userId}/groups")
     public ResponseEntity<Object> getUserGroups(@PathVariable String userId) {
         return webClientService.getUserGroups(userId);
@@ -300,21 +284,21 @@ public class UsersController {
 
     @PutMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> addUserGroups(@PathVariable String userId,
-                                                @PathVariable String groupId) {
+            @PathVariable String groupId) {
         return webClientService.addUserGroups(userId, groupId);
     }
 
     @DeleteMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
-                                                   @PathVariable String groupId) {
+            @PathVariable String groupId) {
         return webClientService.removeUserGroups(userId, groupId);
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
 
     /**
-     * Convert Keycloak's Location header to this service's Location header. Only handles Locations
-     * containing the "users" path.
+     * Convert Keycloak's Location header to this service's Location header. Only handles Locations containing the
+     * "users" path.
      *
      * e.g. https://common-logon.hlth.gov.bc.ca/users/lknlnlkn becomes https://servicename/users/lknlnlkn.
      * Other headers are left untouched.
@@ -343,8 +327,8 @@ public class UsersController {
     }
 
     /**
-     * Checks the client GUID from the request against the user's roles. Since the roles match by Client ID
-     * and the request uses the GUID, we need to do a lookup against Keycloak to get the Client ID.
+     * Checks the client GUID from the request against the user's roles. Since the roles match by Client ID and the
+     * request uses the GUID, we need to do a lookup against Keycloak to get the Client ID.
      */
     boolean isAuthorizedToViewClient(String token, String clientGuid) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
@@ -360,7 +344,7 @@ public class UsersController {
 
     }
 
-    private MultiValueMap<String, String> buildQueryEventActiveParam (int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+    private MultiValueMap<String, String> buildQueryEventActiveParam(int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo) {
 
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
@@ -370,8 +354,8 @@ public class UsersController {
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
     }
-    
-    private MultiValueMap<String, String> buildQueryEventsByUser (String userId, int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo){
+
+    private MultiValueMap<String, String> buildQueryEventsByUser(String userId, int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo) {
 
         MultiValueMap<String, String> queryEventParams = new LinkedMultiValueMap<>();
         queryEventParams.add("type", "LOGIN");
@@ -381,5 +365,5 @@ public class UsersController {
         dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
-    }    
+    }
 }
