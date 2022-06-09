@@ -1,4 +1,4 @@
-let app_config = {};
+let app_config = { config: '', organizations: '[ { "id" : "", "name" :  "" } ]' };
 let config_url = process.env.BASE_URL + "config.json";
 let organizations_url = process.env.BASE_URL + "organizations.json";
 
@@ -16,6 +16,9 @@ fetch(config_url)
     })
     .then((config) => {
         app_config.config = config;
+    })
+    .catch(err => {
+        console.log(err);
     });
 
 fetch(organizations_url)
@@ -32,6 +35,9 @@ fetch(organizations_url)
     })
     .then((organizations) => {
         app_config.organizations = organizations;
+    })
+    .catch(err => {
+        console.log(err);
     });
 
 export default app_config;
