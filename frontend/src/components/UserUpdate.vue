@@ -2,33 +2,60 @@
 <template>
   <div>
     <v-skeleton-loader
-        ref="skeleton"
-        v-show="!user.username"
-        type="article, button, article"
+      ref="skeleton"
+      v-show="!user.username"
+      type="article, button, article"
     >
-    </v-skeleton-loader>
+    </v-skeleton-loader
+    >
     <div id="user-info" v-show="user.username">
       <h1>Update - {{ user.username }}</h1>
-      <user-details :userId="this.$route.params.userid" update-or-create="Update" @submit-user-updates="updateUser" ref="userDetails"></user-details>
-      <user-update-roles :userId="this.$route.params.userid"></user-update-roles>
-      <user-update-groups :userId="this.$route.params.userid"></user-update-groups>
+      <user-details
+        :userId="this.$route.params.userid"
+        update-or-create="Update"
+        @submit-user-updates="updateUser"
+        ref="userDetails"
+      ></user-details>
+      <user-update-roles
+        :userId="this.$route.params.userid"
+      ></user-update-roles>
+      <user-mailbox-authorizations
+        :userId="this.$route.params.userid"
+        :clients="MailboxClients"
+      ></user-mailbox-authorizations>
+      <user-update-groups
+        :userId="this.$route.params.userid"
+      ></user-update-groups>
     </div>
   </div>
 </template>
 
 <script>
-import UsersRepository from "@/api/UsersRepository";
+// import UsersRepository from "@/api/UsersRepository";
 
 import UserDetails from "@/components/UserDetails.vue";
 import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
 import UserUpdateGroups from "@/components/UserUpdateGroups";
+import UserMailboxAuthorizations from "./UserMailboxAuthorizations.vue";
+import UsersRepository from "@/api/UsersRepository";
+import ClientsRepository from "@/api/ClientsRepository";
 
 export default {
   name: "UserInfo",
   components: {
     UserUpdateGroups,
     UserDetails,
-    UserUpdateRoles
+    UserUpdateRoles,
+    UserMailboxAuthorizations,
+  },
+  data() {
+    return {
+      MailboxClientNames: ["SFDS", "HSCIS"],
+      MailboxClients: [],
+    };
+  },
+  async created() {
+    await this.getMailboxClients();
   },
   methods: {
     updateUser: function(userDetails) {
@@ -50,13 +77,24 @@ export default {
         .finally(() => {
           window.scrollTo(0, 0);
         });
-    }
+    },
+    getMailboxClients: async function () {
+      //get both SFSD and HSCIS
+      this.MailboxClients = [];
+      let clients = await ClientsRepository.get();
+      clients = clients.data;
+      clients.map((client) => {
+        if (this.MailboxClientNames.includes(client.name)) {
+          this.MailboxClients.push(client);
+        }
+      });
+    },
   },
   computed: {
     user() {
       return this.$store.state.user;
-    }
-  }
+    },
+  },
 };
 </script>
 <style>
