@@ -267,7 +267,6 @@
 <script>
 import UsersRepository from "@/api/UsersRepository";
 import ClientsRepository from "@/api/ClientsRepository";
-import app_config from '@/loadconfig';
 
 const options = {dateStyle: 'short'};
 const formatDate = new Intl.DateTimeFormat('en-CA', options).format;
@@ -276,7 +275,7 @@ export default {
   name: "UserSearch",
   data() {
     return {
-      organizations: app_config.organizations
+      organizations: this.$organizations
           .map((item) => {
             item.value = `{"id":"${item.id}","name":"${item.name}"}`
             item.text = `${item.id} - ${item.name}`;
@@ -357,7 +356,7 @@ export default {
       return (this.clientRoles.length > 10) ? 2 : 1
     },
     maxResults() {
-      return app_config.config.max_results ? app_config.config.max_results : 100;
+      return this.$config.max_results ? this.$config.max_results : 100;
     },
     maxDateInput() {
       return new Date().toISOString().substr(0, 10).toString();
@@ -387,8 +386,8 @@ export default {
     },
     searchUser: async function(queryParameters) {
       this.$store.commit("alert/dismissAlert");
-      const maxSearch = app_config.config.max_search
-                          ? app_config.config.max_search
+      const maxSearch = this.$config.max_search
+                          ? this.$config.max_search
                           : (this.maxResults * 10);
       this.userSearchLoadingStatus = true;
       try {
