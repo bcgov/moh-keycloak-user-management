@@ -8,13 +8,15 @@ fetch(config_url)
         if (!response.ok) {
             fetch(config_url)
                 .then(async response => {
-                    console.log("Firefox was here");
+                    console.log("config fetch #2");
                     return await response.json();
                 });
         }
+        console.log("config fetch #1");
         return await response.json();
     })
     .then((config) => {
+        console.log("config assignment");
         app_config.config = config;
     })
     .catch(err => {
@@ -27,13 +29,15 @@ fetch(organizations_url)
         if (!response.ok) {
             fetch(organizations_url)
                 .then(async response => {
-                    console.log("Firefox was here");
+                    console.log("organizations fetch #2");
                     return await response.json();
                 });
         }
+        console.log("organizations fetch #1");
         return await response.json();
     })
     .then((organizations) => {
+        console.log("organizations assignment");
         app_config.organizations = organizations;
     })
     .catch(err => {
