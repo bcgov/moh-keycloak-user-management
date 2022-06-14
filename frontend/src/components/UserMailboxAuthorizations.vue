@@ -3,8 +3,7 @@
     <h2 class="sfds-authorizations-header">Mailbox Authorizations</h2>
 
     <div class="nav-tabs" style="width: 100%">
-    <!-- // todo: ??????????? why does this NOT work if its selectedClient = 1?? -->
-      <a 
+      <a
       v-for="(item,index) in clientsWithRoles" v-bind:key="item.name"
       :class="(selectedClient > index || selectedClient < index)? 'tabActive': 'tabInactive'"  
       @click="selectedClient = index">
