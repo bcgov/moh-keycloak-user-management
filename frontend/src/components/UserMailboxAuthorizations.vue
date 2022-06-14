@@ -43,8 +43,6 @@ export default {
       this.getAllowedClients()
 }
  },
-  // todo:why does this work if i make it outside of the created??? 
-  // todo:why does this randomly not work??
   methods: {
     getAllowedClients: function () {
       this.clientsWithRoles = [];

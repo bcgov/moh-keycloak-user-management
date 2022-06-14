@@ -233,15 +233,15 @@ export default {
       this.dialog = false;
     },
     loadUserRoles: async function () {
-      this.getActiveRoles();
       let results = [];
+      let resultsActive = [];
       this.rolesLoaded = true;
       let lastLoginMap = [];
       UsersRepository.getUserLogins(this.userId).then((lastLogins) => {
         lastLoginMap = lastLogins.data;
       });
 
-      await ClientsRepository.get().then((allClients) => {
+      ClientsRepository.get().then((allClients) => {
         Promise.all(
           allClients.data.map((client) => {
             return UsersRepository.getUserEffectiveClientRoles(
@@ -272,47 +272,27 @@ export default {
                 });
               }
             });
-            // todo: ask about this part, and what it does
-            // results.sort((a, b) =>
-            //   a.clientName.localeCompare(b.clientName, undefined, {
-            //     sensitivity: "base",
-            //   })
-            // );
-            // todo: can you combine these?
-          })
-          .then((this.AllEffectiveClientRoles = results))
-          .then((this.rolesLoaded = false));
-      });
-    },
-    getActiveRoles: async function () {
-      let results = [];
-      this.rolesLoaded = true;
+            })
+            .then((this.AllEffectiveClientRoles = results));
 
-      await ClientsRepository.get().then((allClients) => {
-        Promise.all(
-          allClients.data.map((client) => {
-            return UsersRepository.getUserActiveClientRoles(
-              this.userId,
-              client.id
-            )
-          })
-        )
-          .then(function (rolesArray) {
-            rolesArray.forEach((clientRoles) => {
-              if (clientRoles.data.length > 0) {
-                clientRoles.data.forEach((role) => {
-                  results.push(role.id);
-                });
-              }
-            });
-
-          })
-          .then((this.AllSelectedClientRoles = results))
-          .then((this.rolesLoaded = false));
-      });
-    },
-    roleArrayPosition: function (col, item) {
-      return (col - 1) * this.itemsInColumn + item - 1;
+          Promise.all(
+            allClients.data.map((client) => {
+              return UsersRepository.getUserActiveClientRoles(
+                this.userId,
+                client.id
+              );
+            })
+          )
+            .then(function (rolesArray) {
+              rolesArray.forEach((clientRoles) => {
+                  clientRoles.data.forEach((role) => {
+                    resultsActive.push(role.id);
+                  });
+              });
+            })
+            .then((this.AllSelectedClientRoles = resultsActive));
+        })
+        .then((this.rolesLoaded = false));
     },
     getClients: function () {
       return ClientsRepository.get()
@@ -328,7 +308,7 @@ export default {
       this.clientRoles = [];
       this.selectedRoles = [];
 
-      let clientRolesResponses = await Promise.all([
+      let clientRolesResponses = Promise.all([
         this.getUserEffectiveClientRoles(),
         this.getUserAvailableClientRoles(),
         this.getUserActiveClientRoles(),
@@ -446,7 +426,8 @@ export default {
 .row {
   margin: 0px;
 }
-.fit-content, .v-input {
+.fit-content,
+.v-input {
   max-width: fit-content;
 }
 .popup {
