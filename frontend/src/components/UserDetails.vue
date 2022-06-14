@@ -116,7 +116,6 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import app_config from '@/loadconfig';
 import clients from "@/api/ClientsRepository";
 
 export default {
@@ -124,7 +123,7 @@ export default {
   props: ['userId', 'updateOrCreate'],
   data() {
     return {
-      organizations: app_config.organizations.map((item) => {
+      organizations: this.$organizations.map((item) => {
         item.value = `{"id":"${item.id}","name":"${item.name}"}`
         item.text = `${item.id} - ${item.name}`;
         return item;
