@@ -93,20 +93,6 @@
               {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
             </li>
           </ul>
-          <br/><br/>
-          <label for="all-roles">Application Roles and Last Login</label>
-          <v-skeleton-loader
-              ref="roleSkeleton"
-              v-show="!rolesLoaded"
-              type="list-item@5">
-          </v-skeleton-loader>
-          <div id="user-roles" v-show="rolesLoaded">          
-            <ul id="all-roles" style="margin-top: 5px; list-style: square">
-              <li v-for="client in allRoles" :key="client.clientName">
-                {{client.clientName}} [{{client.effectiveRoles.map(role => role.name).join(", ")}}] {{client.lastLogin}}
-              </li>
-            </ul>
-          </div>
         </v-col>
       </v-row>
       <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>

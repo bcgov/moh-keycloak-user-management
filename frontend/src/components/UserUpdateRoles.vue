@@ -169,7 +169,7 @@
 
       <!-- template for each role row. delete button -->
       <template #item.actions="{ item }">
-        <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+        <v-icon :disabled=!isSelectedRole(item) small @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
     </v-data-table>
   </v-card>
@@ -197,12 +197,9 @@ export default {
       effectiveClientRoles: [],
       selectedRoles: [],
       AllEffectiveClientRoles: [],
+      AllSelectedClientRoles: [],
       allRoles: [],
       rolesLoaded: true,
-      copyOfSelectedClient: null,
-      copyOfclientRoles: [],
-      copyOfeffectiveClientRoles: [],
-      copyOfselectedRoles: [],
     };
   },
   async created() {
@@ -229,10 +226,14 @@ export default {
     },
   },
   methods: {
+    isSelectedRole: function(role) {
+      return this.AllSelectedClientRoles.includes(role.roleRepresentation.id);
+    },
     close() {
       this.dialog = false;
     },
     loadUserRoles: async function () {
+      this.getActiveRoles();
       let results = [];
       this.rolesLoaded = true;
       let lastLoginMap = [];
@@ -280,6 +281,33 @@ export default {
             // todo: can you combine these?
           })
           .then((this.AllEffectiveClientRoles = results))
+          .then((this.rolesLoaded = false));
+      });
+    },
+    getActiveRoles: async function () {
+      let results = [];
+      this.rolesLoaded = true;
+
+      await ClientsRepository.get().then((allClients) => {
+        Promise.all(
+          allClients.data.map((client) => {
+            return UsersRepository.getUserActiveClientRoles(
+              this.userId,
+              client.id
+            )
+          })
+        )
+          .then(function (rolesArray) {
+            rolesArray.forEach((clientRoles) => {
+              if (clientRoles.data.length > 0) {
+                clientRoles.data.forEach((role) => {
+                  results.push(role.id);
+                });
+              }
+            });
+
+          })
+          .then((this.AllSelectedClientRoles = results))
           .then((this.rolesLoaded = false));
       });
     },

@@ -47,7 +47,7 @@ export default {
   // todo:why does this randomly not work??
   methods: {
     getAllowedClients: function () {
-
+      this.clientsWithRoles = [];
         this.clients.map((client) => {
         return UsersRepository.getUserEffectiveClientRoles(this.userId,client.id
         ).then((clientRoles) => {
