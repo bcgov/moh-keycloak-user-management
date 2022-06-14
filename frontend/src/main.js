@@ -12,27 +12,20 @@ Vue.config.productionTip = false
 Vue.prototype.$keycloak = keycloak;
 Vue.component('downloadCsv', JsonCSV)
 
-keycloak.onAuthSuccess = function () {
-    fetch(process.env.BASE_URL + "config.json")
-        .then(response => {
-            return response.json();
-        })
-        .then((config) => {
-            Vue.prototype.$config = config;
-            
-            fetch(process.env.BASE_URL + "organizations.json")
-                .then(response => {
-                    return response.json();
-                })
-                .then((organizations) => {
-                    Vue.prototype.$organizations = organizations;
-                    
-                    new Vue({
-                        vuetify,
-                        router,
-                        store,
-                        render: h => h(App)
-                    }).$mount('#app');
-                });
-        });
+keycloak.onAuthSuccess = async function () {
+    try {
+        const configResp = await fetch(process.env.BASE_URL + "config.json");
+        Vue.prototype.$config = await configResp.json();
+        const organizationsResp = await fetch(process.env.BASE_URL + "organizations.json");
+        Vue.prototype.$organizations = await organizationsResp.json();  
+    } catch (err) {
+        console.error(err);
+    } finally {
+        new Vue({
+            vuetify,
+            router,
+            store,
+            render: h => h(App)
+        }).$mount('#app');
     }
+}
