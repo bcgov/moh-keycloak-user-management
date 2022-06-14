@@ -187,7 +187,7 @@ export default {
       headers: [
         { text: "Application", value: "clientRepresentation.name" },
         { text: "Role", value: "roleRepresentation.name" },
-        { text: "Last Log In", value: "lastLogin" },
+        { text: "Last Log In", value: "lastLogin", sortable: false},
         { text: "Actions", value: "actions", sortable: false },
       ],
       clients: [],
@@ -251,7 +251,6 @@ export default {
           .then(function (rolesArray) {
             rolesArray.forEach((clientRoles) => {
               if (clientRoles.data.length > 0) {
-                //todo: since this is a string, it can't be sorted via date?
                 let lastLoginStr = "N/A";
                 if (lastLoginMap[clientRoles.clientName]) {
                   lastLoginStr = new Date(
