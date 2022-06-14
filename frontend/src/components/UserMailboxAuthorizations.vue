@@ -37,13 +37,17 @@ export default {
   },
   async created() {
     this.$root.$refs.UserMailboxAuthorizations = this;
-    this.getAllowedClients()
   },
+   watch: {
+    clients: function(){
+      this.getAllowedClients()
+}
+ },
   // todo:why does this work if i make it outside of the created??? 
   // todo:why does this randomly not work??
   methods: {
-    getAllowedClients: async function () {
-    Promise.all(        
+    getAllowedClients: function () {
+
         this.clients.map((client) => {
         return UsersRepository.getUserEffectiveClientRoles(this.userId,client.id
         ).then((clientRoles) => {
@@ -52,7 +56,6 @@ export default {
           }
         });
         })
-      )
     },
   },
 };

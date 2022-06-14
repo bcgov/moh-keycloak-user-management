@@ -51,7 +51,7 @@ export default {
   data() {
     return {
       MailboxClientNames: ["SFDS", "HSCIS"],
-      MailboxClients: [],
+      MailboxClients: undefined,
     };
   },
   async created() {
