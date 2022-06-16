@@ -18,6 +18,8 @@ config:
   # CORS header, should be the User Management Console:
   allowed-origins: "http://localhost:8080"
 spring:
+  codec:
+    max-in-memory-size-mb: 20
   datasource:
     url: ${keycloak_db_url}
     username: ${keycloak_db_username}
