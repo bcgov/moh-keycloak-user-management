@@ -227,6 +227,9 @@ export default {
     close() {
       this.dialog = false;
     },
+    roleArrayPosition: function(col, item) {
+      return (col - 1) * (this.itemsInColumn) + item - 1;
+    },
     loadUserRoles: async function () {
       let results = [];
       let resultsActive = [];
@@ -252,9 +255,9 @@ export default {
             rolesArray.forEach((clientRoles) => {
               if (clientRoles.data.length > 0) {
                 let lastLoginStr = "N/A";
-                if (lastLoginMap[clientRoles.clientName]) {
+                if (lastLoginMap[clientRoles.clientRepresentation.name]) {
                   lastLoginStr = new Date(
-                    lastLoginMap[clientRoles.clientName]
+                    lastLoginMap[clientRoles.clientRepresentation.name]
                   ).toLocaleDateString("en-CA");
                 }
                 clientRoles.data.forEach((role) => {
