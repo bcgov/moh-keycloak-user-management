@@ -33,11 +33,11 @@
           </div>
           <p class="single-stat">{{ totalNumberOfUsers }}</p>
           <v-skeleton-loader
-          v-if="totalNumberOfUsersLoadingStatus"
-          v-bind="attrs"
-          type="text"
-          max-width="60"
-        ></v-skeleton-loader>
+            v-if="totalNumberOfUsersLoadingStatus"
+            ref="dashboardSkeleton"
+            type="text"
+            max-width="60">
+          </v-skeleton-loader>
         </div>
 
         <div class="tile">
