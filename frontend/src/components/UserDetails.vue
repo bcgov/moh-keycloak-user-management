@@ -224,7 +224,7 @@ export default {
             rolesArray.forEach(clientRoles =>{
                 if (clientRoles.data.length>0){
                   let lastLoginStr = "- N/A";
-                  if (lastLoginMap[clientRoles.clientName]){
+                  if (lastLoginMap[clientRoles.clientRepresentation.name]){
                     lastLoginStr = "- "+new Date(lastLoginMap[clientRoles.clientName]).toLocaleDateString("en-CA");
                   }
                   vueObj.allRoles.push({clientName: clientRoles.clientName, effectiveRoles:clientRoles.data, lastLogin: lastLoginStr});                
