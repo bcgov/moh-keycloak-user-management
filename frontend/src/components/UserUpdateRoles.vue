@@ -166,9 +166,18 @@
         </v-toolbar>
       </template>
 
-      <!-- template for each role row. delete button -->
+      <template #item.roleArray="{ item }">
+        <p style="min-width:600px;max-width: 600px">
+          <span v-for="(val,index) of item.roleArray" v-bind:key="val.name">
+            {{val}}
+            <span v-if="index != Object.keys(item.roleArray).length - 1">, </span>
+          </span>
+        </p>
+      </template>
+
       <template #item.actions="{ item }">
-        <v-icon :disabled=!isSelectedRole(item) small @click="deleteItem(item)"> mdi-delete </v-icon>
+        <v-icon small @click="editClient(item.clientRepresentation)"> mdi-pencil </v-icon>
+
       </template>
     </v-data-table>
   </v-card>
@@ -186,7 +195,7 @@ export default {
       dialog: false,
       headers: [
         { text: "Application", value: "clientRepresentation.name" },
-        { text: "Role", value: "roleRepresentation.name" },
+        { text: "Role", value: "roleArray"},
         { text: "Last Log In", value: "lastLogin", sortable: false},
         { text: "Actions", value: "actions", sortable: false },
       ],
@@ -199,6 +208,7 @@ export default {
       AllSelectedClientRoles: [],
       allRoles: [],
       rolesLoaded: true,
+      isEdit:false,
     };
   },
   async created() {
@@ -221,14 +231,17 @@ export default {
     }
   },
   methods: {
-    isSelectedRole: function(role) {
-      return this.AllSelectedClientRoles.includes(role.roleRepresentation.id);
-    },
     close() {
       this.dialog = false;
     },
     roleArrayPosition: function(col, item) {
       return (col - 1) * (this.itemsInColumn) + item - 1;
+    },
+    editClient: function(client) {
+      console.log(client)
+      this.selectedClient = client;
+      this.isEdit = true;
+      this.dialog = true;
     },
     loadUserRoles: async function () {
       let results = [];
@@ -260,13 +273,16 @@ export default {
                     lastLoginMap[clientRoles.clientRepresentation.name]
                   ).toLocaleDateString("en-CA");
                 }
+                clientRoles.roleArray = [];
                 clientRoles.data.forEach((role) => {
+                  clientRoles.roleArray.push(role.name)
+                });
+
                   results.push({
                     clientRepresentation: clientRoles.clientRepresentation,
-                    roleRepresentation: role,
+                    roleArray: clientRoles.roleArray,
                     lastLogin: lastLoginStr,
                   });
-                });
               }
             });
             })
@@ -346,35 +362,6 @@ export default {
       ).catch(e => {
         console.log(e);
       });
-    },
-    deleteItem: function (item) {
-      let rolesToDelete = this.clientRoles.filter(
-        (value) => !this.selectedRoles.includes(value)
-      );
-      rolesToDelete.push(item.roleRepresentation);
-      Promise.all([
-        UsersRepository.deleteUserClientRoles(
-          this.userId,
-          item.clientRepresentation.id,
-          rolesToDelete
-        ),
-      ])
-        .then(() => {
-          this.getUserClientRoles();
-          this.$store.commit("alert/setAlert", {
-            message: "Role deleted successfully",
-            type: "success",
-          });
-          this.loadUserRoles();
-          this.$root.$refs.UserMailboxAuthorizations.getAllowedClients();
-        })
-        .catch((error) => {
-          this.$store.commit("alert/setAlert", {
-            message: "Error updating roles: " + error,
-            type: "error",
-          });
-          window.scrollTo(0, 0);
-        });
     },
     updateUserClientRoles: function () {
       //If in roles but not selected DELETE
