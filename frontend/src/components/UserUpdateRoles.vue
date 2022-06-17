@@ -14,7 +14,7 @@
             <!-- new item button -->
             <template v-slot:activator="{ on }">
               <v-btn v-if="hasRoleForManageUserRoles" color="primary" v-on="on">
-                Add Role
+                Add Roles
               </v-btn>
             </template>
 
@@ -42,6 +42,13 @@
                   ></v-autocomplete>
                 </v-col>
               </v-row>
+              <v-skeleton-loader
+                ref="roleSkeleton"
+                v-show="
+                  selectedClient && (!clientRoles || clientRoles.length == 0)
+                "
+                type="article, button"
+              ></v-skeleton-loader>
 
               <!-- role list -->
               <div v-if="selectedClient">
@@ -124,25 +131,28 @@
                       </v-row>
                       <!-- effective roles -->
                       <v-row style="flex-direction: column" class="fit-content">
-                      <v-col>
-                        <v-checkbox
-                          class="roles-checkbox"
-                          hide-details="auto"
-                          disabled
-                          readonly
-                          v-for="role in effectiveClientRoles"
-                          v-model="effectiveClientRoles"
-                          :value="role"
-                          :key="role.name"
-                        >
-                          <!-- effective role tooltip -->
-                          <span slot="label" class="tooltip">
-                            {{ role.name }}
-                            <span v-show="role.description" class="tooltiptext">
-                              {{ role.description }}
+                        <v-col>
+                          <v-checkbox
+                            class="roles-checkbox"
+                            hide-details="auto"
+                            disabled
+                            readonly
+                            v-for="role in effectiveClientRoles"
+                            v-model="effectiveClientRoles"
+                            :value="role"
+                            :key="role.name"
+                          >
+                            <!-- effective role tooltip -->
+                            <span slot="label" class="tooltip">
+                              {{ role.name }}
+                              <span
+                                v-show="role.description"
+                                class="tooltiptext"
+                              >
+                                {{ role.description }}
+                              </span>
                             </span>
-                          </span>
-                        </v-checkbox>
+                          </v-checkbox>
                         </v-col>
                       </v-row>
                     </v-col>
@@ -167,17 +177,20 @@
       </template>
 
       <template #item.roleArray="{ item }">
-        <p style="min-width:600px;max-width: 600px">
-          <span v-for="(val,index) of item.roleArray" v-bind:key="val.name">
-            {{val}}
-            <span v-if="index != Object.keys(item.roleArray).length - 1">, </span>
+        <p style="min-width: 600px; max-width: 600px">
+          <span v-for="(val, index) of item.roleArray" v-bind:key="val.name">
+            {{ val }}
+            <span v-if="index != Object.keys(item.roleArray).length - 1"
+              >,
+            </span>
           </span>
         </p>
       </template>
 
       <template #item.actions="{ item }">
-        <v-icon small @click="editClient(item.clientRepresentation)"> mdi-pencil </v-icon>
-
+        <v-icon small @click="editClient(item.clientRepresentation)">
+          mdi-pencil
+        </v-icon>
       </template>
     </v-data-table>
   </v-card>
@@ -189,14 +202,14 @@ import UsersRepository from "@/api/UsersRepository";
 
 export default {
   name: "UserUpdateRoles",
-  props: ['userId'],
+  props: ["userId"],
   data() {
     return {
       dialog: false,
       headers: [
         { text: "Application", value: "clientRepresentation.name" },
-        { text: "Role", value: "roleArray"},
-        { text: "Last Log In", value: "lastLogin", sortable: false},
+        { text: "Role", value: "roleArray" },
+        { text: "Last Log In", value: "lastLogin", sortable: false },
         { text: "Actions", value: "actions", sortable: false },
       ],
       clients: [],
@@ -208,7 +221,7 @@ export default {
       AllSelectedClientRoles: [],
       allRoles: [],
       rolesLoaded: true,
-      isEdit:false,
+      isEdit: false,
     };
   },
   async created() {
@@ -218,27 +231,31 @@ export default {
   },
   computed: {
     itemsInColumn() {
-      return Math.ceil(this.clientRoles.length / this.numberOfClientRoleColumns);
+      return Math.ceil(
+        this.clientRoles.length / this.numberOfClientRoleColumns
+      );
     },
     numberOfClientRoleColumns() {
-      return (this.clientRoles.length > 10) ? 2 : 1
+      return this.clientRoles.length > 10 ? 2 : 1;
     },
-    hasRoleForManageUserRoles: function() {
+    hasRoleForManageUserRoles: function () {
       const umsClientId = "USER-MANAGEMENT-SERVICE";
       const manageUserRolesName = "manage-user-roles";
 
-      return !!this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(manageUserRolesName)
-    }
+      return !!this.$keycloak.tokenParsed.resource_access[
+        umsClientId
+      ].roles.includes(manageUserRolesName);
+    },
   },
   methods: {
     close() {
       this.dialog = false;
     },
-    roleArrayPosition: function(col, item) {
-      return (col - 1) * (this.itemsInColumn) + item - 1;
+    roleArrayPosition: function (col, item) {
+      return (col - 1) * this.itemsInColumn + item - 1;
     },
-    editClient: function(client) {
-      console.log(client)
+    editClient: function (client) {
+      console.log(client);
       this.selectedClient = client;
       this.isEdit = true;
       this.dialog = true;
@@ -252,39 +269,40 @@ export default {
         lastLoginMap = lastLogins.data;
       });
 
-      ClientsRepository.get().then((allClients) => {
-        Promise.all(
-          allClients.data.map((client) => {
-            return UsersRepository.getUserEffectiveClientRoles(
-              this.userId,
-              client.id
-            ).then((clientRoles) => {
-              clientRoles["clientRepresentation"] = client;
-              return clientRoles;
-            });
-          })
-        )
-          .then(function (rolesArray) {
-            rolesArray.forEach((clientRoles) => {
-              if (clientRoles.data.length > 0) {
-                let lastLoginStr = "N/A";
-                if (lastLoginMap[clientRoles.clientRepresentation.name]) {
-                  lastLoginStr = new Date(
-                    lastLoginMap[clientRoles.clientRepresentation.name]
-                  ).toLocaleDateString("en-CA");
-                }
-                clientRoles.roleArray = [];
-                clientRoles.data.forEach((role) => {
-                  clientRoles.roleArray.push(role.name)
-                });
+      ClientsRepository.get()
+        .then((allClients) => {
+          Promise.all(
+            allClients.data.map((client) => {
+              return UsersRepository.getUserEffectiveClientRoles(
+                this.userId,
+                client.id
+              ).then((clientRoles) => {
+                clientRoles["clientRepresentation"] = client;
+                return clientRoles;
+              });
+            })
+          )
+            .then(function (rolesArray) {
+              rolesArray.forEach((clientRoles) => {
+                if (clientRoles.data.length > 0) {
+                  let lastLoginStr = "N/A";
+                  if (lastLoginMap[clientRoles.clientRepresentation.name]) {
+                    lastLoginStr = new Date(
+                      lastLoginMap[clientRoles.clientRepresentation.name]
+                    ).toLocaleDateString("en-CA");
+                  }
+                  clientRoles.roleArray = [];
+                  clientRoles.data.forEach((role) => {
+                    clientRoles.roleArray.push(role.name);
+                  });
 
                   results.push({
                     clientRepresentation: clientRoles.clientRepresentation,
                     roleArray: clientRoles.roleArray,
                     lastLogin: lastLoginStr,
                   });
-              }
-            });
+                }
+              });
             })
             .then((this.AllEffectiveClientRoles = results));
 
@@ -298,25 +316,25 @@ export default {
           )
             .then(function (rolesArray) {
               rolesArray.forEach((clientRoles) => {
-                  clientRoles.data.forEach((role) => {
-                    resultsActive.push(role.id);
-                  });
+                clientRoles.data.forEach((role) => {
+                  resultsActive.push(role.id);
+                });
               });
             })
             .then((this.AllSelectedClientRoles = resultsActive));
         })
         .then((this.rolesLoaded = false));
     },
-    getClients: function() {
+    getClients: function () {
       return ClientsRepository.get()
-        .then(response => {
+        .then((response) => {
           this.clients = response.data;
         })
-        .catch(e => {
+        .catch((e) => {
           console.log(e);
         });
     },
-    getUserClientRoles: async function() {
+    getUserClientRoles: async function () {
       this.effectiveClientRoles = [];
       this.clientRoles = [];
       this.selectedRoles = [];
@@ -324,7 +342,7 @@ export default {
       let clientRolesResponses = await Promise.all([
         this.getUserEffectiveClientRoles(),
         this.getUserAvailableClientRoles(),
-        this.getUserActiveClientRoles()
+        this.getUserActiveClientRoles(),
       ]);
       // TODO roles that are in effective but not active should not be included in clientRoles
       this.clientRoles.push(...clientRolesResponses[1].data);
@@ -332,44 +350,44 @@ export default {
       this.selectedRoles.push(...clientRolesResponses[2].data);
       this.effectiveClientRoles.push(...clientRolesResponses[0].data);
 
-      this.clientRoles.sort(function(a, b) {
+      this.clientRoles.sort(function (a, b) {
         return a.name.localeCompare(b.name);
       });
     },
 
-    getUserActiveClientRoles: function() {
+    getUserActiveClientRoles: function () {
       return UsersRepository.getUserActiveClientRoles(
         this.userId,
         this.selectedClient.id
-      ).catch(e => {
+      ).catch((e) => {
         console.log(e);
       });
     },
 
-    getUserAvailableClientRoles: function() {
+    getUserAvailableClientRoles: function () {
       return UsersRepository.getUserAvailableClientRoles(
         this.userId,
         this.selectedClient.id
-      ).catch(e => {
+      ).catch((e) => {
         console.log(e);
       });
     },
 
-    getUserEffectiveClientRoles: function() {
+    getUserEffectiveClientRoles: function () {
       return UsersRepository.getUserEffectiveClientRoles(
         this.userId,
         this.selectedClient.id
-      ).catch(e => {
+      ).catch((e) => {
         console.log(e);
       });
     },
     updateUserClientRoles: function () {
       //If in roles but not selected DELETE
       let rolesToDelete = this.clientRoles.filter(
-        value => !this.selectedRoles.includes(value)
+        (value) => !this.selectedRoles.includes(value)
       );
       //If in roles and selected ADD
-      let rolesToAdd = this.clientRoles.filter(value =>
+      let rolesToAdd = this.clientRoles.filter((value) =>
         this.selectedRoles.includes(value)
       );
 
@@ -383,13 +401,13 @@ export default {
           this.userId,
           this.selectedClient.id,
           rolesToAdd
-        )
+        ),
       ])
         .then(() => {
           this.getUserClientRoles();
           this.$store.commit("alert/setAlert", {
             message: "Roles updated successfully",
-            type: "success"
+            type: "success",
           });
           window.scrollTo(0, 0);
           //Update list of roles from UserDetails module
@@ -400,12 +418,12 @@ export default {
         .catch((error) => {
           this.$store.commit("alert/setAlert", {
             message: "Error updating roles: " + error,
-            type: "error"
+            type: "error",
           });
           window.scrollTo(0, 0);
         });
-    }
-  }
+    },
+  },
 };
 </script>
 
