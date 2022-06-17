@@ -2,8 +2,8 @@
   <v-card outlined class="subgroup">
     <v-data-table
       :headers="headers"
-      :items="AllEffectiveClientRoles"
-      :loading="rolesLoaded"
+      :items="ClientsWithEffectiveRoles"
+      :loading="!rolesLoaded"
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -12,8 +12,8 @@
           <!-- adds new role -->
           <v-dialog v-model="dialog" max-width="800px">
             <!-- new item button -->
-            <template v-slot:activator="{ on }">
-              <v-btn v-if="hasRoleForManageUserRoles" color="primary" v-on="on">
+            <template v-slot:activator="{}">
+              <v-btn v-if="hasRoleForManageUserRoles" color="primary" @click="addRoles()">
                 Add Roles
               </v-btn>
             </template>
@@ -23,7 +23,7 @@
               <!-- pop up header -->
               <v-row class="header">
                 <label for="select-client">Application</label>
-                <v-icon @click="dialog = false">mdi-close</v-icon>
+                <v-icon @click="close()">mdi-close</v-icon>
               </v-row>
               <!-- pop up content: -->
               <!-- client selector -->
@@ -33,12 +33,13 @@
                     id="select-client"
                     outlined
                     dense
-                    :items="clients"
+                    :items="isEdit ? [selectedClient] : clientWithoutRoles"
                     item-text="clientId"
                     return-object
                     placeholder="Select an Application"
                     v-model="selectedClient"
                     @change="getUserClientRoles()"
+                    :disabled="isEdit"
                   ></v-autocomplete>
                 </v-col>
               </v-row>
@@ -188,7 +189,7 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-icon small @click="editClient(item.clientRepresentation)">
+        <v-icon small @click="editRoles(item.clientRepresentation)">
           mdi-pencil
         </v-icon>
       </template>
@@ -212,22 +213,18 @@ export default {
         { text: "Last Log In", value: "lastLogin", sortable: false },
         { text: "Actions", value: "actions", sortable: false },
       ],
-      clients: [],
+      clientWithoutRoles: [],
       selectedClient: null,
       clientRoles: [],
       effectiveClientRoles: [],
       selectedRoles: [],
-      AllEffectiveClientRoles: [],
-      AllSelectedClientRoles: [],
-      allRoles: [],
-      rolesLoaded: true,
+      ClientsWithEffectiveRoles: [],
+      rolesLoaded: false,
       isEdit: false,
     };
   },
   async created() {
-    //TODO error handling
-    await this.getClients();
-    await this.loadUserRoles();
+   this.loadUserRoles();
   },
   computed: {
     itemsInColumn() {
@@ -248,28 +245,39 @@ export default {
     },
   },
   methods: {
+    addRoles() {
+      this.selectedClient = null;
+      this.isEdit = false;
+      this.dialog = true;
+    },
+    editRoles: function (client) {
+      this.selectedClient = client;
+      this.isEdit = true;
+      this.dialog = true;
+      this.getUserClientRoles();
+    },
     close() {
       this.dialog = false;
     },
     roleArrayPosition: function (col, item) {
       return (col - 1) * this.itemsInColumn + item - 1;
     },
-    editClient: function (client) {
-      console.log(client);
-      this.selectedClient = client;
-      this.isEdit = true;
-      this.dialog = true;
+    addClientRoles: function () {
+      this.isEdit = false;
+      this.getUserClientRoles();
     },
     loadUserRoles: async function () {
+      this.rolesLoaded = false;
+
       let results = [];
-      let resultsActive = [];
-      this.rolesLoaded = true;
       let lastLoginMap = [];
+      let clientsNoRolesAssigned = [];
+
       UsersRepository.getUserLogins(this.userId).then((lastLogins) => {
         lastLoginMap = lastLogins.data;
       });
 
-      ClientsRepository.get()
+      await ClientsRepository.get()
         .then((allClients) => {
           Promise.all(
             allClients.data.map((client) => {
@@ -301,38 +309,15 @@ export default {
                     roleArray: clientRoles.roleArray,
                     lastLogin: lastLoginStr,
                   });
+                } else {
+                  clientsNoRolesAssigned.push(clientRoles.clientRepresentation);
                 }
               });
             })
-            .then((this.AllEffectiveClientRoles = results));
-
-          Promise.all(
-            allClients.data.map((client) => {
-              return UsersRepository.getUserActiveClientRoles(
-                this.userId,
-                client.id
-              );
-            })
-          )
-            .then(function (rolesArray) {
-              rolesArray.forEach((clientRoles) => {
-                clientRoles.data.forEach((role) => {
-                  resultsActive.push(role.id);
-                });
-              });
-            })
-            .then((this.AllSelectedClientRoles = resultsActive));
+            .then((this.ClientsWithEffectiveRoles = results))
+            .then((this.clientWithoutRoles = clientsNoRolesAssigned));
         })
-        .then((this.rolesLoaded = false));
-    },
-    getClients: function () {
-      return ClientsRepository.get()
-        .then((response) => {
-          this.clients = response.data;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+        this.rolesLoaded = true;
     },
     getUserClientRoles: async function () {
       this.effectiveClientRoles = [];
