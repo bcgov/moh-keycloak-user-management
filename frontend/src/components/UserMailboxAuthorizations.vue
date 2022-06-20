@@ -20,39 +20,49 @@
 <script>
 import UserUpdateSfdsAuth from "@/components/UserUpdateSfdsAuth";
 import UsersRepository from "../api/UsersRepository";
+import ClientsRepository from "@/api/ClientsRepository";
 
 export default {
   name: "UserMailboxAuthorizations",
-  props: ["userId", "clients"],
+  props: ["userId"],
 
   components: {
     UserUpdateSfdsAuth,
   },
   data() {
     return {
+      MailboxClientNames: ["SFDS", "HSCIS"],
       clientsWithRoles: [],
       selectedClient: 0,
     };
   },
   async created() {
     this.$root.$refs.UserMailboxAuthorizations = this;
+    this.getMailboxClients();
   },
-   watch: {
-    clients: function(){
-      this.getAllowedClients()
-}
- },
   methods: {
-    getAllowedClients: function () {
+    getMailboxClients: async function () {
+      //get both SFSD and HSCIS
+      let MailboxClients = [];
+      let clients = await ClientsRepository.get();
+      clients = clients.data;
+      clients.map((client) => {
+        if (this.MailboxClientNames.includes(client.name)) {
+          MailboxClients.push(client);
+        }
+      });
+
       this.clientsWithRoles = [];
-        this.clients.map((client) => {
-        return UsersRepository.getUserEffectiveClientRoles(this.userId,client.id
+      MailboxClients.map((client) => {
+        return UsersRepository.getUserEffectiveClientRoles(
+          this.userId,
+          client.id
         ).then((clientRoles) => {
-          if(clientRoles.data.length > 0){
-            this.clientsWithRoles.push(client)
+          if (clientRoles.data.length > 0) {
+            this.clientsWithRoles.push(client);
           }
         });
-        })
+      });
     },
   },
 };

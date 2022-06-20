@@ -21,7 +21,6 @@
       ></user-update-roles>
       <user-mailbox-authorizations
         :userId="this.$route.params.userid"
-        :clients="MailboxClients"
       ></user-mailbox-authorizations>
       <user-update-groups
         :userId="this.$route.params.userid"
@@ -38,7 +37,6 @@ import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
 import UserUpdateGroups from "@/components/UserUpdateGroups";
 import UserMailboxAuthorizations from "./UserMailboxAuthorizations.vue";
 import UsersRepository from "@/api/UsersRepository";
-import ClientsRepository from "@/api/ClientsRepository";
 
 export default {
   name: "UserInfo",
@@ -47,15 +45,6 @@ export default {
     UserDetails,
     UserUpdateRoles,
     UserMailboxAuthorizations,
-  },
-  data() {
-    return {
-      MailboxClientNames: ["SFDS", "HSCIS"],
-      MailboxClients: undefined,
-    };
-  },
-  async created() {
-    await this.getMailboxClients();
   },
   methods: {
     updateUser: function(userDetails) {
@@ -78,17 +67,7 @@ export default {
           window.scrollTo(0, 0);
         });
     },
-    getMailboxClients: async function () {
-      //get both SFSD and HSCIS
-      this.MailboxClients = [];
-      let clients = await ClientsRepository.get();
-      clients = clients.data;
-      clients.map((client) => {
-        if (this.MailboxClientNames.includes(client.name)) {
-          this.MailboxClients.push(client);
-        }
-      });
-    },
+
   },
   computed: {
     user() {

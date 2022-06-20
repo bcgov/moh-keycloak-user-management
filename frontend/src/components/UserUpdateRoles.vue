@@ -404,7 +404,7 @@ export default {
           //Update list of roles from UserDetails module
           this.close();
           this.loadUserRoles();
-          this.$root.$refs.UserMailboxAuthorizations.getAllowedClients();
+          this.$root.$refs.UserMailboxAuthorizations.getMailboxClients();
         })
         .catch((error) => {
           this.$store.commit("alert/setAlert", {
