@@ -176,16 +176,22 @@
           </v-dialog>
         </v-toolbar>
       </template>
+      <template #item.lastLogin="{ item }">
+        <span v-if="item.lastLogin == -1">N/A</span>
+        <span v-else>
+          {{ new Date(item.lastLogin).toLocaleDateString("en-CA") }}
+        </span>
+      </template>
 
       <template #item.roleArray="{ item }">
-        <p style="min-width: 600px; max-width: 600px">
+        <span style="min-width: 600px; max-width: 600px">
           <span v-for="(val, index) of item.roleArray" v-bind:key="val.name">
             {{ val }}
             <span v-if="index != Object.keys(item.roleArray).length - 1"
               >,
             </span>
           </span>
-        </p>
+        </span>
       </template>
 
       <template #item.actions="{ item }">
@@ -210,7 +216,7 @@ export default {
       headers: [
         { text: "Application", value: "clientRepresentation.name" },
         { text: "Role", value: "roleArray" },
-        { text: "Last Log In", value: "lastLogin", sortable: false },
+        { text: "Last Log In", value: "lastLogin"},
         { text: "Actions", value: "actions", sortable: false },
       ],
       clientWithoutRoles: [],
@@ -293,12 +299,11 @@ export default {
             .then(function (rolesArray) {
               rolesArray.forEach((clientRoles) => {
                 if (clientRoles.data.length > 0) {
-                  let lastLoginStr = "N/A";
+                  let lastLoginStr = -1;
                   if (lastLoginMap[clientRoles.clientRepresentation.name]) {
-                    lastLoginStr = new Date(
-                      lastLoginMap[clientRoles.clientRepresentation.name]
-                    ).toLocaleDateString("en-CA");
-                  }
+                  lastLoginStr =
+                    lastLoginMap[clientRoles.clientRepresentation.name];
+                }
                   clientRoles.roleArray = [];
                   clientRoles.data.forEach((role) => {
                     clientRoles.roleArray.push(role.name);
