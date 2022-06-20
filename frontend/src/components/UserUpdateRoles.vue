@@ -266,7 +266,7 @@ export default {
       this.isEdit = false;
       this.getUserClientRoles();
     },
-    loadUserRoles: async function () {
+    loadUserRoles: function () {
       this.rolesLoaded = false;
 
       let results = [];
@@ -277,7 +277,7 @@ export default {
         lastLoginMap = lastLogins.data;
       });
 
-      await ClientsRepository.get()
+      ClientsRepository.get()
         .then((allClients) => {
           Promise.all(
             allClients.data.map((client) => {
@@ -315,9 +315,10 @@ export default {
               });
             })
             .then((this.ClientsWithEffectiveRoles = results))
-            .then((this.clientWithoutRoles = clientsNoRolesAssigned));
+            .then((this.clientWithoutRoles = clientsNoRolesAssigned))
+            .finally(() =>this.rolesLoaded = true);
         })
-        this.rolesLoaded = true;
+        
     },
     getUserClientRoles: async function () {
       this.effectiveClientRoles = [];
