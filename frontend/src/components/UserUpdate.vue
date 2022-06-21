@@ -1,13 +1,7 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div>
-    <v-skeleton-loader
-      ref="skeleton"
-      v-show="!user.username"
-      type="article, button, article"
-    >
-    </v-skeleton-loader
-    >
+    <v-skeleton-loader ref="skeleton" v-show="!user.username" type="article, button, article"/>
     <div id="user-info" v-show="user.username">
       <h1>Update - {{ user.username }}</h1>
       <user-details
@@ -30,8 +24,6 @@
 </template>
 
 <script>
-// import UsersRepository from "@/api/UsersRepository";
-
 import UserDetails from "@/components/UserDetails.vue";
 import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
 import UserUpdateGroups from "@/components/UserUpdateGroups";

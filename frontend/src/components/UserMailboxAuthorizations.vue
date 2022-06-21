@@ -31,7 +31,7 @@ export default {
   },
   data() {
     return {
-      MailboxClientNames: ["SFDS", "HSCIS"],
+      mailboxClientNames: ["SFDS", "HSCIS"],
       clientsWithRoles: [],
       selectedClient: 0,
     };
