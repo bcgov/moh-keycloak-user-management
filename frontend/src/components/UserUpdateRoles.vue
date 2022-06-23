@@ -60,7 +60,7 @@
                 >
                   <v-row>
                     <!-- shows all possible roles -->
-                    <v-col class="col-8 fit-content">
+                    <v-col class="col-7">
                       <!-- header -->
                       <v-row>
                         <label>Roles</label>
@@ -68,7 +68,6 @@
                       <!-- body -->
                       <v-row>
                         <v-col
-                          class="fit-content"
                           v-for="col in numberOfClientRoleColumns"
                           :key="col"
                         >
@@ -112,7 +111,7 @@
                       </v-row>
                     </v-col>
                     <!-- effective roles -->
-                    <v-col class="col-4 fit-content" no-gutters>
+                    <v-col class="col-5" no-gutters>
                       <v-row>
                         <label>
                           Effective Roles
@@ -131,7 +130,7 @@
                         </label>
                       </v-row>
                       <!-- effective roles -->
-                      <v-row style="flex-direction: column" class="fit-content">
+                      <v-row style="flex-direction: column">
                         <v-col>
                           <v-checkbox
                             class="roles-checkbox"
@@ -184,7 +183,7 @@
       </template>
 
       <template #item.roleArray="{ item }">
-        <span style="min-width: 600px; max-width: 600px">
+        <span style="max-width:600px;display: flex;flex-wrap: wrap">
           <span v-for="(val, index) of item.roleArray" v-bind:key="val.name">
             {{ val }}
             <span v-if="index != Object.keys(item.roleArray).length - 1"
@@ -214,7 +213,7 @@ export default {
     return {
       dialog: false,
       headers: [
-        { text: "Application", value: "clientRepresentation.name" },
+        { text: "Application", value: "clientRepresentation.clientId" },
         { text: "Role", value: "roleArray" },
         { text: "Last Log In", value: "lastLogin"},
         { text: "Actions", value: "actions", sortable: false },
@@ -400,7 +399,6 @@ export default {
             message: "Roles updated successfully",
             type: "success",
           });
-          window.scrollTo(0, 0);
           //Update list of roles from UserDetails module
           this.close();
           this.loadUserRoles();
@@ -411,8 +409,9 @@ export default {
             message: "Error updating roles: " + error,
             type: "error",
           });
-          window.scrollTo(0, 0);
-        });
+        })
+        .finally(() => {
+          window.scrollTo(0, 0);})    
     },
   },
 };
@@ -421,10 +420,6 @@ export default {
 <style scoped>
 .row {
   margin: 0px;
-}
-.fit-content,
-.v-input {
-  max-width: fit-content;
 }
 .popup {
   padding: 30px;

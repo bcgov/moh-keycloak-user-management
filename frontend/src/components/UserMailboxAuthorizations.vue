@@ -42,27 +42,19 @@ export default {
   },
   methods: {
     getMailboxClients: async function () {
-      //get both SFSD and HSCIS
-      let MailboxClients = [];
-      let clients = await ClientsRepository.get();
-      clients = clients.data;
-      clients.map((client) => {
-        if (this.MailboxClientNames.includes(client.name)) {
-          MailboxClients.push(client);
-        }
-      });
-
       this.clientsWithRoles = [];
-      MailboxClients.map((client) => {
-        return UsersRepository.getUserEffectiveClientRoles(
-          this.userId,
-          client.id
-        ).then((clientRoles) => {
-          if (clientRoles.data.length > 0) {
+
+      ClientsRepository.get()
+      .then((clients) => {
+        clients.data.map((client) => {
+          UsersRepository.getUserEffectiveClientRoles(this.userId,client.id)
+          .then((clientRoles) => {
+            if (this.mailboxClientNames.includes(client.name) && (clientRoles.data.length > 0)) {
             this.clientsWithRoles.push(client);
-          }
-        });
-      });
+            }
+          })
+        })
+      })
     },
   },
 };
