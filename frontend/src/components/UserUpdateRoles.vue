@@ -10,7 +10,7 @@
           <h2 style="margin-top: 20px">User Roles</h2>
           <v-spacer></v-spacer>
           <!-- adds new role -->
-          <v-dialog v-model="dialog" max-width="800px">
+          <v-dialog content-class="classForDialog" v-model="dialog">
             <!-- new item button -->
             <template v-slot:activator="{}">
               <v-btn v-if="hasRoleForManageUserRoles" color="primary" @click="addRoles()">
@@ -60,7 +60,7 @@
                 >
                   <v-row>
                     <!-- shows all possible roles -->
-                    <v-col class="col-7">
+                    <v-col class="col-8">
                       <!-- header -->
                       <v-row>
                         <label>Roles</label>
@@ -111,7 +111,7 @@
                       </v-row>
                     </v-col>
                     <!-- effective roles -->
-                    <v-col class="col-5" no-gutters>
+                    <v-col class="col-4" no-gutters>
                       <v-row>
                         <label>
                           Effective Roles
@@ -134,6 +134,7 @@
                         <v-col>
                           <v-checkbox
                             class="roles-checkbox"
+                            style="word-break:break-all"
                             hide-details="auto"
                             disabled
                             readonly
@@ -417,9 +418,27 @@ export default {
 };
 </script>
 
+<style>
+.classForDialog {
+    border-radius: 4px;
+    margin: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    pointer-events: auto;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    max-width: 95%;
+    min-width: 450px;
+    width: 900px;
+    z-index: inherit;
+    box-shadow: 0px 11px 15px -7px rgb(0 0 0 / 20%), 0px 24px 38px 3px rgb(0 0 0 / 14%), 0px 9px 46px 8px rgb(0 0 0 / 12%);
+}
+</style>
 <style scoped>
 .row {
   margin: 0px;
+}
+.v-input {
+  max-width: fit-content;
 }
 .popup {
   padding: 30px;
@@ -458,6 +477,7 @@ export default {
 
 /* Tooltip arrow */
 .tooltip .tooltiptext::after {
+  word-break: break-all;
   content: "";
   position: absolute;
   top: 10px;

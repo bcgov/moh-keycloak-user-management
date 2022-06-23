@@ -47,12 +47,14 @@ export default {
       ClientsRepository.get()
       .then((clients) => {
         clients.data.map((client) => {
+          if (this.mailboxClientNames.includes(client.name)){
           UsersRepository.getUserEffectiveClientRoles(this.userId,client.id)
           .then((clientRoles) => {
-            if (this.mailboxClientNames.includes(client.name) && (clientRoles.data.length > 0)) {
+            if (clientRoles.data.length > 0) {
             this.clientsWithRoles.push(client);
             }
           })
+          }
         })
       })
     },
