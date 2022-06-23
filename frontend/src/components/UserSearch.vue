@@ -365,7 +365,7 @@ export default {
       const umsClientId = "USER-MANAGEMENT-SERVICE";
       const createUserRoleName = "create-user";
 
-      return !!this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName)
+      return this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName)
     }
   },
   methods: {
