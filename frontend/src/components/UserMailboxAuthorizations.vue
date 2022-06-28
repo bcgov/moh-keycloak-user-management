@@ -38,7 +38,7 @@ export default {
   },
   async created() {
     this.$root.$refs.UserMailboxAuthorizations = this;
-    this.getMailboxClients();
+    await this.getMailboxClients();
   },
   methods: {
     getMailboxClients: async function () {

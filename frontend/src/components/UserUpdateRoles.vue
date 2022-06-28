@@ -10,7 +10,7 @@
           <h2 style="margin-top: 20px">User Roles</h2>
           <v-spacer></v-spacer>
           <!-- adds new role -->
-          <v-dialog content-class="classForDialog" v-model="dialog">
+          <v-dialog content-class="updateRolesDialog" v-model="dialog">
             <!-- new item button -->
             <template v-slot:activator="{}">
               <v-btn v-if="hasRoleForManageUserRoles" color="primary" @click="addRoles()">
@@ -20,13 +20,9 @@
 
             <!-- pop up to add something -->
             <v-card class="popup">
-              <!-- pop up header -->
-              <v-row class="header">
-                <label for="select-client">Application</label>
-                <v-icon @click="close()">mdi-close</v-icon>
-              </v-row>
-              <!-- pop up content: -->
               <!-- client selector -->
+              <label style="padding-left: 12px;" for="select-client">Application</label>
+              <v-icon style="float: right" @click="close()">mdi-close</v-icon>
               <v-row>
                 <v-col class="col-7">
                   <v-autocomplete
@@ -46,7 +42,7 @@
               <v-skeleton-loader
                 ref="roleSkeleton"
                 v-show="
-                  selectedClient && (!clientRoles || clientRoles.length == 0)
+                  selectedClient && (!clientRoles || clientRoles.length === 0)
                 "
                 type="article, button"
               ></v-skeleton-loader>
@@ -176,21 +172,19 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <template #item.lastLogin="{ item }">
-        <span v-if="item.lastLogin == -1">N/A</span>
-        <span v-else>
-          {{ new Date(item.lastLogin).toLocaleDateString("en-CA") }}
-        </span>
-      </template>
 
       <template #item.roleArray="{ item }">
         <span style="max-width:600px;display: flex;flex-wrap: wrap">
           <span v-for="(val, index) of item.roleArray" v-bind:key="val.name">
-            {{ val }}
-            <span v-if="index != Object.keys(item.roleArray).length - 1"
-              >,
+            {{val}}<span v-if="index != Object.keys(item.roleArray).length - 1" style="margin-right:5px">,
             </span>
           </span>
+        </span>
+      </template>
+      <template #item.lastLogin="{ item }">
+        <span v-if="item.lastLogin == LAST_LOGIN_NOT_RECORDED">N/A</span>
+        <span v-else>
+          {{ new Date(item.lastLogin).toLocaleDateString("en-CA") }}
         </span>
       </template>
 
@@ -207,6 +201,7 @@
 import ClientsRepository from "@/api/ClientsRepository";
 import UsersRepository from "@/api/UsersRepository";
 
+const LAST_LOGIN_NOT_RECORDED = -1;
 export default {
   name: "UserUpdateRoles",
   props: ["userId"],
@@ -217,7 +212,6 @@ export default {
         { text: "Application", value: "clientRepresentation.clientId" },
         { text: "Role", value: "roleArray" },
         { text: "Last Log In", value: "lastLogin"},
-        { text: "Actions", value: "actions", sortable: false },
       ],
       clientWithoutRoles: [],
       selectedClient: null,
@@ -227,10 +221,14 @@ export default {
       ClientsWithEffectiveRoles: [],
       rolesLoaded: false,
       isEdit: false,
+      LAST_LOGIN_NOT_RECORDED
     };
   },
   async created() {
    this.loadUserRoles();
+   if(this.hasRoleForManageUserRoles){
+    this.headers.push({ text: "Actions", value: "actions", sortable: false})
+   }
   },
   computed: {
     itemsInColumn() {
@@ -251,7 +249,7 @@ export default {
     },
   },
   methods: {
-    addRoles() {
+    addRoles: function() {
       this.selectedClient = null;
       this.isEdit = false;
       this.dialog = true;
@@ -262,15 +260,11 @@ export default {
       this.dialog = true;
       this.getUserClientRoles();
     },
-    close() {
+    close: function() {
       this.dialog = false;
     },
     roleArrayPosition: function (col, item) {
       return (col - 1) * this.itemsInColumn + item - 1;
-    },
-    addClientRoles: function () {
-      this.isEdit = false;
-      this.getUserClientRoles();
     },
     loadUserRoles: function () {
       this.rolesLoaded = false;
@@ -296,10 +290,10 @@ export default {
               });
             })
           )
-            .then(function (rolesArray) {
+            .then((rolesArray) => {
               rolesArray.forEach((clientRoles) => {
                 if (clientRoles.data.length > 0) {
-                  let lastLoginStr = -1;
+                  let lastLoginStr = LAST_LOGIN_NOT_RECORDED;
                   if (lastLoginMap[clientRoles.clientRepresentation.name]) {
                   lastLoginStr =
                     lastLoginMap[clientRoles.clientRepresentation.name];
@@ -319,9 +313,11 @@ export default {
                 }
               });
             })
-            .then((this.ClientsWithEffectiveRoles = results))
-            .then((this.clientWithoutRoles = clientsNoRolesAssigned))
-            .finally(() =>this.rolesLoaded = true);
+            .finally(() =>{
+              this.ClientsWithEffectiveRoles = results
+              this.clientWithoutRoles = clientsNoRolesAssigned
+              this.rolesLoaded = true
+              });
         })
         
     },
@@ -341,11 +337,10 @@ export default {
       this.selectedRoles.push(...clientRolesResponses[2].data);
       this.effectiveClientRoles.push(...clientRolesResponses[0].data);
 
-      this.clientRoles.sort(function (a, b) {
+      this.clientRoles.sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
     },
-
     getUserActiveClientRoles: function () {
       return UsersRepository.getUserActiveClientRoles(
         this.userId,
@@ -354,7 +349,6 @@ export default {
         console.log(e);
       });
     },
-
     getUserAvailableClientRoles: function () {
       return UsersRepository.getUserAvailableClientRoles(
         this.userId,
@@ -363,7 +357,6 @@ export default {
         console.log(e);
       });
     },
-
     getUserEffectiveClientRoles: function () {
       return UsersRepository.getUserEffectiveClientRoles(
         this.userId,
@@ -419,18 +412,14 @@ export default {
 </script>
 
 <style>
-.classForDialog {
-    border-radius: 4px;
+.updateRolesDialog {
     margin: 24px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    pointer-events: auto;
-    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* overflow-y: auto;
+    overflow-x: hidden; */
     max-width: 95%;
     min-width: 450px;
     width: 900px;
     z-index: inherit;
-    box-shadow: 0px 11px 15px -7px rgb(0 0 0 / 20%), 0px 24px 38px 3px rgb(0 0 0 / 14%), 0px 9px 46px 8px rgb(0 0 0 / 12%);
 }
 </style>
 <style scoped>
@@ -444,10 +433,6 @@ export default {
   padding: 30px;
 }
 
-.popup .header {
-  justify-content: space-between;
-  padding: 12px;
-}
 .roles-checkbox {
   margin: 0 0 12px 0;
   padding: 8px 0 0 0;

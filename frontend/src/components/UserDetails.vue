@@ -102,7 +102,6 @@
 
 <script>
 import UsersRepository from "@/api/UsersRepository";
-import clients from "@/api/ClientsRepository";
 
 export default {
   name: "UserDetails",
@@ -129,11 +128,8 @@ export default {
           org_details: null,
           access_team_notes: null
         },
-        
         federatedIdentities: null
       },
-      allRoles: null,
-      rolesLoaded: false
     };
   },
   async created() {
@@ -143,7 +139,6 @@ export default {
     this.$store.commit("user/resetState");
     if (this.userId) {
       await this.getUser();
-      await this.loadUserRoles();
     }
   },
   computed: {
@@ -183,42 +178,6 @@ export default {
         })
         .catch(e => {
           console.log(e);
-        });
-    },
-    loadUserRoles: function() {    
-      this.allRoles = [];
-      this.rolesLoaded = false;
-      let vueObj = this;
-      let lastLoginMap = [];
-      UsersRepository.getUserLogins(this.userId).then(lastLogins => {
-        lastLoginMap = lastLogins.data;
-      });
-      /*
-      No API call exists to load all roles for a user, so we need to first query
-      for a list of clients, then load the roles for each client one by one
-      */          
-      clients.get().then(allClients => {  
-        Promise.all(      
-          allClients.data.map(client => {
-              return UsersRepository.getUserEffectiveClientRoles(this.userId,client.id)
-                     .then(clientRoles =>{
-                        clientRoles["clientName"] = client.name; 
-                        return clientRoles;
-                      });
-            })
-          ).then(function(rolesArray) {
-            rolesArray.forEach(clientRoles =>{
-                if (clientRoles.data.length>0){
-                  let lastLoginStr = "- N/A";
-                  if (lastLoginMap[clientRoles.clientName]){
-                    lastLoginStr = "- "+new Date(lastLoginMap[clientRoles.clientName]).toLocaleDateString("en-CA");
-                  }
-                  vueObj.allRoles.push({clientName: clientRoles.clientName, effectiveRoles:clientRoles.data, lastLogin: lastLoginStr});                
-                }
-            });            
-            vueObj.allRoles.sort((a, b) => a.clientName.localeCompare(b.clientName, undefined, {sensitivity: 'base'}))
-            vueObj.rolesLoaded = true;
-          });           
         });
     },
     updateUser: function() {
