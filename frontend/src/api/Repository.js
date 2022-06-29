@@ -13,7 +13,7 @@ function kcRequest() {
         });
     }
     let expiryDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
-    if(new Date > expiryDate){
+    if(Date.now()> expiryDate){
         return keycloak.logout();
     }
     return keycloak.updateToken(0).then(createAxios);
@@ -28,7 +28,7 @@ function umsRequest() {
         });
     }
     let expiryDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
-    if(new Date > expiryDate){
+    if(Date.now()> expiryDate){
         return keycloak.logout();
 
     }
@@ -43,7 +43,7 @@ function sfdsRequest() {
         });
     }
     let expiryDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
-    if(new Date > expiryDate){
+    if(Date.now()> expiryDate){
         return keycloak.logout();
     }
     return keycloak.updateToken(0).then(createAxios);
