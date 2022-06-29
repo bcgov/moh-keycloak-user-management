@@ -42,7 +42,7 @@
               <v-skeleton-loader
                 ref="roleSkeleton"
                 v-show="
-                  selectedClient && (!clientRoles || clientRoles.length === 0)
+                  selectedClient && isClientRoleLoading
                 "
                 type="article, button"
               ></v-skeleton-loader>
@@ -52,7 +52,7 @@
                 <div
                   width="inherit"
                   id="select-user-roles"
-                  v-show="clientRoles && clientRoles.length > 0"
+                  v-show="clientRoles && !isClientRoleLoading"
                 >
                   <v-row>
                     <!-- shows all possible roles -->
@@ -221,6 +221,7 @@ export default {
       ClientsWithEffectiveRoles: [],
       rolesLoaded: false,
       isEdit: false,
+      isClientRoleLoading:false,
       LAST_LOGIN_NOT_RECORDED
     };
   },
@@ -325,6 +326,7 @@ export default {
       this.effectiveClientRoles = [];
       this.clientRoles = [];
       this.selectedRoles = [];
+      this.isClientRoleLoading = true;
 
       let clientRolesResponses = await Promise.all([
         this.getUserEffectiveClientRoles(),
@@ -336,6 +338,8 @@ export default {
       this.clientRoles.push(...clientRolesResponses[2].data);
       this.selectedRoles.push(...clientRolesResponses[2].data);
       this.effectiveClientRoles.push(...clientRolesResponses[0].data);
+
+      this.isClientRoleLoading = false;
 
       this.clientRoles.sort((a, b) => {
         return a.name.localeCompare(b.name);
