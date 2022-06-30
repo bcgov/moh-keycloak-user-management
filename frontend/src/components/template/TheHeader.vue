@@ -7,6 +7,7 @@
           <div class="sitename">{{ title }}</div>
         </section>
         <section class="options user-select-off">
+          <p> {{this.$keycloak.tokenParsed.preferred_username}}</p>
           <a id="logoutLink" class="sign-out" v-on:click="logout">Sign Out</a>
         </section>
       </section>
@@ -67,7 +68,8 @@ header .container .identity .sitename {
 header .container .options {
     float: right;
     height: 60px;
-    padding-top: 10px;
+    display: flex;
+    align-items: center;
 }
 header .container .options .sign-out {
     display: inline-block;
@@ -84,5 +86,10 @@ header .container .options .sign-out {
 }
 header .container .options .sign-out:focus {
     box-shadow: 0 0 3px #FFFFFF;
+}
+
+header .container .options p {
+  color:#FFFFFF;
+  margin: 0 10px
 }
 </style>

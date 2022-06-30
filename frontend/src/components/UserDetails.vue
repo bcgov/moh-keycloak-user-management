@@ -29,7 +29,7 @@
               :disabled="!!userId || !editUserDetailsPermission"
               outlined
               id="user-name"
-              v-model="user.username"
+              v-model.trim="user.username"
               required
               :rules="[v => !!v || 'Username is required']"
             />

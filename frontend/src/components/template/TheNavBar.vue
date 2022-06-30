@@ -5,7 +5,7 @@
         <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">User Search</router-link>
         </li>
-        <li v-if=!!dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
+        <li v-if=dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'Dashboard'}">Dashboard</router-link>
         </li>
       </ul>

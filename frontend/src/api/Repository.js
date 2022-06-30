@@ -12,7 +12,8 @@ function kcRequest() {
             headers: { Authorization: 'Bearer ' + keycloak.token }
         });
     }
-    if (keycloak.isTokenExpired(0)) {
+    let expiryDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
+    if(Date.now() > expiryDate){
         return keycloak.logout();
     }
     return keycloak.updateToken(0).then(createAxios);
@@ -26,7 +27,8 @@ function umsRequest() {
             headers: { Authorization: 'Bearer ' + keycloak.token }
         });
     }
-    if (keycloak.isTokenExpired(0)) {
+    let expiryDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
+    if(Date.now() > expiryDate){
         return keycloak.logout();
 
     }
@@ -40,7 +42,8 @@ function sfdsRequest() {
             baseURL: baseURL
         });
     }
-    if (keycloak.isTokenExpired(0)) {
+    let expiryDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
+    if(Date.now() > expiryDate){
         return keycloak.logout();
     }
     return keycloak.updateToken(0).then(createAxios);
