@@ -176,13 +176,13 @@
       <template #item.roleArray="{ item }">
         <span style="max-width:600px;display: flex;flex-wrap: wrap">
           <span v-for="(val, index) of item.roleArray" v-bind:key="val.name">
-            {{val}}<span v-if="index != Object.keys(item.roleArray).length - 1" style="margin-right:5px">,
+            {{val}}<span v-if="index !== Object.keys(item.roleArray).length - 1" style="margin-right:5px">,
             </span>
           </span>
         </span>
       </template>
       <template #item.lastLogin="{ item }">
-        <span v-if="item.lastLogin == LAST_LOGIN_NOT_RECORDED">N/A</span>
+        <span v-if="item.lastLogin === LAST_LOGIN_NOT_RECORDED">N/A</span>
         <span v-else>
           {{ new Date(item.lastLogin).toLocaleDateString("en-CA") }}
         </span>
