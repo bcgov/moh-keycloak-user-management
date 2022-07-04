@@ -400,7 +400,6 @@ export default {
           //Update list of roles from UserDetails module
           this.close();
           this.loadUserRoles();
-          this.$root.$refs.UserMailboxAuthorizations.getMailboxClients();
         })
         .catch((error) => {
           this.$store.commit("alert/setAlert", {
@@ -409,6 +408,7 @@ export default {
           });
         })
         .finally(() => {
+          this.$root.$refs.UserMailboxAuthorizations.getMailboxClients();
           window.scrollTo(0, 0);})    
     },
   },
