@@ -6,7 +6,6 @@
       class="break">
     <template v-slot:top>
       <v-toolbar flat >
-        <h2 class="sfds-authorizations-header">Mailbox Authorizations</h2>
         <v-spacer></v-spacer>
         
         <v-dialog v-model="editDialog" max-width="840px">
