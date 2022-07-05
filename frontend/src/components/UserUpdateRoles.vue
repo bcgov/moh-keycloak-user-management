@@ -418,8 +418,8 @@ export default {
 <style>
 .updateRolesDialog {
     margin: 24px;
-    /* overflow-y: auto;
-    overflow-x: hidden; */
+    overflow-y: auto;
+    overflow-x: hidden;
     max-width: 95%;
     min-width: 450px;
     width: 900px;
