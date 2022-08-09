@@ -14,13 +14,18 @@ It provides the following design benefits over using the Keycloak REST API direc
 Tested with:
 * Java 11
 * Maven 3.6.1
-* Keycloak 9.0.2
+* Keycloak 15.0.2
 
 # Configuration
 
 For local development, specify Keycloak details using the configuration file at [src/main/resources/application.yaml](src/main/resources/application.yaml). For deploys to other environments, we suggest [external properties](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-files).
 
 The configuration file expects an externally defined property (environment variable or JVM system property) named `UMS_CLIENT_SECRET`. Its value should match the `Secret` attribute of the Client's Credentials defined in Keycloak.
+Other enviroment variables required in the configuration file (check Dev Team keepass for details): 
+* keycloak_db_password
+* keycloak_db_username
+* keycloak_db_url
+* ums_encryptor_password
 
 # Run
 

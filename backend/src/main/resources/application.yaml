@@ -23,7 +23,7 @@ spring:
   datasource:
     url: ${keycloak_db_url}
     username: ${keycloak_db_username}
-    password: ${keycloak.db-password}
+    password: ${keycloak_db_password}
     driver-class-name: oracle.jdbc.OracleDriver
   security:
     oauth2:
