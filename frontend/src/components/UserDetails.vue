@@ -211,9 +211,9 @@ export default {
 };
 function formatOrganization(organization) {
   if (Array.isArray(organization)) {
-    return organization[0];
+    return `{"id":"${JSON.parse(organization[0]).id}","name":"${JSON.parse(organization[0]).name}"}`
   } else {
-    return organization;
+    return Object(`{"id":"${JSON.parse(organization).id}","name":"${JSON.parse(organization).name}"}`);
   }
 }
 </script>
