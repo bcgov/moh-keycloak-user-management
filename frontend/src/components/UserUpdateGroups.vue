@@ -90,8 +90,7 @@ export default {
               message: "User Groups updated successfully",
               type: "success"
             });
-            //Update list of roles from UserDetails module
-            this.$root.$refs.UserDetails.loadUserRoles();
+            this.$root.$refs.UserUpdateRoles.loadUserRoles();
           })
           .catch((error) => {
             this.$store.commit("alert/setAlert", {

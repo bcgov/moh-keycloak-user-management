@@ -226,6 +226,7 @@ export default {
     };
   },
   async created() {
+  this.$root.$refs.UserUpdateRoles = this;
    this.loadUserRoles();
    if(this.hasRoleForManageUserRoles){
     this.headers.push({ text: "Actions", value: "actions", sortable: false})
