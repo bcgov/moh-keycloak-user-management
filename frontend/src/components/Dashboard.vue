@@ -16,7 +16,18 @@
             no-data-text=""
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
-          />
+          > <template #item.REALM="{item}">
+              {{item.REALM}}
+            </template>
+            <template #item.CLIENT="{item}">
+               <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <span v-on="on">{{item.CLIENT}}</span>
+                </template>
+                <span>{{item.DESCRIPTION || 'No data'}}</span>
+              </v-tooltip>
+            </template>
+          </v-data-table>
         </div>
 
       </div>
