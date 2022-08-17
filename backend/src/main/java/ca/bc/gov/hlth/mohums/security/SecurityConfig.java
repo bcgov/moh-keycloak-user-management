@@ -61,6 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors(Customizer.withDefaults())
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
+                .mvcMatchers(HttpMethod.GET,"/realms").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET, "/dashboard/**").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET,"/events/**").hasRole(viewEventsRole)
                 .mvcMatchers(HttpMethod.GET,"/admin-events/**").hasRole(viewEventsRole)

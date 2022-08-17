@@ -17,14 +17,19 @@
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
           > <template #item.REALM="{item}">
-              {{item.REALM}}
+              <v-tooltip bottom :disabled="!item.REALM_DESCRIPTION" max-width="300px">
+                <template v-slot:activator="{ on }">
+                  <span v-on="on">{{item.REALM}}</span>
+                </template>
+                <span>{{item.REALM_DESCRIPTION}}</span>
+              </v-tooltip>
             </template>
             <template #item.CLIENT="{item}">
-               <v-tooltip right>
+               <v-tooltip bottom :disabled="!item.DESCRIPTION" max-width="300px">
                 <template v-slot:activator="{ on }">
                   <span v-on="on">{{item.CLIENT}}</span>
                 </template>
-                <span>{{item.DESCRIPTION || 'No data'}}</span>
+                <span>{{item.DESCRIPTION}}</span>
               </v-tooltip>
             </template>
           </v-data-table>
@@ -94,6 +99,7 @@
 
 <script>
 import MetricsRepository from "@/api/MetricsRepository";
+import RealmsRepository from "@/api/RealmsRepository";
 
 export default {
   data() {
@@ -119,6 +125,7 @@ export default {
       activeUserCount: [],
       uniqueUserCountByIDP: [],
       uniqueUserCountByRealm: [],
+      realmsInfo: [],
       totalNumberOfUsersLoadingStatus:true,
       activeUserCountLoadingStatus: true,
       uniqueUserCountByIDPLoadingStatus: true,
@@ -126,12 +133,19 @@ export default {
     };
   },
   async created() {
-      this.loadActiveUserCount();
+      await this.loadActiveUserCount();
+      await this.loadRealmsInfo();
       this.loadTotalNumberOfUsers();
       this.loadUniqueUserCountByIDP();
       this.loadUniqueUserCountByRealm();
+      this.mergeActiveUsersCountWithRealmsInfo();
   },
   methods: {
+     async loadRealmsInfo() {
+      const response = await RealmsRepository.get();
+      this.realmsInfo = response.data;
+      this.activeUserCountLoadingStatus = false;
+    },
     async loadActiveUserCount() {
       const response = await MetricsRepository.get("active-user-count");
       this.activeUserCount = response.data;
@@ -151,6 +165,11 @@ export default {
       const response = await MetricsRepository.get("unique-user-count-by-realm");
       this.uniqueUserCountByRealm = response.data;
       this.uniqueUserCountByRealmLoadingStatus = false;
+    },
+    mergeActiveUsersCountWithRealmsInfo() {
+      this.activeUserCount = this.activeUserCount.map(item => {
+        return{...item, REALM_DESCRIPTION: this.realmsInfo.find(realm => realm.REALM === item.REALM).DESCRIPTION}
+      })
     },
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
