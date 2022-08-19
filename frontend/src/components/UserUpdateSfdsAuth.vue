@@ -193,7 +193,9 @@ export default {
       return this.sfdsAuthorizations.filter(item => this.selectedClient.clientId=='HSCIS'?item.u.includes("hscis"):!item.u.includes("hscis"));
     },
     filteredSfdsUses(){
-      return this.sfdsUses.filter(item => this.selectedClient.clientId=='HSCIS'?item.label.includes("hscis"):!item.label.includes("hscis"))
+      const hscisLabels = ['hscis', 'rpt'];
+      const containsHscisLabel = (item) => hscisLabels.some(l => item.label.includes(l));
+      return this.sfdsUses.filter(item => this.selectedClient.clientId=='HSCIS'?containsHscisLabel(item):!containsHscisLabel(item))
     },
     dialogTitle () {
       return this.editedIndex === -1 ? 'New Authorization' : 'Edit Authorization'
