@@ -2,6 +2,7 @@
 node_modules
 /frontend/dist/
 /logs/
+/backend/logs/
 
 # local env files
 .env.local

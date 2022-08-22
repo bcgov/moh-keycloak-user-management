@@ -28,9 +28,9 @@ public class MetricsController {
     @GetMapping("/metrics/active-user-count")
     public List<Map<String, Object>> getActiveUserCount() throws SQLException {
         String sql
-                = "SELECT realm_id AS REALM, client_id AS CLIENT, COUNT(1) AS ACTIVE_USER_COUNT"
+                = "SELECT realm_id AS REALM, client_id AS CLIENT, COUNT(1) AS ACTIVE_USER_COUNT, description AS DESCRIPTION"
                 + "  FROM ("
-                + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username"
+                + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username, c.description"
                 + "      FROM keycloak.event_entity ee"
                 + "     INNER JOIN keycloak.user_entity ue ON ue.id = ee.user_id"
                 + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id"
@@ -40,7 +40,7 @@ public class MetricsController {
                 + "       AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000"
                 + "       AND ue.enabled = 1"
                 + "     UNION"
-                + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username"
+                + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username, c.description"
                 + "      FROM keycloak.event_entity ee"
                 + "     INNER JOIN keycloak.user_entity ue ON ue.id = ee.user_id"
                 + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id"
@@ -52,7 +52,7 @@ public class MetricsController {
                 + " )"
                 + " WHERE NOT (client_id = 'account' AND (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'idir', 'idir_aad', 'master', 'moh_applications', 'moh_citizen', 'moh_idp', 'phsa'))"
                 + "          OR (client_id IN ('realm-management', 'USER-MANAGEMENT-SERVICE', 'PRIME-WEBAPP-ENROLLMENT')))"
-                + " GROUP BY realm_id, client_id"
+                + " GROUP BY realm_id, client_id, description"
                 + " ORDER BY realm_id ASC, client_id ASC";
 
         return jdbcTemplate.queryForList(sql);
