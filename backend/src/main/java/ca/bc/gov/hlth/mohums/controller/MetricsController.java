@@ -65,7 +65,9 @@ public class MetricsController {
                 + "  FROM ("
                 + "    SELECT DISTINCT id, realm_id"
                 + "      FROM keycloak.user_entity"
-                + "     WHERE (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'idir', 'moh_idp', 'phsa')) OR (realm_id = 'idir_aad' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'idir'))"
+                + "     WHERE (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'idir', 'mhsu_ehs', 'moh_idp', 'phsa'))"
+                + "        OR (realm_id = 'idir_aad' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'idir'))"
+                + "        OR (realm_id = 'mhsu_foundry' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'mhsu_ehs'))"
                 + "       AND enabled = 1"
                 + " )";
 
