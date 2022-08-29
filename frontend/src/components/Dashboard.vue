@@ -17,6 +17,7 @@
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
           > <template #item.REALM="{item}">
+           <template #item.REALM="{item}">
               <v-tooltip bottom :disabled="!item.REALM_DESCRIPTION" max-width="300px">
                 <template v-slot:activator="{ on }">
                   <span v-on="on">{{item.REALM}}</span>
@@ -60,36 +61,33 @@
           <div class="heading">
             <p>Unique User Count (By IDP)</p>
           </div>
-          <v-data-table
-            id="unique-user-idp-table"
-            class="tile-table"
-            :items="uniqueUserCountByIDP"
-            :headers="headerUniqueUserCountByIDP"
-            hide-default-header
-            hide-default-footer
-            dense
-            no-data-text=""
-            :loading="uniqueUserCountByIDPLoadingStatus"
-            :items-per-page="-1"
-          />
+            <PieChart
+            :pieChartData="uniqueUserCountByIDP"
+            v-if="!uniqueUserCountByIDPLoadingStatus" 
+            /> 
+            <v-skeleton-loader
+            v-if="uniqueUserCountByIDPLoadingStatus"
+            ref="dashboardSkeleton"
+            width=''
+            type="image"
+            >
+            </v-skeleton-loader>
         </div>
 
         <div class="tile">
           <div class="heading">
             <p>Unique User Count (By Realm)</p>
           </div>
-          <v-data-table
-            id="unique-user-count-table"
-            class="tile-table"
-            :items="uniqueUserCountByRealm"
-            :headers="headerUniqueUserCountByRealm"
-            hide-default-header
-            hide-default-footer
-            dense
-            no-data-text=""
-            :loading="uniqueUserCountByRealmLoadingStatus"
-            :items-per-page="-1"
+          <PieChart
+            :pieChartData="uniqueUserCountByRealm"
+            v-if="!uniqueUserCountByRealmLoadingStatus"
           />
+            <v-skeleton-loader
+            v-if="uniqueUserCountByIDPLoadingStatus"
+            ref="dashboardSkeleton"
+            width=''
+            type="image">
+          </v-skeleton-loader>
         </div>
       </div>
     </div>
@@ -100,8 +98,10 @@
 <script>
 import MetricsRepository from "@/api/MetricsRepository";
 import RealmsRepository from "@/api/RealmsRepository";
+import PieChart from '@/components/PieChart'
 
 export default {
+  components: { PieChart },
   data() {
     return {
       headerActiveUserCount: [
@@ -123,8 +123,8 @@ export default {
       ],
       totalNumberOfUsers: "",
       activeUserCount: [],
-      uniqueUserCountByIDP: [],
-      uniqueUserCountByRealm: [],
+      uniqueUserCountByIDP: {},
+      uniqueUserCountByRealm: {},
       realmsInfo: [],
       totalNumberOfUsersLoadingStatus:true,
       activeUserCountLoadingStatus: true,
@@ -158,12 +158,28 @@ export default {
     },
     async loadUniqueUserCountByIDP() {
       const response = await MetricsRepository.get("unique-user-count-by-idp");
-      this.uniqueUserCountByIDP = response.data;
+      const labels = [];
+      const dataset = [];
+      for (var key of response.data.entries()) {
+        labels.push(key[1]["IDP"])
+        dataset.push(key[1]["UNIQUE_USER_COUNT"])
+      }
+
+      this.uniqueUserCountByIDP["labels"] = labels;
+      this.uniqueUserCountByIDP["UNIQUE_USER_COUNT"] = dataset;
       this.uniqueUserCountByIDPLoadingStatus = false;
     },
     async loadUniqueUserCountByRealm() {
       const response = await MetricsRepository.get("unique-user-count-by-realm");
-      this.uniqueUserCountByRealm = response.data;
+      const labels = [];
+      const dataset = [];
+      for (var key of response.data.entries()) {
+        labels.push(key[1]["REALM"])
+        dataset.push(key[1]["UNIQUE_USER_COUNT"])
+      }
+
+      this.uniqueUserCountByRealm["labels"] = labels;
+      this.uniqueUserCountByRealm["UNIQUE_USER_COUNT"] = dataset;
       this.uniqueUserCountByRealmLoadingStatus = false;
     },
     mergeActiveUsersCountWithRealmsInfo() {
@@ -212,6 +228,7 @@ export default {
   display: flex;
   flex-direction: row;
   width: fit-content;
+  margin: 0 0 10px 0;
 }
 
 .tile .heading p {
