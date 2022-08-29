@@ -16,7 +16,7 @@
             no-data-text=""
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
-          > <template #item.REALM="{item}">
+          >
            <template #item.REALM="{item}">
               <v-tooltip bottom :disabled="!item.REALM_DESCRIPTION" max-width="300px">
                 <template v-slot:activator="{ on }">
