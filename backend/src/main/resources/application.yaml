@@ -1,3 +1,8 @@
+keycloak_db_password : K3yCl0ak_UM5_D3v
+keycloak_db_username : KEYCLOAK_UMS
+keycloak_db_url : jdbc:oracle:thin:@daudelin.hlth.gov.bc.ca:1521:kcd
+UMS_CLIENT_SECRET : a80792ef-8e43-4423-a10a-58bffb2a7b44
+ums_encryptor_password : 123123
 keycloak:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
@@ -12,6 +17,8 @@ user-management-client:
     manage-user-roles: manage-user-roles
     manage-user-groups: manage-user-groups
     create-user: create-user
+    manage-all-groups: manage-all-groups
+    manage-own-groups: manage-own-groups
 config:
   # vanity-hostname: Sets the HTTP "Location" header for the service.
   vanity-hostname: "http://localhost:${server.port}"
