@@ -2,7 +2,7 @@
   <nav role="navigation">
     <div class="container">
       <ul>
-        <li id="users-link" :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
+        <li id="users-link" v-if=userSearchPermission :class="($route.name == 'UserSearch' || $route.name == 'UserUpdate' || $route.name == 'UserCreate') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'UserSearch'}">User Search</router-link>
         </li>
         <li v-if=dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
@@ -19,19 +19,28 @@ export default {
   data() {
     return{
       dashboardPermission:false,
+      userSearchPermission:false,
       }
   },
   async created() {
     this.checkDashboardPermission();
+    this.checkUserSearchPermission();
   },
   methods: {
     resetAlert: function () {
       this.$store.commit("alert/dismissAlert");
     },
-    checkDashboardPermission: function() {
-      if (this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'] && this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE'].roles.includes('view-metrics')) {
-        this.dashboardPermission = true;
+    checkPermission: function(requiredRoles) {
+      if (requiredRoles.every(role => this.$keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE'].roles.includes(role))) {
+        return true;
       }
+      return false;
+    },
+    checkDashboardPermission: function() {
+        this.dashboardPermission = this.checkPermission(['view-metrics']);
+    },
+    checkUserSearchPermission: function() {
+        this.userSearchPermission = this.checkPermission(['view-users', 'view-clients', 'view-groups']);
     },
   }
 }
