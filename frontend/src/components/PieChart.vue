@@ -36,28 +36,20 @@ export default {
       chartData: {
         labels: this.pieChartData["labels"],
         datasets: [ {
-          backgroundColor:['#004c6d', '#7cd6ff', '#5e95b4', '#367090', '#86bdd9','#205e7e','#4b82a1','#72a9c6','#9ad1ec'],
+          backgroundColor:['#003366',"#0C5297", '#C7DEF5', '#1F66AD', '#86bdd9','#205e7e','#4b82a1','#3A80A6','#9ad1ec'],
           data: this.pieChartData["UNIQUE_USER_COUNT"],       
           datalabels: {
             align: "start",
-            offset: -17,
+            offset: -20,
             anchor: function(context) {
-              let sum = 0;
-              for(let x in context.dataset.data){
-                sum = sum + context.dataset.data[x];
-              }
-              var index = context.dataIndex;
-              var value = 100 * context.dataset.data[index] /sum;
+              const sum = context.dataset.data.reduce((sum, current) => sum + current);
+              const value = 100 * context.dataset.data[context.dataIndex] /sum;
               return value < 6 ? 'end' : 
               'center'
             },
             color: function(context) {
-              let sum = 0;
-              for(let x in context.dataset.data){
-                sum = sum + context.dataset.data[x];
-              }
-              var index = context.dataIndex;
-              var value = 100 * context.dataset.data[index] /sum;
+              const sum = context.dataset.data.reduce((sum, current) => sum + current);
+              const value = 100 * context.dataset.data[context.dataIndex] /sum;
               return value < 6 ? '#003366' :
               '#f7f7f7'    
             },
@@ -80,19 +72,17 @@ export default {
             }
           },
           legend: {
-            fullSize: true,
-            maxWidth:120,
             align:"center",
             position: "right",
-              labels: {
-                boxWidth:10,
-                boxHeight:10,
-                font: {
-                  size:10
-                }
+            labels: {
+              boxWidth:10,
+              boxHeight:10,
+              font: {
+                size:9
               }
             },
           },
+        },
         layout: {
           padding: {
             top:0,
