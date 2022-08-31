@@ -33,7 +33,7 @@ public class MetricsController {
                 + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username, c.description"
                 + "      FROM keycloak.event_entity ee"
                 + "     INNER JOIN keycloak.user_entity ue ON ue.id = ee.user_id"
-                + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id"
+                + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id AND c.realm_id = ee.realm_id"
                 + "     INNER JOIN keycloak.keycloak_role kcr ON kcr.client = c.id"
                 + "     INNER JOIN keycloak.user_role_mapping urm ON urm.user_id = ee.user_id AND urm.role_id = kcr.id"
                 + "     WHERE ee.type = 'LOGIN'"
@@ -43,7 +43,7 @@ public class MetricsController {
                 + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username, c.description"
                 + "      FROM keycloak.event_entity ee"
                 + "     INNER JOIN keycloak.user_entity ue ON ue.id = ee.user_id"
-                + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id"
+                + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id AND c.realm_id = ee.realm_id"
                 + "      LEFT OUTER JOIN keycloak.keycloak_role kcr ON kcr.client = c.id"
                 + "     WHERE ee.type = 'LOGIN'"
                 + "       AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000"
@@ -65,7 +65,9 @@ public class MetricsController {
                 + "  FROM ("
                 + "    SELECT DISTINCT id, realm_id"
                 + "      FROM keycloak.user_entity"
-                + "     WHERE (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'idir', 'moh_idp', 'phsa')) OR (realm_id = 'idir_aad' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'idir'))"
+                + "     WHERE (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'idir', 'mhsu_ehs', 'moh_idp', 'phsa'))"
+                + "        OR (realm_id = 'idir_aad' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'idir'))"
+                + "        OR (realm_id = 'mhsu_foundry' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'mhsu_ehs'))"
                 + "       AND enabled = 1"
                 + " )";
 

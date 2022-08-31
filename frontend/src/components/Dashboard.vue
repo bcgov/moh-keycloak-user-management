@@ -41,11 +41,11 @@
         <div class="tile">
           <div class="heading">
             <p>Total Number of Users</p>
-            <v-tooltip right>
+            <v-tooltip right max-width="300px">
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" small>mdi-help-circle</v-icon>
               </template>
-             <p class="tooltip"> Total Unique User Count by IDP</p>
+             <p class="tooltip">Total Unique User Count by IDP + MHSU Realms that do not use an IDP</p>
             </v-tooltip>
           </div>
           <p class="single-stat">{{ totalNumberOfUsers }}</p>
