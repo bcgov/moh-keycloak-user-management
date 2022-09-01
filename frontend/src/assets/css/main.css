@@ -70,6 +70,9 @@ input {
 .select-table tr.v-data-table__empty-wrapper {
     cursor: default;
 }
+.v-data-footer {
+    justify-content: flex-end;
+}
 
 .theme--light.v-btn.BC-Gov-SecondaryButton {
     background: none;
