@@ -290,15 +290,19 @@ public class UsersController {
 
     @PutMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> addUserGroups(@PathVariable String userId,
-                                                @PathVariable String groupId, @AuthenticationPrincipal Jwt jwt) {
-        return permissionsValidator.validateGroupManagementPermission(jwt, groupId) ?
+                                                @PathVariable String groupId,
+                                                @RequestBody String groupName,
+                                                @AuthenticationPrincipal Jwt jwt) {
+        return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
                 webClientService.addUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Add user to group - permission denied");
     }
 
     @DeleteMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
-                                                   @PathVariable String groupId, @AuthenticationPrincipal Jwt jwt) {
-        return permissionsValidator.validateGroupManagementPermission(jwt, groupId) ?
+                                                   @PathVariable String groupId,
+                                                   @RequestBody String groupName,
+                                                   @AuthenticationPrincipal Jwt jwt) {
+        return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
                 webClientService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
     }
 

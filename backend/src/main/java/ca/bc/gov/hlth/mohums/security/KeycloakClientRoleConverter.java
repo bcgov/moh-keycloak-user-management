@@ -31,13 +31,4 @@ public class KeycloakClientRoleConverter implements Converter<Jwt, Collection<Gr
                 .collect(Collectors.toList());
         return authorities;
     }
-
-    //        final Map<String, Object> resourceAccesses = (Map<String, Object>) jwt.getClaims().get("resource_access");
-//        if (resourceAccesses != null) {
-//            final Map<String, Object> resource = (Map<String, Object>) resourceAccesses.get(apiClientName);
-//            if (resource != null) {
-//                authorities = ((List<String>) resource.get("roles")).stream()
-//
-//            }
-//        }
 }

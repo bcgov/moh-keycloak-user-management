@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PermissionsValidator {
 
@@ -12,7 +14,8 @@ public class PermissionsValidator {
     private String manageAllGroupsRole;
     public boolean validateGroupManagementPermission(Jwt requesterToken, String groupId){
         if(!canManageAllGroups(requesterToken)){
-            return JwtTokenUtils.getUserGroups(requesterToken).contains(groupId);
+            List<String> a = JwtTokenUtils.getUserGroups(requesterToken);
+            return a.contains(groupId);
         }
         return true;
     }
