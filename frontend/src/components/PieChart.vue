@@ -39,6 +39,24 @@ export default {
     },
   },
   data() {
+    const minPct = 5;
+    function chartSum(context) {
+      let sum = 0;
+      const hiddenIndices = context.chart._hiddenIndices;
+      context.dataset.data.forEach((val, i) => {
+        if (hiddenIndices[i] != undefined) {
+          if (!hiddenIndices[i]) {
+            sum += val;
+          }
+        } else {
+          sum += val;
+        }
+      });
+      return sum;
+    }
+    function chartPct(context) {
+      return context.dataset.data[context.dataIndex] / chartSum(context) * 100;
+    }
     return {
       chartData: {
         labels: this.pieChartData["labels"],
@@ -46,34 +64,39 @@ export default {
           {
             backgroundColor: [
               "#003366",
-              "#0C5297",
-              "#C7DEF5",
-              "#1F66AD",
-              "#86bdd9",
-              "#205e7e",
-              "#4b82a1",
-              "#3A80A6",
-              "#9ad1ec",
+              "#134575",
+              "#265784",
+              "#396a94",
+              "#4c7ca3",
+              "#5f8eb2",
+              "#72a0c1",
+              "#85b3d1",
+              "#98c5e0",
+              "#abd7ef",
             ],
             data: this.pieChartData["UNIQUE_USER_COUNT"],
             datalabels: {
-              align: "start",
-              offset: -23,
-              anchor: function (context) {
-                const sum = context.dataset.data.reduce(
-                  (sum, current) => sum + current
-                );
-                const value =
-                  (100 * context.dataset.data[context.dataIndex]) / sum;
-                return value < 6 ? "end" : "center";
+              align: (context) => {
+                return chartPct(context) < minPct ? "end" : "start";
               },
-              color: function (context) {
-                const sum = context.dataset.data.reduce(
-                  (sum, current) => sum + current
-                );
-                const value =
-                  (100 * context.dataset.data[context.dataIndex]) / sum;
-                return value < 6 ? "#003366" : "#f7f7f7";
+              anchor: (context) => {
+                return chartPct(context) < minPct ? "end" : "center";
+              },
+              color: (context) => {
+                return chartPct(context) < minPct ? "#003366" : "#f7f7f7";
+              },
+              font: {
+                family: "BCSans",
+                size: 11, 
+              },
+              formatter: (value, context) => {
+                return chartPct(context).toFixed(1) + '%';
+              },
+              offset: (context) => {
+                return chartPct(context) < minPct ? -5 : -45;
+              },
+              rotation: (context) => {
+                return chartPct(context) < minPct ? -45 : 0;
               },
             },
           },
@@ -91,18 +114,20 @@ export default {
             position: "nearest",
             padding: 3,
             bodyFont: {
-              size: 10,
+              family: "BCSans",
+              size: 14,
             },
           },
           legend: {
-            maxWidth:125,
+            maxWidth: 135,
             align: "center",
             position: "right",
             labels: {
               boxWidth: 10,
               boxHeight: 10,
               font: {
-                size: 12,
+                family: "BCSans",
+                size: 14,
               },
             },
           },
