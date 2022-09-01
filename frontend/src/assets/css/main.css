@@ -71,7 +71,7 @@ input {
     cursor: default;
 }
 .v-data-footer {
-    justify-content: flex-end !important;
+    justify-content: flex-end;
 }
 
 .theme--light.v-btn.BC-Gov-SecondaryButton {
