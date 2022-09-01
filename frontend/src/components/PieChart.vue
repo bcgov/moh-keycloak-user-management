@@ -58,7 +58,7 @@ export default {
             data: this.pieChartData["UNIQUE_USER_COUNT"],
             datalabels: {
               align: "start",
-              offset: -20,
+              offset: -23,
               anchor: function (context) {
                 const sum = context.dataset.data.reduce(
                   (sum, current) => sum + current
@@ -83,7 +83,7 @@ export default {
         responsive: true,
         maintainAspectRatio: true,
         aspectRatio: 1.5,
-        radius: 60,
+        radius: 100,
         plugins: {
           align: "start",
           tooltip: {
@@ -95,13 +95,14 @@ export default {
             },
           },
           legend: {
+            maxWidth:125,
             align: "center",
             position: "right",
             labels: {
               boxWidth: 10,
               boxHeight: 10,
               font: {
-                size: 9,
+                size: 12,
               },
             },
           },
@@ -109,9 +110,9 @@ export default {
         layout: {
           padding: {
             top: 0,
-            right: 5,
+            right: 15,
             bottom: 0,
-            left: 5,
+            left: 15,
           },
         },
       },

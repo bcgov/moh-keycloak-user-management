@@ -216,7 +216,7 @@ export default {
 }
 
 .tile {
-  width: 300px;
+  width: 440px;
   padding: 16px 20px;
 
   margin: 20px;
