@@ -11,12 +11,24 @@ let initOptions = {
     pkceMethod: 'S256',
 };
 
+
+let kcCreateLoginUrl = keycloak.createLoginUrl;
+keycloak.createLoginUrl = (options) => {
+    var loginUrl = kcCreateLoginUrl(options);
+    if (options && options.idpsToShow) {
+        loginUrl += '&idps_to_show=' + encodeURIComponent(options.idpsToShow);
+    }
+    return loginUrl;
+};
+
 // For some reason idpHint cannot be specified in the Keycloak constructor or init options.
 // https://stackoverflow.com/a/56338011/201891
 let kcLogin = keycloak.login;
 keycloak.login = (options) => {
     if (process.env.NODE_ENV !== 'development') {
         options.idpHint = 'idir';
+    } else {
+        options.idpsToShow = 'idir,phsa';
     }
     return kcLogin(options);
 };
