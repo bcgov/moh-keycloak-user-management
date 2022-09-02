@@ -14,14 +14,18 @@
             <!-- new item button -->
             <template v-slot:activator="{}">
               <v-btn v-if="hasRoleForManageUserRoles" color="primary" @click="addRoles()">
-                Add Roles
+                Add User Role
               </v-btn>
             </template>
 
             <!-- pop up to add something -->
-            <v-card class="popup">
+            <v-card>
+               <v-card-title>
+                <span class="headline">{{ dialogTitle }}</span>
+              </v-card-title>
+              <v-card-text>
               <!-- client selector -->
-              <label style="padding-left: 12px;" for="select-client">Application</label>
+              <label style="padding-left: 12px;" class="required" for="select-client">Application</label>
               <v-icon style="float: right" @click="close()">mdi-close</v-icon>
               <v-row>
                 <v-col class="col-7">
@@ -154,10 +158,11 @@
                       </v-row>
                     </v-col>
                   </v-row>
-
-                  <!-- button to save new role assignments -->
-                  <div v-if="selectedClient">
-                    <v-btn
+                </div>
+              </div>
+              </v-card-text>
+              <v-card-actions v-if="selectedClient">
+              <v-btn
                       v-if="hasRoleForManageUserRoles"
                       id="save-user-roles"
                       class="primary"
@@ -165,9 +170,10 @@
                       v-on:click="updateUserClientRoles()"
                       >Save User Roles</v-btn
                     >
-                  </div>
-                </div>
-              </div>
+              <v-btn outlined class="primary--text" @click="close()">
+                Cancel
+              </v-btn>
+            </v-card-actions>
             </v-card>
           </v-dialog>
         </v-toolbar>
@@ -208,6 +214,7 @@ export default {
   data() {
     return {
       dialog: false,
+      dialogTitle: "",
       headers: [
         { text: "Application", value: "clientRepresentation.clientId" },
         { text: "Role", value: "roleArray" },
@@ -252,11 +259,13 @@ export default {
   },
   methods: {
     addRoles: function() {
+      this.dialogTitle = "Add User Role";
       this.selectedClient = null;
       this.isEdit = false;
       this.dialog = true;
     },
     editRoles: function (client) {
+      this.dialogTitle = "Edit User Role";
       this.selectedClient = client;
       this.isEdit = true;
       this.dialog = true;
