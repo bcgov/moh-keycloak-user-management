@@ -110,6 +110,18 @@ export default {
         plugins: {
           align: "start",
           tooltip: {
+            callbacks: {
+              label: function (context) {
+                let label = context.label.trim();
+                if (label) {
+                    label += ': ';
+                }
+                if (context.parsed !== null) {
+                    label += context.parsed + ' [' + chartPct(context).toFixed(1) + '%]';
+                }
+                return label;
+              }
+            },
             displayColors: false,
             position: "nearest",
             padding: 3,
@@ -119,7 +131,7 @@ export default {
             },
           },
           legend: {
-            maxWidth: 135,
+            maxWidth: 145,
             align: "center",
             position: "right",
             labels: {
@@ -135,9 +147,9 @@ export default {
         layout: {
           padding: {
             top: 0,
-            right: 15,
+            right: 10,
             bottom: 0,
-            left: 15,
+            left: 10,
           },
         },
       },
