@@ -161,7 +161,7 @@ export default {
       const labels = [];
       const dataset = [];
       for (var key of response.data.entries()) {
-        labels.push(key[1]["IDP"])
+        labels.push(key[1]["IDP"].padEnd(20))
         dataset.push(key[1]["UNIQUE_USER_COUNT"])
       }
 
@@ -174,7 +174,7 @@ export default {
       const labels = [];
       const dataset = [];
       for (var key of response.data.entries()) {
-        labels.push(key[1]["REALM"])
+        labels.push(key[1]["REALM"].padEnd(20))
         dataset.push(key[1]["UNIQUE_USER_COUNT"])
       }
 
