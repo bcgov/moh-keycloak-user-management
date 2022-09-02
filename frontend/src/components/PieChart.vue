@@ -89,9 +89,6 @@ export default {
                 family: "BCSans",
                 size: 11, 
               },
-              formatter: (value, context) => {
-                return chartPct(context).toFixed(1) + '%';
-              },
               offset: (context) => {
                 return chartPct(context) < minPct ? -5 : -45;
               },
