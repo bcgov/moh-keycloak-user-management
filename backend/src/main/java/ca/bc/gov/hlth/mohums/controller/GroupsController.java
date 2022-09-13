@@ -3,6 +3,7 @@ package ca.bc.gov.hlth.mohums.controller;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -18,4 +19,7 @@ public class GroupsController {
     public ResponseEntity<Object> getGroups() {
         return webClientService.getGroups();
     }
+
+    @GetMapping("/groups/{groupId}")
+    public ResponseEntity<Object> getGroupById(@PathVariable String groupId) {return webClientService.getGroupById(groupId);}
 }

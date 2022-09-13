@@ -48,6 +48,11 @@ public class WebClientService {
     public ResponseEntity<Object> getGroups() {
         return get(groupsPath, null);
     }
+    // Group details
+    public ResponseEntity<Object> getGroupById(String groupId) {
+        String path = String.format("%s/%s", groupsPath, groupId);
+        return get(path, null);
+    }
 
     // Users
     public ResponseEntity<List<Object>> getUsers(MultiValueMap<String, String> queryParams) {
@@ -188,5 +193,4 @@ public class WebClientService {
                 .exchange()
                 .block().toEntity(Object.class).block();
     }
-
 }
