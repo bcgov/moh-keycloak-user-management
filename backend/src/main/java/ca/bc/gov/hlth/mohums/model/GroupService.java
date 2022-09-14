@@ -57,7 +57,7 @@ public class GroupService {
                 .filter(role -> !role.contains("manage-") && !role.contains("view-"))
                 .collect(Collectors.toList());
 
-        return miscellaneousRoles.isEmpty() ? "" : miscellaneousRoles.stream().map(role -> role.replace("-", " ")).collect(Collectors.joining(", ")) + ". ";
+        return miscellaneousRoles.isEmpty() ? "" : miscellaneousRoles.stream().map(role -> role.replace("-", " ")).collect(Collectors.joining(", ")) + ".\n";
     }
 
     private String createRolesDescription(List<String> userManagementRoles, String prefix) {
@@ -69,6 +69,6 @@ public class GroupService {
                 .collect(Collectors.toList());
 
         String rolesString = String.join(", ", roleKeyWords);
-        return prefix + rolesString + ". ";
+        return prefix + rolesString + ".\n";
     }
 }
