@@ -20,6 +20,4 @@ public class GroupsController {
         return webClientService.getGroups();
     }
 
-    @GetMapping("/groups/{groupId}")
-    public ResponseEntity<Object> getGroupById(@PathVariable String groupId) {return webClientService.getGroupById(groupId);}
 }
