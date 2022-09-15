@@ -11,13 +11,14 @@
             :value="group"
             :label="group.name"
             :key="group.id"
+            :disabled="isCheckboxDisabled(group.name)"
         ></v-checkbox>
       </v-col>
     </v-row>
     <div class="my-6">
       <v-btn id="save-user-groups" class="primary"
              medium v-on:click="updateUserGroups()"
-             v-if="adminUser">
+             v-if="adminUser  && allGroups.length > 0">
         Save User Groups
       </v-btn>
     </div>
@@ -34,19 +35,42 @@ export default {
   data() {
     return {
       adminUser: false,
+      adminRole: "",
       currentGroups: [],
       allGroups: [],
-      selectedGroups: []
+      selectedGroups: [],
+      ownGroups: [],
+      MANAGE_ALL_GROUPS: 'manage-all-groups',
+      MANAGE_OWN_GROUPS: 'manage-own-groups'
     };
   },
   async created() {
-    this.checkIfAdmin();
+    this.checkAdminPermissions();
     await this.getUserGroupsData();
   },
   methods: {
-    checkIfAdmin: function() {
-      if (this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT'] &&
-          this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT'].roles.includes('user-management-admin')) {
+    isCheckboxDisabled: function(groupName) {
+      const canManageOwnGroups = this.adminRole === this.MANAGE_OWN_GROUPS;
+      const isPartOfGroup = this.ownGroups.some(group => group.name === groupName);
+      return canManageOwnGroups && !isPartOfGroup;
+    },
+    deleteDuplicateGroups: function(groups){
+      const uniqueGroupIds = [];
+      return groups.filter(group => {
+          const isDuplicate = uniqueGroupIds.includes(group.id);
+          if(!isDuplicate){
+            uniqueGroupIds.push(group.id);
+            return true;
+          }
+          return false;
+        });
+    },
+    checkAdminPermissions: function() {
+      if(this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE']?.roles.includes(this.MANAGE_ALL_GROUPS)){
+        this.adminRole = this.MANAGE_ALL_GROUPS;
+        this.adminUser = true;
+      }else if(this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE']?.roles.includes(this.MANAGE_OWN_GROUPS)){
+        this.adminRole = this.MANAGE_OWN_GROUPS;
         this.adminUser = true;
       }
     },
@@ -62,29 +86,41 @@ export default {
               type: "error"
             });
           });
-
-      this.currentGroups.push(...userGroupResponses[0].data);
-      this.selectedGroups.push(...userGroupResponses[0].data);
-      this.allGroups.push(...userGroupResponses[1].data);
+      const searchedUserGroups = userGroupResponses[0].data;
+      const allGroups = userGroupResponses[1].data;
+      this.currentGroups.push(...searchedUserGroups);
+      this.selectedGroups.push(...searchedUserGroups);
+      if(this.adminRole === this.MANAGE_ALL_GROUPS){
+        this.allGroups.push(...allGroups);
+      }else if(this.adminRole === this.MANAGE_OWN_GROUPS){
+        const ownGroups = allGroups.filter(group => this.$keycloak.tokenParsed.groups?.some(name => name === group.name));
+        const uniqueCombinedGroups = this.deleteDuplicateGroups([...ownGroups, ...searchedUserGroups]);
+    
+        this.allGroups.push(...uniqueCombinedGroups);
+        this.ownGroups.push(...ownGroups);
+      }else {
+        this.allGroups.push(...searchedUserGroups);
+      }
       // Keycloak "Groups" API returns a different object structure than users/groups
       // We need them to match for the checkboxes to map
       this.allGroups = this.allGroups.map(({id,name,path})=>({id,name,path}));
     },
     updateUserGroups: function() {
       let groupUpdates = [];
+      
       for (let group of this.allGroups) {
         //It was originally a joined group but is no longer selected
         if (this.currentGroups.some(e => e.id === group.id) && !this.selectedGroups.some(e => e.id === group.id)) {
-          groupUpdates.push(UsersRepository.removeGroupFromUser(this.userId, group.id))
+          groupUpdates.push(UsersRepository.removeGroupFromUser(this.userId, group.id, group.name))
         }
         //It was not originally a joined group but is now selected
         if (!this.currentGroups.some(e => e.id === group.id) && this.selectedGroups.some(e => e.id === group.id)) {
-          groupUpdates.push(UsersRepository.addGroupToUser(this.userId, group.id))
+          groupUpdates.push(UsersRepository.addGroupToUser(this.userId, group.id, group.name))
         }
       }
       Promise.all(groupUpdates)
           .then(() => {
-            this.checkIfAdmin()
+            this.checkAdminPermissions()
             this.getUserGroupsData();
             this.$store.commit("alert/setAlert", {
               message: "User Groups updated successfully",

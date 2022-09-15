@@ -60,11 +60,12 @@ export default {
     getUserGroups(userId) {
       return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${userId}/${groups}`));
     },
-    addGroupToUser(userId, groupId) {
-        return umsRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}/${groups}/${groupId}`))
+    addGroupToUser(userId, groupId, groupName) {
+        return umsRequest().then(axiosInstance => axiosInstance.put(`${resource}/${userId}/${groups}/${groupId}`, groupName, {headers: {"Content-Type": "text/plain"}}));
     },
-    removeGroupFromUser(userId, groupId) {
-        return umsRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${groups}/${groupId}`))
+    removeGroupFromUser(userId, groupId, groupName) {
+        const nameOfGroupToBeDeleted = { data: groupName }
+        return umsRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${groups}/${groupId}`, nameOfGroupToBeDeleted));
     },
 
 }
