@@ -47,6 +47,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.manage-user-groups}")
     private String manageUserGroupsRole;
 
+    @Value("${user-management-client.roles.manage-all-groups}")
+    private String manageAllGroupsRole;
+
+    @Value("${user-management-client.roles.manage-own-groups}")
+    private String manageOwnGroupsRole;
+
     @Value("${config.allowed-origins}")
     private String allowedOrigins;
 
@@ -71,9 +77,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
                 .mvcMatchers(HttpMethod.POST, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
                 .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(createUserRole)
-                .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUserDetailsRole, manageUserGroupsRole))
                 .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUserDetailsRole)
-                .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").access(String.format("hasRole('%s') and hasRole('%s')", manageUserDetailsRole, manageUserGroupsRole))
+                .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
+                .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
                 .mvcMatchers(HttpMethod.DELETE, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
                 .mvcMatchers("/*").denyAll()
                 .and()

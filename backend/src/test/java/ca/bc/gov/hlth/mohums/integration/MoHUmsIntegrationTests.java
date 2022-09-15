@@ -420,6 +420,7 @@ public class MoHUmsIntegrationTests {
                 // CGI QA group
                 .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
+                .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
@@ -427,11 +428,12 @@ public class MoHUmsIntegrationTests {
     @Test
     public void removeUserGroups() throws Exception {
         webTestClient
-                .delete()
+                .method(HttpMethod.DELETE)
                 // 123-tschiavo user
                 // CGI QA group
                 .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
+                .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }

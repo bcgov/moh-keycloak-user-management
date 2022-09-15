@@ -3,6 +3,7 @@ package ca.bc.gov.hlth.mohums.controller;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
+import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -32,6 +35,9 @@ public class UsersController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PermissionsValidator permissionsValidator;
 
     private final WebClientService webClientService;
 
@@ -129,8 +135,8 @@ public class UsersController {
      * all roles for that client.
      *
      * @param selectedRoles - Set of roles passed in as search parameters
-     * @param clientId - cientId passed in as search parameter
-     * @param users - Unfiltered search results
+     * @param clientId      - cientId passed in as search parameter
+     * @param users         - Unfiltered search results
      * @return List
      */
     private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId, List users) {
@@ -284,14 +290,20 @@ public class UsersController {
 
     @PutMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> addUserGroups(@PathVariable String userId,
-            @PathVariable String groupId) {
-        return webClientService.addUserGroups(userId, groupId);
+                                                @PathVariable String groupId,
+                                                @RequestBody String groupName,
+                                                @AuthenticationPrincipal Jwt jwt) {
+        return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
+                webClientService.addUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Add user to group - permission denied");
     }
 
     @DeleteMapping("/users/{userId}/groups/{groupId}")
     public ResponseEntity<Object> removeUserGroups(@PathVariable String userId,
-            @PathVariable String groupId) {
-        return webClientService.removeUserGroups(userId, groupId);
+                                                   @PathVariable String groupId,
+                                                   @RequestBody String groupName,
+                                                   @AuthenticationPrincipal Jwt jwt) {
+        return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
+                webClientService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
@@ -299,7 +311,7 @@ public class UsersController {
     /**
      * Convert Keycloak's Location header to this service's Location header. Only handles Locations containing the
      * "users" path.
-     *
+     * <p>
      * e.g. https://common-logon.hlth.gov.bc.ca/users/lknlnlkn becomes https://servicename/users/lknlnlkn.
      * Other headers are left untouched.
      *
