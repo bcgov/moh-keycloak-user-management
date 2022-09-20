@@ -1,20 +1,43 @@
 package ca.bc.gov.hlth.mohums.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
-import lombok.Value;
 
 import java.util.List;
 
-@Builder
-@Value
 public class Group {
 
-    String id;
-    String name;
-    String path;
-    String description;
+    private final String id;
+    private final String name;
+    private final String path;
     @JsonIgnore
-    List<String> umsRoles;
+    private final List<String> umsRoles;
+    private final String description;
 
+    public Group(String id, String name, String path, List<String> umsRoles, String description) {
+        this.id = id;
+        this.name = name;
+        this.path = path;
+        this.umsRoles = umsRoles;
+        this.description = description;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public List<String> getUmsRoles() {
+        return umsRoles;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

@@ -1,8 +1,7 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
 import ca.bc.gov.hlth.mohums.model.Group;
-import ca.bc.gov.hlth.mohums.model.GroupMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,11 +23,8 @@ public class WebClientService {
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
 
     private final WebClient kcAuthorizedWebClient;
-    private final GroupMapper groupMapper;
 
-    @Autowired
-    public WebClientService(GroupMapper groupMapper, WebClient kcAuthorizedWebClient) {
-        this.groupMapper = groupMapper;
+    public WebClientService(WebClient kcAuthorizedWebClient) {
         this.kcAuthorizedWebClient = kcAuthorizedWebClient;
     }
 
@@ -58,7 +54,6 @@ public class WebClientService {
     public ResponseEntity<Object> getGroups() {
         ResponseEntity<Object> response = get(groupsPath, null);
         ArrayList<LinkedHashMap> groups = (ArrayList<LinkedHashMap>) response.getBody();
-        assert groups != null;
         List<Group> groupList = groups.stream().map(g -> getGroupById(g.get("id").toString())).collect(Collectors.toList());
         return ResponseEntity.of(Optional.of(groupList));
     }
@@ -66,7 +61,7 @@ public class WebClientService {
     private Group getGroupById(String groupId) {
         String path = String.format("%s/%s", groupsPath, groupId);
         ResponseEntity<Object> response =  get(path, null);
-        return groupMapper.mapToGroup((LinkedHashMap)response.getBody());
+        return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap)response.getBody());
     }
 
     // Users

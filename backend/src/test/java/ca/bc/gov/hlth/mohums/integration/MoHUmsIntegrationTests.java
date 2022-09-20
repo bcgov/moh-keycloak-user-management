@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.integration;
 
+import ca.bc.gov.hlth.mohums.model.Group;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -28,6 +29,8 @@ import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -92,13 +95,21 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void groupsAuthorized() throws Exception {
-        webTestClient
+    public void groupsAuthorizedWithDescriptionsCheck() throws Exception {
+        List<Object> groups = webTestClient
                 .get()
                 .uri("/groups")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk(); //HTTP 200
+                .expectStatus().isOk() //HTTP 200
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(groups).isNotEmpty();
+
+        groups.stream().map(g -> (LinkedHashMap)g)
+                .forEach(g -> Assertions.assertThat(g.get("description")).isNotNull());
     }
 
     @Test
