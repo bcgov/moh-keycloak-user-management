@@ -18,4 +18,5 @@ public class GroupsController {
     public ResponseEntity<Object> getGroups() {
         return webClientService.getGroups();
     }
+
 }
