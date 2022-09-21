@@ -12,7 +12,16 @@
             :label="group.name"
             :key="group.id"
             :disabled="isCheckboxDisabled(group.name)"
-        ></v-checkbox>
+        >
+        <template v-slot:label>
+          <v-tooltip right max-width="300px">
+            <template v-slot:activator="{ on }">
+              <span v-on="on">{{group.name}}</span>
+            </template>
+            <span class="white-space-fix">{{group.description}}</span>
+          </v-tooltip>         
+        </template>
+      </v-checkbox>
       </v-col>
     </v-row>
     <div class="my-6">
@@ -86,8 +95,10 @@ export default {
               type: "error"
             });
           });
-      const searchedUserGroups = userGroupResponses[0].data;
+      // Keycloak "Groups" API returns a different object structure than users/groups
+      // We need them to match for the checkboxes to map
       const allGroups = userGroupResponses[1].data;
+      const searchedUserGroups = userGroupResponses[0].data.map(({id, name, path}) => ({id, name, path, description : allGroups.find(g => g.id === id).description}))
       this.currentGroups.push(...searchedUserGroups);
       this.selectedGroups.push(...searchedUserGroups);
       if(this.adminRole === this.MANAGE_ALL_GROUPS){
@@ -101,9 +112,6 @@ export default {
       }else {
         this.allGroups.push(...searchedUserGroups);
       }
-      // Keycloak "Groups" API returns a different object structure than users/groups
-      // We need them to match for the checkboxes to map
-      this.allGroups = this.allGroups.map(({id,name,path})=>({id,name,path}));
     },
     updateUserGroups: function() {
       let groupUpdates = [];
@@ -141,3 +149,8 @@ export default {
   }
 }
 </script>
+<style>
+  .white-space-fix {
+    white-space: pre-wrap; /* or pre-line */
+  }
+</style>

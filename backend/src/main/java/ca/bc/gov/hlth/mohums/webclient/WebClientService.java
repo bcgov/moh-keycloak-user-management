@@ -1,12 +1,18 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import ca.bc.gov.hlth.mohums.model.Group;
+import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class WebClientService {
@@ -46,7 +52,16 @@ public class WebClientService {
 
     // Groups
     public ResponseEntity<Object> getGroups() {
-        return get(groupsPath, null);
+        ResponseEntity<Object> response = get(groupsPath, null);
+        ArrayList<LinkedHashMap> groups = (ArrayList<LinkedHashMap>) response.getBody();
+        List<Group> groupList = groups.stream().map(g -> getGroupById(g.get("id").toString())).collect(Collectors.toList());
+        return ResponseEntity.of(Optional.of(groupList));
+    }
+    // Group details
+    private Group getGroupById(String groupId) {
+        String path = String.format("%s/%s", groupsPath, groupId);
+        ResponseEntity<Object> response =  get(path, null);
+        return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap)response.getBody());
     }
 
     // Users
@@ -188,5 +203,4 @@ public class WebClientService {
                 .exchange()
                 .block().toEntity(Object.class).block();
     }
-
 }
