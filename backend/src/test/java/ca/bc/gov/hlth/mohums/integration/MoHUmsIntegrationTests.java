@@ -48,7 +48,7 @@ public class MoHUmsIntegrationTests {
 
     @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
     String clientSecret;
-
+    
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
     String masterRealmClientId;
 
@@ -56,7 +56,6 @@ public class MoHUmsIntegrationTests {
     String masterRealmClientSecret;
 
     @Value("${keycloak-moh.organizations-api-url}")
-
     private String organizationsApiBaseUrl;
 
     @Value("${spring.datasource.url}")

@@ -14,12 +14,12 @@ public class OrganizationsController {
     private final OrganizationsApiService webClientService;
 
 
-    public OrganizationsController(OrganizationsApiService webClientService){
+    public OrganizationsController(OrganizationsApiService webClientService) {
         this.webClientService = webClientService;
     }
 
     @GetMapping("/organizations")
-    public ResponseEntity<List<Object>> getOrganizations(){
+    public ResponseEntity<List<Object>> getOrganizations() {
         return webClientService.getOrganizations();
     }
 
