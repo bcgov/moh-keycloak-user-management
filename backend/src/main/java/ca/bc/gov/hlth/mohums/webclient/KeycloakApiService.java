@@ -3,7 +3,9 @@ package ca.bc.gov.hlth.mohums.webclient;
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -22,9 +24,11 @@ public class KeycloakApiService {
     private final String groupsPath = "/groups";
     private final String identityProviderLinksPath = "/federated-identity";
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
-
     private final ExternalApiCaller keycloakMohExternalApiCaller;
     private final ExternalApiCaller keycloakMasterExternalApiCaller;
+
+    @Value("${keycloak.organizations-api-url}")
+    private String organizationsApiBaseUrl;
 
     public KeycloakApiService(@Qualifier("keycloakMohApiCaller") ExternalApiCaller keycloakMohExternalApiCaller, @Qualifier("keycloakMasterApiCaller") ExternalApiCaller keycloakMasterExternalApiCaller) {
         this.keycloakMohExternalApiCaller = keycloakMohExternalApiCaller;
