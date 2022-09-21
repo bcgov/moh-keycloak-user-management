@@ -11,7 +11,7 @@
         <v-dialog v-model="editDialog" max-width="840px">
           <template v-slot:activator="{ on, attrs }">
             <v-btn id="new-sfds-auth-btn" color="primary" darkclass="mb-2" v-bind="attrs" v-on="on">
-              New Authorization
+              Add Mailbox Authorization
             </v-btn>
           </template>
           <v-card>
@@ -73,7 +73,7 @@
             </v-card-text>
             <v-card-actions>
               <v-btn id="save-sfds-auth-btn" class="primary" @click="saveSfdsAuthorization">
-                Save
+                Save Mailbox Authorization
               </v-btn>
               <v-btn outlined class="primary--text" @click="closeDialog">
                 Cancel
@@ -198,7 +198,7 @@ export default {
       return this.sfdsUses.filter(item => this.selectedClient.clientId == 'HSCIS' ? containsHscisLabel(item) : !containsHscisLabel(item))
     },
     dialogTitle () {
-      return this.editedIndex === -1 ? 'New Authorization' : 'Edit Authorization'
+      return this.editedIndex === -1 ? 'Add Mailbox Authorization' : 'Edit Mailbox Authorization'
     },
     mailboxRules() {
       const rules = []
