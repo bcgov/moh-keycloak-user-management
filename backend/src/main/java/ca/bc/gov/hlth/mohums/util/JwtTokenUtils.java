@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.util;
 
+import net.minidev.json.JSONArray;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
