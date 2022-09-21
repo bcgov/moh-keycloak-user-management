@@ -55,6 +55,10 @@ public class MoHUmsIntegrationTests {
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-secret}")
     String masterRealmClientSecret;
 
+    @Value("${keycloak-moh.organizations-api-url}")
+
+    private String organizationsApiBaseUrl;
+
     @Value("${spring.datasource.url}")
     private String url;
 
@@ -96,6 +100,22 @@ public class MoHUmsIntegrationTests {
         String access_token = responseBodyAsJson.get("access_token").toString();
 
         return access_token;
+    }
+
+    @Test
+    public void getOrganizations() throws Exception {
+       WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        List<Object> organizations = orgApiWebTestClient
+                .get()
+                .uri("/organizations")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk() //HTTP 200
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(organizations).isNotEmpty();
     }
 
     @Test

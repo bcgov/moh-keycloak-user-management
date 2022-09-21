@@ -31,7 +31,7 @@ export default {
       this.$store.commit("alert/dismissAlert");
     },
     checkPermission: function(requiredRoles) {
-      if (requiredRoles.every(role => this.$keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE'].roles.includes(role))) {
+      if (requiredRoles.every(role => this.$keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE']?.roles.includes(role))) {
         return true;
       }
       return false;
