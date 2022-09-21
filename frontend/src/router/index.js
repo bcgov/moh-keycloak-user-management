@@ -68,7 +68,7 @@ const router = new VueRouter({
 });
 
 const checkAccess = (requiredRoles) => {
-  return !!requiredRoles.every(r => keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE'].roles.includes(r))
+  return !!requiredRoles.every(r => keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE']?.roles.includes(r))
 }
 
 router.beforeEach((to, from, next) => {

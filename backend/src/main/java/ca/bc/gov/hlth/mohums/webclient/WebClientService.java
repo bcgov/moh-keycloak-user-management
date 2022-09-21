@@ -2,6 +2,7 @@ package ca.bc.gov.hlth.mohums.webclient;
 
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,24 @@ public class WebClientService {
 
     private final WebClient kcAuthorizedWebClient;
 
+    @Value("${keycloak.organizations-api-url}")
+    private String organizationsApiBaseUrl;
+
     public WebClientService(WebClient kcAuthorizedWebClient) {
         this.kcAuthorizedWebClient = kcAuthorizedWebClient;
+    }
+
+    public ResponseEntity<List<Object>> getOrganizations() {
+        WebClient orgClient = kcAuthorizedWebClient.mutate()
+                .baseUrl(organizationsApiBaseUrl)
+                .build();
+        ResponseEntity<List<Object>> response =  orgClient
+                .get()
+                .uri(t -> t.path("/organizations").build())
+                .exchange()
+                .block().toEntityList(Object.class).block();
+        return response;
+
     }
 
     // Clients
@@ -203,4 +220,6 @@ public class WebClientService {
                 .exchange()
                 .block().toEntity(Object.class).block();
     }
+
+
 }

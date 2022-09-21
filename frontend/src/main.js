@@ -7,6 +7,7 @@ import JsonCSV from 'vue-json-csv'
 import router from './router'
 import keycloak from './keycloak';
 import store from './store'
+import OrganizationsRepository from './api/OrganizationsRepository';
 
 Vue.config.productionTip = false
 Vue.prototype.$keycloak = keycloak;
@@ -16,8 +17,8 @@ keycloak.onAuthSuccess = async function () {
     try {
         const configResp = await fetch(process.env.BASE_URL + "config.json");
         Vue.prototype.$config = await configResp.json();
-        const organizationsResp = await fetch(process.env.BASE_URL + "organizations.json");
-        Vue.prototype.$organizations = await organizationsResp.json();  
+        const organizationsResp = await OrganizationsRepository.get();
+        Vue.prototype.$organizations = await organizationsResp?.data;  
     } catch (err) {
         console.error(err);
     } finally {

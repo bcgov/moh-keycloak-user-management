@@ -1,6 +1,5 @@
 package ca.bc.gov.hlth.mohums.integration;
 
-import ca.bc.gov.hlth.mohums.model.Group;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -29,7 +28,6 @@ import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +48,9 @@ public class MoHUmsIntegrationTests {
 
     @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
     String clientSecret;
+
+    @Value("${keycloak.organizations-api-url}")
+    private String organizationsApiBaseUrl;
 
     @Value("${spring.datasource.url}")
     private String url;
@@ -92,6 +93,22 @@ public class MoHUmsIntegrationTests {
         String access_token = responseBodyAsJson.get("access_token").toString();
 
         return access_token;
+    }
+
+    @Test
+    public void getOrganizations() throws Exception {
+       WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        List<Object> organizations = orgApiWebTestClient
+                .get()
+                .uri("/organizations")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk() //HTTP 200
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(organizations).isNotEmpty();
     }
 
     @Test
