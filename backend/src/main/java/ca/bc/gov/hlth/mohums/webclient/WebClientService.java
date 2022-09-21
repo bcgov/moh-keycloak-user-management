@@ -3,6 +3,7 @@ package ca.bc.gov.hlth.mohums.webclient;
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import net.minidev.json.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,14 +28,28 @@ public class WebClientService {
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
 
     private final WebClient kcMohAuthorizedWebClient;
-
     private final WebClient kcMasterAuthorizedWebClient;
 
     private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
 
+    @Value("${keycloak-moh.organizations-api-url}")
+    private String organizationsApiBaseUrl;
+
     public WebClientService(WebClient kcMohAuthorizedWebClient, WebClient kcMasterAuthorizedWebClient) {
         this.kcMohAuthorizedWebClient = kcMohAuthorizedWebClient;
         this.kcMasterAuthorizedWebClient = kcMasterAuthorizedWebClient;
+    }
+
+    public ResponseEntity<List<Object>> getOrganizations() {
+        WebClient orgClient = kcMohAuthorizedWebClient.mutate()
+                .baseUrl(organizationsApiBaseUrl)
+                .build();
+        ResponseEntity<List<Object>> response =  orgClient
+                .get()
+                .uri(t -> t.path("/organizations").build())
+                .exchange()
+                .block().toEntityList(Object.class).block();
+        return response;
     }
 
     // Clients
@@ -237,4 +252,6 @@ public class WebClientService {
                 .exchange()
                 .block().toEntity(Object.class).block();
     }
+
+
 }

@@ -136,8 +136,8 @@ export default {
   data() {
     return {
       organizations: this.$organizations.map((item) => {
-        item.value = `{"id":"${item.id}","name":"${item.name}"}`
-        item.text = `${item.id} - ${item.name}`;
+        item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`
+            item.text = `${item.organizationId} - ${item.name}`;
         return item;
       }),
       emailRules: [

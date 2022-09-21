@@ -1,6 +1,7 @@
 keycloak-moh:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
+  organizations-api-url: https://startup-sample-project.cey5wq-dev.nimbus.cloud.gov.bc.ca
 keycloak-master:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master
@@ -17,6 +18,8 @@ user-management-client:
     create-user: create-user
     manage-all-groups: manage-all-groups
     manage-own-groups: manage-own-groups
+    get-org: get-org
+    add-org: add-org
 config:
   # vanity-hostname: Sets the HTTP "Location" header for the service.
   vanity-hostname: "http://localhost:${server.port}"
