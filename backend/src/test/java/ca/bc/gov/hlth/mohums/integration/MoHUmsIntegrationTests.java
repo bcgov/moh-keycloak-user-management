@@ -316,7 +316,7 @@ public class MoHUmsIntegrationTests {
                                 .path("/users")
                                 .queryParam("first", 0)
                                 .queryParam("max", 2000)
-                                .queryParam("firstName", "Trevor")
+                                .queryParam("firstName", "Filip")
                                 .queryParam("lastLogAfter",
                                         LocalDate.now().minusMonths(1).format(DateTimeFormatter.ISO_DATE))
                                 .build()
