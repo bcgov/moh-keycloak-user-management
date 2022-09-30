@@ -28,6 +28,9 @@ public class WebClientConfig {
     @Value("${keycloak-master.admin-api-url}")
     private String keycloakMasterAdminBaseUrl;
 
+    @Value("${keycloak-moh.organizations-api-url}")
+    private String organizationsApiBaseUrl;
+
     @Value("${spring.codec.max-in-memory-size-mb}")
     int maxInMemorySize;
 
@@ -63,6 +66,13 @@ public class WebClientConfig {
         String registrationId = "keycloak-master";
         ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
         return createWebClient(oauth, keycloakMasterAdminBaseUrl);
+    }
+
+    @Bean("orgApiAuthorizedWebClient")
+    public WebClient organizationsApiWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        String registrationId = "keycloak-moh";
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
+        return createWebClient(oauth, organizationsApiBaseUrl);
     }
 
     private ServletOAuth2AuthorizedClientExchangeFilterFunction createOauthFilterFunction(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId) {

@@ -2,15 +2,11 @@ package ca.bc.gov.hlth.mohums.webclient;
 
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
-import net.minidev.json.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class WebClientService {
+public class KeycloakApiService {
 
     private final String clientsPath = "/clients";
     private final String usersPath = "/users";
@@ -27,56 +23,39 @@ public class WebClientService {
     private final String identityProviderLinksPath = "/federated-identity";
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
 
-    private final WebClient kcMohAuthorizedWebClient;
-    private final WebClient kcMasterAuthorizedWebClient;
+    private final ExternalApiCaller keycloakMohExternalApiCaller;
+    private final ExternalApiCaller keycloakMasterExternalApiCaller;
 
-    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-
-    @Value("${keycloak-moh.organizations-api-url}")
-    private String organizationsApiBaseUrl;
-
-    public WebClientService(WebClient kcMohAuthorizedWebClient, WebClient kcMasterAuthorizedWebClient) {
-        this.kcMohAuthorizedWebClient = kcMohAuthorizedWebClient;
-        this.kcMasterAuthorizedWebClient = kcMasterAuthorizedWebClient;
-    }
-
-    public ResponseEntity<List<Object>> getOrganizations() {
-        WebClient orgClient = kcMohAuthorizedWebClient.mutate()
-                .baseUrl(organizationsApiBaseUrl)
-                .build();
-        ResponseEntity<List<Object>> response =  orgClient
-                .get()
-                .uri(t -> t.path("/organizations").build())
-                .exchange()
-                .block().toEntityList(Object.class).block();
-        return response;
+    public KeycloakApiService(@Qualifier("keycloakMohApiCaller") ExternalApiCaller keycloakMohExternalApiCaller, @Qualifier("keycloakMasterApiCaller") ExternalApiCaller keycloakMasterExternalApiCaller) {
+        this.keycloakMohExternalApiCaller = keycloakMohExternalApiCaller;
+        this.keycloakMasterExternalApiCaller = keycloakMasterExternalApiCaller;
     }
 
     // Clients
     public ResponseEntity<List<Object>> getClients() {
-        return getList(clientsPath);
+        return keycloakMohExternalApiCaller.getList(clientsPath);
 
     }
 
     public ResponseEntity<Object> getClient(String clientId) {
         String path = clientsPath + "/" + clientId;
-        return get(path, null);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     public ResponseEntity<List<Object>> getClientRoles(String clientId) {
         String path = String.format("%s/%s/roles", clientsPath, clientId);
-        return getList(path, null);
+        return keycloakMohExternalApiCaller.getList(path, null);
     }
 
     public ResponseEntity<List<Object>> getUsersInRole(String clientId, String roleName,
                                                        MultiValueMap<String, String> queryParams) {
         String path = String.format("%s/%s/roles/%s/users", clientsPath, clientId, roleName);
-        return getList(path, queryParams);
+        return keycloakMohExternalApiCaller.getList(path, queryParams);
     }
 
     // Groups
     public ResponseEntity<Object> getGroups() {
-        ResponseEntity<Object> response = get(groupsPath, null);
+        ResponseEntity<Object> response = keycloakMohExternalApiCaller.get(groupsPath, null);
         ArrayList<LinkedHashMap> groups = (ArrayList<LinkedHashMap>) response.getBody();
         List<Group> groupList = groups.stream().map(g -> getGroupById(g.get("id").toString())).collect(Collectors.toList());
         return ResponseEntity.of(Optional.of(groupList));
@@ -85,81 +64,81 @@ public class WebClientService {
     // Group details
     private Group getGroupById(String groupId) {
         String path = String.format("%s/%s", groupsPath, groupId);
-        ResponseEntity<Object> response = get(path, null);
+        ResponseEntity<Object> response = keycloakMohExternalApiCaller.get(path, null);
         return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap) response.getBody());
     }
 
     // Users
     public ResponseEntity<List<Object>> getUsers(MultiValueMap<String, String> queryParams) {
-        return getList(usersPath, queryParams);
+        return keycloakMohExternalApiCaller.getList(usersPath, queryParams);
     }
 
     public ResponseEntity<Object> getUser(String userId) {
         String path = usersPath + "/" + userId;
-        return get(path, null);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     public ResponseEntity<Object> createUser(Object data) {
-        return post(usersPath, data);
+        return keycloakMohExternalApiCaller.post(usersPath, data);
     }
 
     public ResponseEntity<Object> updateUser(String userId, Object data) {
         String path = usersPath + "/" + userId;
-        return put(path, data);
+        return keycloakMohExternalApiCaller.put(path, data);
     }
 
     public ResponseEntity<Object> getAssignedUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
-        return get(path, null);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     public ResponseEntity<Object> getAvailableUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/available";
-        return get(path, null);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     public ResponseEntity<Object> getEffectiveUserClientRoleMappings(String userId, String clientId) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId + "/composite";
-        return get(path, null);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     public ResponseEntity<Object> addUserClientRole(String userId, String clientId, Object data) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
-        return post(path, data);
+        return keycloakMohExternalApiCaller.post(path, data);
     }
 
     public ResponseEntity<Object> deleteUserClientRole(String userId, String clientId, Object data) {
         String path = usersPath + "/" + userId + userClientRoleMappingPath + clientId;
-        return delete(path, data);
+        return keycloakMohExternalApiCaller.delete(path, data);
     }
 
     public ResponseEntity<Object> getUserGroups(String userId) {
         String path = usersPath + "/" + userId + groupsPath;
-        return get(path, null);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     public ResponseEntity<Object> addUserGroups(String userId, String groupId) {
         String path = usersPath + "/" + userId + groupsPath + "/" + groupId;
-        return put(path);
+        return keycloakMohExternalApiCaller.put(path);
     }
 
     public ResponseEntity<Object> removeUserGroups(String userId, String groupId) {
         String path = usersPath + "/" + userId + groupsPath + "/" + groupId;
-        return delete(path);
+        return keycloakMohExternalApiCaller.delete(path);
     }
 
     // Events
     public ResponseEntity<Object> getEvents(MultiValueMap<String, String> allParams) {
-        return get("/events", allParams);
+        return keycloakMohExternalApiCaller.get("/events", allParams);
     }
 
     public ResponseEntity<Object> getAdminEvents(MultiValueMap<String, String> allParams) {
-        return get("/admin-events", allParams);
+        return keycloakMohExternalApiCaller.get("/admin-events", allParams);
     }
 
     public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
         String path = usersPath + "/" + userId + identityProviderLinksPath + "/" + identityProvider;
-        ResponseEntity<Object> deleteIDPLinkResponse = delete(path);
+        ResponseEntity<Object> deleteIDPLinkResponse = keycloakMohExternalApiCaller.delete(path);
         if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponse)) {
             return deleteUserFromIdpRealm(userIdIdpRealm, identityProvider);
         } else {
@@ -169,89 +148,10 @@ public class WebClientService {
 
     private ResponseEntity<Object> deleteUserFromIdpRealm(String userIdIdpRealm, String identityProvider) {
         String path = "/" + identityProvider + usersPath + "/" + userIdIdpRealm;
-        return kcMasterAuthorizedWebClient
-                .delete()
-                .uri(t -> t.path(path).build())
-                .exchange()
-                .block().toEntity(Object.class).block();
+        return keycloakMasterExternalApiCaller.delete(path);
     }
 
     private boolean identityProviderLinkDeletedSuccessfully(ResponseEntity<Object> deleteIdentityProviderLinkResponse) {
         return deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT);
     }
-
-    private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
-        ClientResponse o = kcMohAuthorizedWebClient
-                .get()
-                .uri(t -> t
-                        .path(path)
-                        .queryParams(queryParams)
-                        .build())
-                .exchange().block();
-        return o.toEntity(Object.class).block();
-    }
-
-    private ResponseEntity<List<Object>> getList(String path, MultiValueMap<String, String> queryParams) {
-        return kcMohAuthorizedWebClient
-                .get()
-                .uri(t -> t
-                        .path(path)
-                        .queryParams(queryParams)
-                        .build())
-                .exchange()
-                .block().toEntityList(Object.class).block();
-    }
-
-    private ResponseEntity<List<Object>> getList(String path) {
-        return kcMohAuthorizedWebClient
-                .get()
-                .uri(t -> t.path(path).build())
-                .exchange()
-                .block().toEntityList(Object.class).block();
-    }
-
-    private ResponseEntity<Object> post(String path, Object data) {
-        return kcMohAuthorizedWebClient
-                .post()
-                .uri(t -> t.path(path).build())
-                .bodyValue(data)
-                .exchange()
-                .block().toEntity(Object.class).block();
-    }
-
-    private ResponseEntity<Object> put(String path, Object data) {
-        return kcMohAuthorizedWebClient
-                .put()
-                .uri(t -> t.path(path).build())
-                .bodyValue(data)
-                .exchange()
-                .block().toEntity(Object.class).block();
-    }
-
-    private ResponseEntity<Object> put(String path) {
-        return kcMohAuthorizedWebClient
-                .put()
-                .uri(t -> t.path(path).build())
-                .exchange()
-                .block().toEntity(Object.class).block();
-    }
-
-    private ResponseEntity<Object> delete(String path) {
-        return kcMohAuthorizedWebClient
-                .delete()
-                .uri(t -> t.path(path).build())
-                .exchange()
-                .block().toEntity(Object.class).block();
-    }
-
-    private ResponseEntity<Object> delete(String path, Object data) {
-        return kcMohAuthorizedWebClient
-                .method(HttpMethod.DELETE)
-                .uri(t -> t.path(path).build())
-                .bodyValue(data)
-                .exchange()
-                .block().toEntity(Object.class).block();
-    }
-
-
 }
