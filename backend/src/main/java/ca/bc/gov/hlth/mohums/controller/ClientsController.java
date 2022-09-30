@@ -1,34 +1,31 @@
 package ca.bc.gov.hlth.mohums.controller;
 
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ClientsController {
 
-    private final WebClientService webClientService;
+    private final KeycloakApiService keycloakApiService;
 
-    public ClientsController(WebClientService webClientService) {
-        this.webClientService = webClientService;
+    public ClientsController(KeycloakApiService keycloakApiService) {
+        this.keycloakApiService = keycloakApiService;
     }
 
     @GetMapping("/clients")
     public ResponseEntity<List<Object>> getClients(@RequestHeader("Authorization") String token) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
         List<String> authorizedClients = acp.parse(token);
-        ResponseEntity<List<Object>> clients = webClientService.getClients();
+        ResponseEntity<List<Object>> clients = keycloakApiService.getClients();
         return ResponseEntity.status(clients.getStatusCode())
                 .headers(clients.getHeaders())
                 .body(clients.getBody().stream()
@@ -40,7 +37,7 @@ public class ClientsController {
     public ResponseEntity<List<Object>> getClientRoles(
             @PathVariable String clientId
     ) {
-        return webClientService.getClientRoles(clientId);
+        return keycloakApiService.getClientRoles(clientId);
     }
 
     @GetMapping("/clients/{clientId}/roles/{roleName}/users")
@@ -57,7 +54,7 @@ public class ClientsController {
         first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
         max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
 
-        return webClientService.getUsersInRole(clientId, roleName, queryParams);
+        return keycloakApiService.getUsersInRole(clientId, roleName, queryParams);
     }
 
 }
