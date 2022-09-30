@@ -4,7 +4,7 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
-import ca.bc.gov.hlth.mohums.webclient.WebClientService;
+import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -37,12 +37,12 @@ public class UsersController {
     @Autowired
     private PermissionsValidator permissionsValidator;
 
-    private final WebClientService webClientService;
+    private final KeycloakApiService keycloakApiService;
 
     private final String vanityHostname;
 
-    public UsersController(WebClientService webClientService, @Value("${config.vanity-hostname}") String vanityHostname) {
-        this.webClientService = webClientService;
+    public UsersController(KeycloakApiService keycloakApiService, @Value("${config.vanity-hostname}") String vanityHostname) {
+        this.keycloakApiService = keycloakApiService;
         this.vanityHostname = vanityHostname;
     }
 
@@ -74,7 +74,7 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
-        ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
+        ResponseEntity<List<Object>> searchResults = keycloakApiService.getUsers(queryParams);
 
         List<Object> users = searchResults.getBody();
 
@@ -147,7 +147,7 @@ public class UsersController {
         Map<String, String> userRoleMap = new HashMap<>();
         if (selectedRoles.isEmpty()) {
             //If no roles selected, grab all roles for the selected client
-            ResponseEntity res = webClientService.getClientRoles(clientId);
+            ResponseEntity res = keycloakApiService.getClientRoles(clientId);
             List<Map> allRoles = (List) res.getBody();
             roles = allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
         } else {
@@ -156,7 +156,7 @@ public class UsersController {
         for (String role : roles) {
             MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
             queryParams.add("max", "-1");
-            ResponseEntity res = webClientService.getUsersInRole(clientId, role, queryParams);
+            ResponseEntity res = keycloakApiService.getUsersInRole(clientId, role, queryParams);
             List<Map> usersInRole = (List) res.getBody();
             for (Map u : usersInRole) {
                 String key = (String) u.get("id");
@@ -180,12 +180,12 @@ public class UsersController {
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<Object> getUser(@PathVariable String userId) {
-        return webClientService.getUser(userId);
+        return keycloakApiService.getUser(userId);
     }
 
     @PostMapping("/users")
     public ResponseEntity<Object> createUser(@RequestBody Object body) {
-        ResponseEntity<Object> post = webClientService.createUser(body);
+        ResponseEntity<Object> post = keycloakApiService.createUser(body);
         return ResponseEntity.status(post.getStatusCode())
                 .headers(convertLocationHeader(post.getHeaders()))
                 .body(post.getBody());
@@ -193,7 +193,7 @@ public class UsersController {
 
     @PutMapping("/users/{userId}")
     public ResponseEntity<Object> updateUser(@PathVariable String userId, @RequestBody Object body) {
-        ResponseEntity<Object> post = webClientService.updateUser(userId, body);
+        ResponseEntity<Object> post = keycloakApiService.updateUser(userId, body);
         return ResponseEntity.status(post.getStatusCode())
                 .headers(post.getHeaders())
                 .body(post.getBody());
@@ -206,7 +206,7 @@ public class UsersController {
             @PathVariable String clientGuid) {
 
         if (isAuthorizedToViewClient(token, clientGuid)) {
-            return webClientService.getAssignedUserClientRoleMappings(userId, clientGuid);
+            return keycloakApiService.getAssignedUserClientRoleMappings(userId, clientGuid);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to view user details for this client");
         }
@@ -219,7 +219,7 @@ public class UsersController {
             @PathVariable String clientGuid) {
 
         if (isAuthorizedToViewClient(token, clientGuid)) {
-            return webClientService.getAvailableUserClientRoleMappings(userId, clientGuid);
+            return keycloakApiService.getAvailableUserClientRoleMappings(userId, clientGuid);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to view user details for this client");
         }
@@ -232,7 +232,7 @@ public class UsersController {
             @PathVariable String clientGuid) {
 
         if (isAuthorizedToViewClient(token, clientGuid)) {
-            return webClientService.getEffectiveUserClientRoleMappings(userId, clientGuid);
+            return keycloakApiService.getEffectiveUserClientRoleMappings(userId, clientGuid);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to view user details for this client");
         }
@@ -245,7 +245,7 @@ public class UsersController {
             @PathVariable String clientGuid,
             @RequestBody Object body) {
         if (isAuthorizedToViewClient(token, clientGuid)) {
-            return webClientService.addUserClientRole(userId, clientGuid, body);
+            return keycloakApiService.addUserClientRole(userId, clientGuid, body);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
         }
@@ -258,7 +258,7 @@ public class UsersController {
             @PathVariable String clientGuid,
             @RequestBody Object body) {
         if (isAuthorizedToViewClient(token, clientGuid)) {
-            return webClientService.deleteUserClientRole(userId, clientGuid, body);
+            return keycloakApiService.deleteUserClientRole(userId, clientGuid, body);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
         }
@@ -271,7 +271,7 @@ public class UsersController {
         Optional<String> oneYearAgoParam = Optional.of(oneYearAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
 
         MultiValueMap<String, String> params = buildQueryEventsByUser(userId, 0, maxRecords, oneYearAgoParam, Optional.empty());
-        List<Map<String, Object>> logins = (List<Map<String, Object>>) webClientService.getEvents(params).getBody();
+        List<Map<String, Object>> logins = (List<Map<String, Object>>) keycloakApiService.getEvents(params).getBody();
 
         Map<String, Long> mostRecentLogins = new HashMap<>();
         for (Map<String, Object> login : logins) {
@@ -287,7 +287,7 @@ public class UsersController {
 
     @GetMapping("/users/{userId}/groups")
     public ResponseEntity<Object> getUserGroups(@PathVariable String userId) {
-        return webClientService.getUserGroups(userId);
+        return keycloakApiService.getUserGroups(userId);
     }
 
     @PutMapping("/users/{userId}/groups/{groupId}")
@@ -296,7 +296,7 @@ public class UsersController {
                                                 @RequestBody String groupName,
                                                 @AuthenticationPrincipal Jwt jwt) {
         return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
-                webClientService.addUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Add user to group - permission denied");
+                keycloakApiService.addUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Add user to group - permission denied");
     }
 
     @DeleteMapping("/users/{userId}/groups/{groupId}")
@@ -305,7 +305,7 @@ public class UsersController {
                                                    @RequestBody String groupName,
                                                    @AuthenticationPrincipal Jwt jwt) {
         return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
-                webClientService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
+                keycloakApiService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");
@@ -348,7 +348,7 @@ public class UsersController {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
         List<String> authorizedClients = acp.parse(token);
 
-        LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) webClientService.getClient(clientGuid).getBody();
+        LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) keycloakApiService.getClient(clientGuid).getBody();
         // TODO If the client doesn't exist return a 401 (should this be a 404 which is the actual KC response)
         if (client.get("clientId") != null) {
             return authorizedClients.contains(client.get("clientId").toLowerCase());
