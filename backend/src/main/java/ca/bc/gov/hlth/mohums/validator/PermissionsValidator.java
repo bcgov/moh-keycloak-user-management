@@ -14,8 +14,8 @@ public class PermissionsValidator {
     private String manageAllGroupsRole;
     public boolean validateGroupManagementPermission(Jwt requesterToken, String groupId){
         if(!canManageAllGroups(requesterToken)){
-            List<String> a = JwtTokenUtils.getUserGroups(requesterToken);
-            return a.contains(groupId);
+            List<String> userGroups = JwtTokenUtils.getUserGroups(requesterToken);
+            return userGroups.contains(groupId);
         }
         return true;
     }

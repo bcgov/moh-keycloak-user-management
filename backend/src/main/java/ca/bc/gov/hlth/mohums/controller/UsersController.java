@@ -95,12 +95,13 @@ public class UsersController {
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
             String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
+            Optional<String> lastLogBeforeCriteria = Optional.empty();
             if (lastLogAfter.isPresent()) {
                 Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
                 customDateCriteria = " AND event_time > " + lastLogAfterEpoch;
             } else {
                 Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                customDateCriteria = customDateCriteria + " AND event_time < " + lastLogBeforeEpoch;
+                lastLogBeforeCriteria = Optional.of(" HAVING MAX(event_time) < " + lastLogBeforeEpoch);
             }
 
             String sql
@@ -109,6 +110,9 @@ public class UsersController {
                     + " WHERE type='LOGIN'"
                     + "   AND user_id IS NOT NULL" + customDateCriteria
                     + " GROUP BY user_id";
+            if(lastLogBeforeCriteria.isPresent()){
+                sql += lastLogBeforeCriteria.get();
+            }
             List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
 
             Map<String, Object> usersLastLogin = new HashMap<>();

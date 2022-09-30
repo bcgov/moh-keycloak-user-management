@@ -63,17 +63,6 @@ export default {
       const isPartOfGroup = this.ownGroups.some(group => group.name === groupName);
       return canManageOwnGroups && !isPartOfGroup;
     },
-    deleteDuplicateGroups: function(groups){
-      const uniqueGroupIds = [];
-      return groups.filter(group => {
-          const isDuplicate = uniqueGroupIds.includes(group.id);
-          if(!isDuplicate){
-            uniqueGroupIds.push(group.id);
-            return true;
-          }
-          return false;
-        });
-    },
     checkAdminPermissions: function() {
       if(this.$keycloak.tokenParsed.resource_access['USER-MANAGEMENT-SERVICE']?.roles.includes(this.MANAGE_ALL_GROUPS)){
         this.adminRole = this.MANAGE_ALL_GROUPS;
@@ -104,10 +93,8 @@ export default {
       if(this.adminRole === this.MANAGE_ALL_GROUPS){
         this.allGroups.push(...allGroups);
       }else if(this.adminRole === this.MANAGE_OWN_GROUPS){
-        const ownGroups = allGroups.filter(group => this.$keycloak.tokenParsed.groups?.some(name => name === group.name));
-        const uniqueCombinedGroups = this.deleteDuplicateGroups([...ownGroups, ...searchedUserGroups]);
-    
-        this.allGroups.push(...uniqueCombinedGroups);
+        const ownGroups = allGroups.filter(group => this.$keycloak.tokenParsed.groups?.some(name => name === group.name));    
+        this.allGroups.push(...ownGroups);
         this.ownGroups.push(...ownGroups);
       }else {
         this.allGroups.push(...searchedUserGroups);
