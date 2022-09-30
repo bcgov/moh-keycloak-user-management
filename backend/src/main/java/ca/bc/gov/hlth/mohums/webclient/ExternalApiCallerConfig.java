@@ -13,6 +13,7 @@ public class ExternalApiCallerConfig {
         return new ExternalApiCaller(organizationsApiWebClient);
     }
 
+<<<<<<< HEAD
     @Bean("keycloakMohApiCaller")
     public ExternalApiCaller keycloakMohApiCaller(@Qualifier("kcMohAuthorizedWebClient") WebClient keycloakMohWebClient){
         return new ExternalApiCaller(keycloakMohWebClient);
@@ -21,5 +22,10 @@ public class ExternalApiCallerConfig {
     @Bean("keycloakMasterApiCaller")
     public ExternalApiCaller keycloakMasterApiCaller(@Qualifier("kcMasterAuthorizedWebClient") WebClient keycloakMasterWebClient){
         return new ExternalApiCaller(keycloakMasterWebClient);
+=======
+    @Bean("keycloakApiCaller")
+    public ExternalApiCaller keycloakApiCaller(@Qualifier("kcAuthorizedWebClient") WebClient keycloakWebClient){
+        return new ExternalApiCaller(keycloakWebClient);
+>>>>>>> 318f7ac (WebClientService refactor)
     }
 }

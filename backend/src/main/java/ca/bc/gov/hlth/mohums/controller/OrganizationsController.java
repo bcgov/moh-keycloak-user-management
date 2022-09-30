@@ -12,8 +12,7 @@ import java.util.List;
 public class OrganizationsController {
 
     private final OrganizationsApiService webClientService;
-
-
+    
     public OrganizationsController(OrganizationsApiService webClientService) {
         this.webClientService = webClientService;
     }

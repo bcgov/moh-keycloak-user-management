@@ -31,6 +31,9 @@ public class WebClientConfig {
     @Value("${keycloak-moh.organizations-api-url}")
     private String organizationsApiBaseUrl;
 
+    @Value("${keycloak.organizations-api-url}")
+    private String organizationsApiBaseUrl;
+
     @Value("${spring.codec.max-in-memory-size-mb}")
     int maxInMemorySize;
 
@@ -52,6 +55,7 @@ public class WebClientConfig {
         return authorizedClientManager;
     }
 
+<<<<<<< HEAD
     @Bean("kcMohAuthorizedWebClient")
     public WebClient webClient(OAuth2AuthorizedClientManager authorizedClientManager) {
 
@@ -94,6 +98,16 @@ public class WebClientConfig {
                                 .maxInMemorySize(maxInMemorySize * 1024 * 1024))
                         .build())
                 .build();
+=======
+    @Bean("kcAuthorizedWebClient")
+    public WebClient keycloakWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        return buildWebClient(authorizedClientManager, keycloakAdminBaseUrl);
+    }
+
+    @Bean("orgApiAuthorizedWebClient")
+    public WebClient organizationsApiWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+       return buildWebClient(authorizedClientManager, organizationsApiBaseUrl);
+>>>>>>> 318f7ac (WebClientService refactor)
     }
 
     /*
@@ -105,6 +119,25 @@ public class WebClientConfig {
             c.headers().forEach((n, v) -> webClientLogger.debug("request header {}={}", n, v));
             return Mono.just(c);
         });
+    }
+
+    private WebClient buildWebClient(OAuth2AuthorizedClientManager authorizedClientManager, String baseUrl){
+        String registrationId = "keycloak";
+
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth
+                = new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        oauth.setDefaultClientRegistrationId(registrationId);
+
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .filter(oauth)
+                .filter(logRequest())
+                .exchangeStrategies(ExchangeStrategies.builder()
+                        .codecs(configurer -> configurer
+                                .defaultCodecs()
+                                .maxInMemorySize(maxInMemorySize * 1024 * 1024))
+                        .build())
+                .build();
     }
 
 }

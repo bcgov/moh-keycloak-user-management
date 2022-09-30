@@ -399,7 +399,6 @@ public class UsersController {
         if (matcher.matches() && matcher.groupCount() == 1) {
             outHeaders.setLocation(URI.create(vanityHostname + "/users/" + matcher.group(1)));
         }
-
         return outHeaders;
     }
 
