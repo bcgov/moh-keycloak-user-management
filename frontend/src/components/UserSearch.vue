@@ -191,7 +191,7 @@
       </v-skeleton-loader>
       <div v-if="selectedClientId" v-show="rolesLoaded">
         <v-row no-gutters>
-          <v-col class="col-4">
+          <v-col class="col-12">
             <v-row no-gutters>
               <v-col class="col-12">
                 <label>Roles</label>
@@ -206,10 +206,15 @@
                       :value="clientRoles[roleArrayPosition(col, item)]"
                       :key="clientRoles[roleArrayPosition(col, item)].name"
                       >
-                    <span slot="label" class="tooltip" :id="'role-' + roleArrayPosition(col,item)">
-                      {{clientRoles[roleArrayPosition(col, item)].name}}
-                      <span v-show="clientRoles[roleArrayPosition(col, item)].description" class="tooltiptext"> {{ clientRoles[roleArrayPosition(col, item)].description }} </span>
-                    </span>
+                      <template v-slot:label>
+                        <v-tooltip v-if="clientRoles[roleArrayPosition(col, item)].description" right max-width="300px">
+                          <template v-slot:activator="{ on }">
+                            <span v-on="on">{{clientRoles[roleArrayPosition(col, item)].name}}</span>
+                          </template>
+                          <span class="white-space-fix">{{clientRoles[roleArrayPosition(col, item)].description}}</span>
+                        </v-tooltip> 
+                        <span v-else>{{clientRoles[roleArrayPosition(col, item)].name}}</span>        
+                      </template>
                   </v-checkbox>
                 </span>
               </v-col>
