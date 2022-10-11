@@ -66,6 +66,7 @@ public class UsersController {
             @RequestParam Optional<String[]> selectedRoles) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
+        //include query params
         briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
                 briefRepresentationValue.toString()));
         email.ifPresent(emailValue -> queryParams.add("email", emailValue));
@@ -76,10 +77,12 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
+        //get users
         ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
 
         List<Object> users = searchResults.getBody();
 
+        //filter users by organizations
         if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             users = filteredUsers;
@@ -93,6 +96,7 @@ public class UsersController {
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
         }
 
+        //filter users basted on login dates
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
             String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
             Optional<String> lastLogBeforeCriteria = Optional.empty();
