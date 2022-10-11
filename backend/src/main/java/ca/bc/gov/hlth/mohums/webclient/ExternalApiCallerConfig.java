@@ -14,7 +14,7 @@ public class ExternalApiCallerConfig {
     }
 
     @Bean("keycloakMohApiCaller")
-    public ExternalApiCaller keycloakMohApiCaller(@Qualifier("kcAuthorizedWebClient") WebClient keycloakMohWebClient){
+    public ExternalApiCaller keycloakMohApiCaller(@Qualifier("kcMohAuthorizedWebClient") WebClient keycloakMohWebClient){
         return new ExternalApiCaller(keycloakMohWebClient);
     }
 
