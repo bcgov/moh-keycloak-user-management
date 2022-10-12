@@ -66,7 +66,6 @@ public class UsersController {
             @RequestParam Optional<String[]> selectedRoles) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
-        //include query params
         briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
                 briefRepresentationValue.toString()));
         email.ifPresent(emailValue -> queryParams.add("email", emailValue));
@@ -77,12 +76,10 @@ public class UsersController {
         search.ifPresent(searchValue -> queryParams.add("search", searchValue));
         username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
 
-        //get users
         ResponseEntity<List<Object>> searchResults = webClientService.getUsers(queryParams);
 
         List<Object> users = searchResults.getBody();
 
-        //filter users by organizations
         if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
             List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
             users = filteredUsers;
@@ -96,7 +93,6 @@ public class UsersController {
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
         }
 
-        //filter users basted on login dates
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
             String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
             Optional<String> lastLogBeforeCriteria = Optional.empty();
@@ -107,16 +103,31 @@ public class UsersController {
                 Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
                 lastLogBeforeCriteria = Optional.of(" HAVING MAX(event_time) < " + lastLogBeforeEpoch);
             }
+            Optional<String> clientAndRolesJoins = Optional.empty();
+            Optional<String> clientAndRolesCriteria = Optional.empty();
+            if(clientName.isPresent()){
+                clientAndRolesJoins = Optional.of(
+                        " JOIN KEYCLOAK.USER_ROLE_MAPPING urm ON urm.USER_ID = ee.USER_ID"
+                                + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
+                                + " JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT"
+                );
+                clientAndRolesCriteria = Optional.of(
+                        " AND ee.CLIENT_ID = " + "'" + clientName.get() + "'"
+                        + " AND kr.NAME IN " + listOfRoles(selectedRoles, clientId.get())
+                );
+            }
+            String doNotInclude = "";
 
             String sql
-                    = "SELECT user_id, MAX(event_time) AS last_login"
-                    + "  FROM keycloak.event_entity"
-                    + " WHERE type='LOGIN'"
-                    + "   AND user_id IS NOT NULL" + customDateCriteria
-                    + " GROUP BY user_id";
-            if(lastLogBeforeCriteria.isPresent()){
-                sql += lastLogBeforeCriteria.get();
-            }
+                    = "SELECT ee.user_id, MAX(ee.event_time) AS last_login"
+                    + " FROM keycloak.event_entity ee"
+                    + clientAndRolesJoins.orElse(doNotInclude)
+                    + " WHERE ee.type='LOGIN'"
+                    + " AND ee.user_id IS NOT NULL" + customDateCriteria
+                    + clientAndRolesCriteria.orElse(doNotInclude)
+                    + " GROUP BY ee.user_id"
+                    + lastLogBeforeCriteria.orElse(doNotInclude);
+
             List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
 
             Map<String, Object> usersLastLogin = new HashMap<>();
@@ -138,6 +149,25 @@ public class UsersController {
         return searchResults;
     }
 
+    private String listOfRoles(Optional<String[]> selectedRoles, String clientId) {
+        String[] roles = getSelectedRolesForChosenClient(selectedRoles, clientId);
+        String rolesString = Arrays.stream(roles).map(role -> "'" + role + "'").collect(Collectors.joining(","));
+        return "(" + rolesString + ")";
+    }
+
+    private String[] getSelectedRolesForChosenClient(Optional<String[]> selectedRoles, String clientId) {
+        String[] roles = null;
+        if (selectedRoles.isEmpty()) {
+            //If no roles selected, grab all roles for the selected client
+            ResponseEntity res = webClientService.getClientRoles(clientId);
+            List<Map> allRoles = (List) res.getBody();
+            roles = allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
+        } else {
+            roles = selectedRoles.get();
+        }
+        return roles;
+    }
+
     /**
      * Filter the results by the selected clientId, and optionally the list of selected roles If no roles selected, use
      * all roles for that client.
@@ -149,16 +179,8 @@ public class UsersController {
      */
     private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId, List users) {
         List<Object> filteredUsers = new ArrayList<>();
-        String[] roles = null;
+        String[] roles = getSelectedRolesForChosenClient(selectedRoles, clientId);
         Map<String, String> userRoleMap = new HashMap<>();
-        if (selectedRoles.isEmpty()) {
-            //If no roles selected, grab all roles for the selected client
-            ResponseEntity res = webClientService.getClientRoles(clientId);
-            List<Map> allRoles = (List) res.getBody();
-            roles = allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
-        } else {
-            roles = selectedRoles.get();
-        }
         for (String role : roles) {
             MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
             queryParams.add("max", "-1");
