@@ -31,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -102,8 +103,8 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getOrganizations() throws Exception {
-       WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+    public void getOrganizations() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         List<Object> organizations = orgApiWebTestClient
                 .get()
                 .uri("/organizations")
@@ -115,6 +116,86 @@ public class MoHUmsIntegrationTests {
                 .getResponseBody();
 
         Assertions.assertThat(organizations).isNotEmpty();
+    }
+
+    @Test
+    public void getOrganizationById() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        Object organization = orgApiWebTestClient
+                .get()
+                .uri("/organizations/11301")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk() //HTTP 200
+                .expectBody(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(organization).isNotNull();
+    }
+
+    @Test
+    public void getOrganizationByIdNotFound() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        orgApiWebTestClient
+                .get()
+                .uri("/organizations/invalidOrganizationId")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    public void addOrganizationSuccess() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        String organizationId = UUID.randomUUID().toString();
+        orgApiWebTestClient
+                .post()
+                .uri("/organizations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(String.format("{\"organizationId\":\"%s\",\"name\":\"Added by integration test\"}", organizationId))
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isCreated();
+    }
+
+    @Test
+    public void addOrganizationFailure() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        orgApiWebTestClient
+                .post()
+                .uri("/organizations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"organizationId\":\"11301\",\"name\":\"Hi Dad\"}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    public void editOrganizationFailure() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        orgApiWebTestClient
+                .put()
+                .uri("/organizations/12345678")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"organizationId\":\"12345678\",\"name\":\"Test changed it\"}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    public void editOrganizationSuccess() {
+        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
+        orgApiWebTestClient
+                .post()
+                .uri("/organizations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"organizationId\":\"11301\",\"name\":\"Hi Dad\"}")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -131,7 +212,7 @@ public class MoHUmsIntegrationTests {
 
         Assertions.assertThat(groups).isNotEmpty();
 
-        groups.stream().map(g -> (LinkedHashMap)g)
+        groups.stream().map(g -> (LinkedHashMap) g)
                 .forEach(g -> Assertions.assertThat(g.get("description")).isNotNull());
     }
 
@@ -246,10 +327,10 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().value(status -> Assertions.assertThat(status).isIn(
-                // CREATED is returned when the user does not already exist.
-                HttpStatus.CREATED.value(),
-                // CONFLICT is returned when the user already exists.
-                HttpStatus.CONFLICT.value()));
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
 
         // ... and another test user with the same e-mail but no Org. ID, ...
         webTestClient
@@ -260,19 +341,19 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().value(status -> Assertions.assertThat(status).isIn(
-                // CREATED is returned when the user does not already exist.
-                HttpStatus.CREATED.value(),
-                // CONFLICT is returned when the user already exists.
-                HttpStatus.CONFLICT.value()));
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
 
         // ... when a search is made on that e-mail address AND filtering by Org. ID, ...
         final List<Object> filteredUsers = webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                .path("/users")
-                .queryParam("email", "test@domain.com")
-                .queryParam("org", "00001763")
-                .build())
+                        .path("/users")
+                        .queryParam("email", "test@domain.com")
+                        .queryParam("org", "00001763")
+                        .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -284,7 +365,7 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(filteredUsers).isNotEmpty()
                 // with username = "testWithoutOrgId"
                 .anySatisfy(filteredUser -> Assertions.assertThat(filteredUser)
-                .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
+                        .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
     }
 
     @Test
@@ -292,9 +373,9 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                .path("/users")
-                .queryParam("org", "non_existing_org_id")
-                .build())
+                        .path("/users")
+                        .queryParam("org", "non_existing_org_id")
+                        .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
