@@ -105,7 +105,7 @@ public class UsersController {
             }
             Optional<String> clientAndRolesJoins = Optional.empty();
             Optional<String> clientAndRolesCriteria = Optional.empty();
-            if(clientName.isPresent()){
+            if(clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())){
                 clientAndRolesJoins = Optional.of(
                         " JOIN KEYCLOAK.USER_ROLE_MAPPING urm ON urm.USER_ID = ee.USER_ID"
                                 + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
@@ -116,17 +116,17 @@ public class UsersController {
                         + " AND kr.NAME IN " + listOfRoles(selectedRoles, clientId.get())
                 );
             }
-            String doNotInclude = "";
+            final String DO_NOT_INCLUDE = "";
 
             String sql
                     = "SELECT ee.user_id, MAX(ee.event_time) AS last_login"
                     + " FROM keycloak.event_entity ee"
-                    + clientAndRolesJoins.orElse(doNotInclude)
+                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
                     + " WHERE ee.type='LOGIN'"
                     + " AND ee.user_id IS NOT NULL" + customDateCriteria
-                    + clientAndRolesCriteria.orElse(doNotInclude)
+                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
                     + " GROUP BY ee.user_id"
-                    + lastLogBeforeCriteria.orElse(doNotInclude);
+                    + lastLogBeforeCriteria.orElse(DO_NOT_INCLUDE);
 
             List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
 
@@ -149,6 +149,11 @@ public class UsersController {
         return searchResults;
     }
 
+    private boolean clientNameAndIdAreValid(String clientName, String clientId) {
+        LinkedHashMap client = (LinkedHashMap) webClientService.getClient(clientId).getBody();
+        return client.get("name").equals(clientName);
+    }
+
     private String listOfRoles(Optional<String[]> selectedRoles, String clientId) {
         String[] roles = getSelectedRolesForChosenClient(selectedRoles, clientId);
         String rolesString = Arrays.stream(roles).map(role -> "'" + role + "'").collect(Collectors.joining(","));
@@ -156,16 +161,14 @@ public class UsersController {
     }
 
     private String[] getSelectedRolesForChosenClient(Optional<String[]> selectedRoles, String clientId) {
-        String[] roles = null;
         if (selectedRoles.isEmpty()) {
             //If no roles selected, grab all roles for the selected client
             ResponseEntity res = webClientService.getClientRoles(clientId);
             List<Map> allRoles = (List) res.getBody();
-            roles = allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
+            return allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
         } else {
-            roles = selectedRoles.get();
+            return selectedRoles.get();
         }
-        return roles;
     }
 
     /**
