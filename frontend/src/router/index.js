@@ -44,6 +44,22 @@ const routes = [
     ]
   },
   {
+    path: '/organizations',
+    component: Organizations,
+    children: [
+      {
+        path: '',
+        component: OrganizationSearch,
+        name: 'OrganizationSearch'
+      },
+      {
+        path: 'create',
+        component: OrganizationCreate,
+        name: 'OrganizationCreate'
+      },
+    ]
+  },
+  {
     path: '/dashboard',
     component: Dashboard,
     name: 'Dashboard',

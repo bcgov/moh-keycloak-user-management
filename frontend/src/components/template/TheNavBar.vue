@@ -8,6 +8,9 @@
         <li v-if=dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'Dashboard'}">Dashboard</router-link>
         </li>
+        <li :class="($route.name == 'Organizations') ? 'active' : 'inactive'">
+            <router-link @click.native="resetAlert" :to="{ name: 'Organizations'}">Organizations</router-link>
+        </li>
       </ul>
     </div>
   </nav>
