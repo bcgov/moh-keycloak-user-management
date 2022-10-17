@@ -19,5 +19,6 @@
     {"id" : "00005502", "name" :  "ICBC - Head Office"},
     {"id" : "00006501", "name" :  "Belkorp Industries Inc - Parent"},
     {"id" : "00008888", "name" :  "VIHA - Human Resources"},
-    {"id" : "00015824", "name" :  "First Nations Health Authority - Employees"}
+    {"id" : "00015824", "name" :  "First Nations Health Authority - Employees"},
+    {"id" : "00022164", "name" :  "Social Development and Poverty Reduction"}
 ]
