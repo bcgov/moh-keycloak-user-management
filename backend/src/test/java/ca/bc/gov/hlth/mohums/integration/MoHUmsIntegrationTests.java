@@ -156,7 +156,8 @@ public class MoHUmsIntegrationTests {
                 .bodyValue(String.format("{\"organizationId\":\"%s\",\"name\":\"Added by integration test\"}", organizationId))
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isCreated();
+                .expectStatus().isCreated()
+                .expectBody(Object.class);
     }
 
     @Test
@@ -173,7 +174,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void editOrganizationFailure() {
+    public void editOrganizationSuccess() {
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         orgApiWebTestClient
                 .put()
@@ -186,7 +187,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void editOrganizationSuccess() {
+    public void editOrganizationFailure() {
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         orgApiWebTestClient
                 .post()
