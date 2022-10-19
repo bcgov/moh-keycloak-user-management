@@ -155,7 +155,8 @@
             <v-date-picker
                 v-model="lastLogDate"
                 @input="menuDate = false"
-                max="maxDateInput"
+                :max="maxDateInput"
+                :min="minDateInput"
                 scrollable
                 elevation="10"
             ></v-date-picker>
@@ -364,7 +365,12 @@ export default {
       return this.$config.max_results ? this.$config.max_results : 100;
     },
     maxDateInput() {
-      return new Date().toISOString().substr(0, 10).toString();
+      return formatDate(new Date());
+    },
+    minDateInput() {
+      var date = new Date();
+      date.setFullYear(date.getFullYear() - 1);
+      return formatDate(date);
     },
     hasCreateUserRole: function() {
       const umsClientId = "USER-MANAGEMENT-SERVICE";
