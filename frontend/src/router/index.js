@@ -5,6 +5,9 @@ import UserSearch from '../components/UserSearch.vue'
 import UserUpdate from '../components/UserUpdate.vue'
 import UserCreate from '../components/UserCreate.vue'
 import Dashboard from '../components/Dashboard.vue'
+import Organizations from '../views/Organizations.vue'
+import OrganizationsSearch from '../components/OrganizationsSearch.vue'
+import OrganizationsCreate from '../components/OrganizationsCreate.vue'
 import NotFound from  '../views/NotFound.vue'
 import AccessDenied from  '../views/AccessDenied.vue'
 import keycloak from '../keycloak';
@@ -49,13 +52,13 @@ const routes = [
     children: [
       {
         path: '',
-        component: OrganizationSearch,
-        name: 'OrganizationSearch'
+        component: OrganizationsSearch,
+        name: 'OrganizationsSearch'
       },
       {
         path: 'create',
-        component: OrganizationCreate,
-        name: 'OrganizationCreate'
+        component: OrganizationsCreate,
+        name: 'OrganizationsCreate'
       },
     ]
   },

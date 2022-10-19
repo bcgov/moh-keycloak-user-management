@@ -79,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/admin-events/**").hasRole(viewEventsRole)
                 .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
-                .mvcMatchers(HttpMethod.GET,"/organizations/**").permitAll()
+                .mvcMatchers(HttpMethod.GET,"/organizations/**").hasRole(getOrganizationsRole)
                 .mvcMatchers(HttpMethod.PUT,"/organizations/**").hasRole(addOrganizationsRole)
                 .mvcMatchers(HttpMethod.POST,"/organizations/**").hasRole(addOrganizationsRole)
                 .mvcMatchers(HttpMethod.GET,"/users/{userId}/groups").access(String.format("hasRole('%s') and hasRole('%s')", viewUsersRole, viewGroupsRole))

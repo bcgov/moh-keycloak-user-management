@@ -8,8 +8,8 @@
         <li v-if=dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'Dashboard'}">Dashboard</router-link>
         </li>
-        <li :class="($route.name == 'Organizations') ? 'active' : 'inactive'">
-            <router-link @click.native="resetAlert" :to="{ name: 'Organizations'}">Organizations</router-link>
+        <li v-if=organizationsPermission :class="($route.name == 'Organizations') ? 'active' : 'inactive'">
+            <router-link @click.native="resetAlert" :to="{ name: 'OrganizationsSearch'}">Organizations</router-link>
         </li>
       </ul>
     </div>
@@ -23,6 +23,7 @@ export default {
     return{
       dashboardPermission:false,
       userSearchPermission:false,
+      organizationsPermission:true,
       }
   },
   async created() {
