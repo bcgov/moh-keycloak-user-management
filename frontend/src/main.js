@@ -19,8 +19,6 @@ keycloak.onAuthSuccess = async function () {
         Vue.prototype.$config = await configResp.json();
         const organizationsResp = await OrganizationsRepository.get();
         Vue.prototype.$organizations = await organizationsResp?.data;  
-        // const organizationsResp = await fetch(process.env.BASE_URL + "organizations.json");
-        // Vue.prototype.$organizations = await organizationsResp.json();  
     } catch (err) {
         console.error(err);
     } finally {
