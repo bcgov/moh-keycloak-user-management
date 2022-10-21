@@ -25,10 +25,7 @@
           <v-btn id="create-organization-button" class="success" medium @click.native="goToCreateOrganization">Create New organization</v-btn>
         </v-col>
       </v-row>
-  
       <!-- table -->
-      <v-row no-gutters>
-        <v-col class="col-12">
           <v-data-table
             id="organizations-table"
             class="base-table select-table"
@@ -39,67 +36,74 @@
             :loading="organizationSearchLoadingStatus"
             loading-text="Searching for organizations"
           >
-            <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
-            <template #item.id="{ item }">
-                {{ item.id }}
-            </template>
             <template #item.actions="{ item }">
-              <v-icon small @click="editOrganization(item)">
+              <v-icon small @click="openEditOrganizationDialog(item)">
                 mdi-pencil
               </v-icon>
-              <v-dialog content-class="updateRolesDialog" v-model="dialog">
-              <v-card>
+            </template>
+          </v-data-table>
+
+          <v-dialog content-class="updateOrganizationDialog" v-model="dialog">
+            <v-card>
                <v-card-title>
-                <span class="headline">Edit organization</span>
+                <span style="float: left" class="headline">Edit organization</span>
               </v-card-title>
               <v-card-text>
-             
-              <label style="padding-left: 12px;" class="required" for="select-client">Organization name</label>
-              <v-icon style="float: right" @click="close()">mdi-close</v-icon>
-             
+                <v-form ref="form">
+                  <label for="id" class="required">Organization ID</label>
+                  <v-text-field
+                    disabled
+                    dense
+                    outlined
+                    id="ID"
+                    v-model="organizationToEdit.organizationId"
+                  ></v-text-field>
+                
+                  <label for="name" class="required">Organization Name</label>
+                  <v-text-field
+                    dense
+                    outlined
+                    id="name"
+                    v-model="organizationToEdit.name"
+                    required
+                    :rules="[v => !!v || 'Organization Name is required', v => v && !!v.trim() || 'Organization Name cannot be blank']"
+                  />
+                </v-form>
               </v-card-text>
               <v-card-actions >
-              <v-btn
-                      id="save-oeganization"
-                      class="primary"
-                      medium
-                      v-on:click="updateOrganization()"
-                      >Save Changes</v-btn
-                    >
-              <v-btn outlined class="primary--text" @click="close()">
-                Cancel
-              </v-btn>
-            </v-card-actions>
+                <v-btn
+                  id="save-organization"
+                  class="primary"
+                  medium
+                  v-on:click="validateOrganizationToBeSaved()">
+                    Save Changes
+                </v-btn>
+                <v-btn outlined class="primary--text" @click="close()">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
             </v-card>
-            </v-dialog>
-            </template>
-           
-           
-          </v-data-table>
-        </v-col>
-      </v-row>
-  
+          </v-dialog>
     </div>
   </template>
   
   <script>
-  
+  import OrganizationsRepository from "../api/OrganizationsRepository";
   export default {
     name: "OrganizationsSearch",
     data() {
       return {
         dialog: false,
-        organizations: this.$organizations
-          .map((item) => {
-            item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`
-            item.text = `${item.organizationId} - ${item.name}`;
-            return item;
-          }),
         headers: [
           { text: "ID", value: "organizationId", class: "table-header" },
           { text: "Name", value: "name", class: "table-header" },
           { text: "Actions", value: "actions", class: "table-header"}
         ],
+        organizations: this.$organizations,
+        organizationToEdit: {
+          organizationId: '',
+          name: '',
+        },
         footerProps: { "items-per-page-options": [15] },
         searchResults: [],
         organizationSearchInput: "",
@@ -108,35 +112,63 @@
       };
     },
     methods: {
-      editOrganization: function (organization) {
-        console.log(organization);
-      this.dialog = true;
-      console.log(this.dialog);
-    },
-    close: function() {
-      this.dialog = false;
-    },
+      openEditOrganizationDialog: function (org) {
+        this.dialog = true;
+        Object.assign(this.organizationToEdit, org);
+      },
+      close: function() {
+        this.dialog = false;
+      },
+      updateOrganizationsInApplicationMemory: function() {
+        const indexOfUpdatedOrg = this.$organizations.findIndex(org => org.organizationId === this.organizationToEdit.organizationId);
+        this.$organizations.splice(indexOfUpdatedOrg, 1, this.organizationToEdit);
+        this.organizationToEdit =  {organizationId: '', name: ''};
+        this.organizations = this.$organizations;
+      },
+      validateOrganizationToBeSaved: function() {
+        if (!this.$refs.form.validate()) {
+          this.$store.commit("alert/setAlert", {
+            message: "Please correct errors before submitting",
+            type: "error"
+          });
+          window.scrollTo(0, 0);
+          return;
+        }
+        this.updateOrganization();
+      },
+      updateOrganization: function() {
+          OrganizationsRepository.updateOrganization(this.organizationToEdit.organizationId, this.organizationToEdit)
+            .then(() => {
+            this.$store.commit("alert/setAlert", {
+              message: "Organization updated successfully",
+              type: "success"
+            });
+            this.close();
+            this.updateOrganizationsInApplicationMemory();
+          }).catch(error => {
+            this.$store.commit("alert/setAlert", {
+              message: "Error updating organization: " + error,
+              type: "error"
+            });
+          })
+          .finally(() => {
+            window.scrollTo(0, 0);
+          });
+      },
       goToCreateOrganization: function() {
         this.$store.commit("alert/dismissAlert");
         this.$router.push({ name: "OrganizationsCreate"});
       },
-      handleError(message, error) {
-        this.$store.commit("alert/setAlert", {
-          message: message + ": " + error,
-          type: "error"
-        });
-        window.scrollTo(0, 0);
-      }
     }
   };
   </script>
   
-  <style scoped>
+  <style>
   #create-organization-button {
     float: right;
     margin-top: 25px;
   }
-  .updateOrganizationssDialog {
+  .updateOrganizationDialog {
     margin: 24px;
     overflow-y: auto;
     overflow-x: hidden;

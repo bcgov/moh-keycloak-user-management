@@ -13,4 +13,7 @@ export default {
     createOrganization(content) {
         return umsRequest().then(axiosInstance => axiosInstance.post(`${resource}`, content, {headers: {"Content-Type": "application/json"}}));
     },
+    updateOrganization(organizationId, content) {
+        return umsRequest().then(axiosInstance => axiosInstance.put(`${resource}/${organizationId}`, content));
+    }
 }

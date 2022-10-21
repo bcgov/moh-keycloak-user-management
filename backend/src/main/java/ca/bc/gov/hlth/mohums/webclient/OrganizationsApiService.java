@@ -29,7 +29,6 @@ public class OrganizationsApiService {
     }
 
     public ResponseEntity<Object> updateOrganization(String organizationId, Object organizationToUpdate) {
-        //make sure both org ids are the same
         return externalApiCaller.put(organizationsPath + "/" + organizationId, organizationToUpdate);
     }
 }

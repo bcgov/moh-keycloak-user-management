@@ -2,7 +2,6 @@ package ca.bc.gov.hlth.mohums.controller;
 
 
 import ca.bc.gov.hlth.mohums.webclient.OrganizationsApiService;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

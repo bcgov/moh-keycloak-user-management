@@ -9,7 +9,7 @@
               <v-text-field
                 dense
                 outlined
-                id="ID"
+                id="id"
                 v-model="organization.organizationId"
                 required
                 :rules="[
@@ -18,14 +18,14 @@
                 ]"
               />
   
-              <label for="first-name" class="required">Organization Name</label>
+              <label for="name" class="required">Organization Name</label>
               <v-text-field
                 dense
                 outlined
-                id="first-name"
+                id="name"
                 v-model="organization.name"
                 required
-                :rules="[v => !!v || 'Organization Name is required']"
+                :rules="[v => !!v || 'Organization Name is required', v => v && !!v.trim() || 'Organization Name cannot be blank']"
               />
             </v-form>
           </v-col>
@@ -67,7 +67,7 @@
               type: "success"
             });
           }).then(() => {
-            this.$organizations.push(this.organization)
+            this.$organizations.push(this.organization);
           })
             .catch(error => {
             this.$store.commit("alert/setAlert", {

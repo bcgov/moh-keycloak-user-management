@@ -1,10 +1,8 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -39,12 +37,13 @@ public class ExternalApiCaller {
     }
 
     public ResponseEntity<List<Object>> getList(String path) {
-        ClientResponse c = webClient
+        return webClient
                 .get()
                 .uri(t -> t.path(path).build())
                 .exchange()
+                .block()
+                .toEntityList(Object.class)
                 .block();
-        return c.toEntityList(Object.class).block();
     }
 
     public ResponseEntity<Object> post(String path, Object data) {
