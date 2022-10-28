@@ -9,8 +9,9 @@ import ca.bc.gov.hlth.mohums.webclient.WebClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.CollectionUtils;
@@ -28,13 +29,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
-
 @RestController
 public class UsersController {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
     private PermissionsValidator permissionsValidator;
@@ -94,27 +93,32 @@ public class UsersController {
         }
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
+            Map<String, Object> namedParameters = new HashMap<>();
             String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
             Optional<String> lastLogBeforeCriteria = Optional.empty();
             if (lastLogAfter.isPresent()) {
                 Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                customDateCriteria = " AND event_time > " + lastLogAfterEpoch;
+                customDateCriteria = " AND event_time > :lastLogAfterEpoch";
+                namedParameters.put("lastLogAfterEpoch", lastLogAfterEpoch);
             } else {
                 Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                lastLogBeforeCriteria = Optional.of(" HAVING MAX(event_time) < " + lastLogBeforeEpoch);
+                lastLogBeforeCriteria = Optional.of(" HAVING MAX(event_time) < :lastLogBeforeEpoch");
+                namedParameters.put("lastLogBeforeEpoch", lastLogBeforeEpoch);
             }
             Optional<String> clientAndRolesJoins = Optional.empty();
             Optional<String> clientAndRolesCriteria = Optional.empty();
-            if(clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())){
+            if (clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())) {
                 clientAndRolesJoins = Optional.of(
                         " JOIN KEYCLOAK.USER_ROLE_MAPPING urm ON urm.USER_ID = ee.USER_ID"
-                                + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
-                                + " JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT"
+                        + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
+                        + " JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT"
                 );
                 clientAndRolesCriteria = Optional.of(
-                        " AND ee.CLIENT_ID = " + "'" + clientName.get() + "'"
-                        + " AND kr.NAME IN " + listOfRoles(selectedRoles, clientId.get())
+                        " AND ee.CLIENT_ID = :clientName"
+                        + " AND kr.NAME IN (:selectedRoles)"
                 );
+                namedParameters.put("clientName", clientName.get());
+                namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
             }
             final String DO_NOT_INCLUDE = "";
 
@@ -128,7 +132,7 @@ public class UsersController {
                     + " GROUP BY ee.user_id"
                     + lastLogBeforeCriteria.orElse(DO_NOT_INCLUDE);
 
-            List<Map<String, Object>> queryResult = jdbcTemplate.queryForList(sql);
+            List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
 
             Map<String, Object> usersLastLogin = new HashMap<>();
             for (Map<String, Object> o : queryResult) {
@@ -152,12 +156,6 @@ public class UsersController {
     private boolean clientNameAndIdAreValid(String clientName, String clientId) {
         LinkedHashMap client = (LinkedHashMap) webClientService.getClient(clientId).getBody();
         return client.get("name").equals(clientName);
-    }
-
-    private String listOfRoles(Optional<String[]> selectedRoles, String clientId) {
-        String[] roles = getSelectedRolesForChosenClient(selectedRoles, clientId);
-        String rolesString = Arrays.stream(roles).map(role -> "'" + role + "'").collect(Collectors.joining(","));
-        return "(" + rolesString + ")";
     }
 
     private String[] getSelectedRolesForChosenClient(Optional<String[]> selectedRoles, String clientId) {
