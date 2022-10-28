@@ -90,13 +90,32 @@
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
-              {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
+              <span style="margin-right: 20px">
+                {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
+              </span>
+              <v-icon @click="openResetIdentityProviderLinkDialog(identity.identityProvider)">mdi-link-variant-off</v-icon>
             </li>
           </ul>
         </v-col>
       </v-row>
       <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
     </v-card>
+    <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
+      <v-card>
+               <v-card-title>
+                <span class="headline">Identity Provider Link Reset Confirmation</span>
+              </v-card-title>
+              <v-card-text>
+                Are you sure you want to reset {{ this.selectedIdentityProvider | formatIdentityProvider }} linked identity? Resetting a linked identity will retain existing roles for the user and the identity will be re-linked upon the user's next Keycloak login event.
+              </v-card-text>
+              <v-card-actions>
+                <v-btn class="primary" @click="resetIdentityProviderLink">Reset Identity Provider Link</v-btn>
+                <v-btn outlined class="primary--text" @click="closeResetIdentityProviderLinkDialog">
+                  Cancel
+                </v-btn>
+            </v-card-actions>
+            </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -130,6 +149,8 @@ export default {
         },
         federatedIdentities: null
       },
+      dialog: false,
+      selectedIdentityProvider: ""
     };
   },
   async created() {
@@ -161,6 +182,45 @@ export default {
     }
   },
   methods: {
+    openResetIdentityProviderLinkDialog: function(provider) {
+        this.dialog = true;
+        if(this.dialog){
+          this.selectedIdentityProvider = provider
+        }
+    },
+    closeResetIdentityProviderLinkDialog: function() {
+      this.dialog = false;
+      this.selectedIdentityProvider = "";
+    },
+    updateUserFederatedIdetities: function(deletedIdentityProvider) {
+      console.log(deletedIdentityProvider);
+      console.log(this.user.federatedIdentities);
+      this.user.federatedIdentities = this.user.federatedIdentities.filter(fi => fi.identityProvider !== deletedIdentityProvider);
+      console.log(this.user.federatedIdentities);
+    },
+    resetIdentityProviderLink: function() {
+      const userIdIdpRealm = this.user.federatedIdentities.find(fi => fi.identityProvider === this.selectedIdentityProvider).userId;
+      console.log(userIdIdpRealm);
+      UsersRepository.resetUserIdentityProviderLink(this.userId, this.selectedIdentityProvider, userIdIdpRealm)
+        .then(() => {
+          this.$store.commit("alert/setAlert", {
+            message: "Identity provider link was reset successfully",
+            type: "success",
+          });
+          this.updateUserFederatedIdetities(this.selectedIdentityProvider);
+          this.closeResetIdentityProviderLinkDialog();
+        })
+        .catch((error) => {
+          this.$store.commit("alert/setAlert", {
+            message: "Error reseting identity provider link: " + error,
+            type: "error",
+          });
+        })
+        .finally(() => {
+          window.scrollTo(0, 0);
+          this.selectedIdentityProvider = "";
+        });
+    },
     getUser: function() {
       return UsersRepository.getUser(this.userId)
         .then(response => {
@@ -218,7 +278,17 @@ function formatOrganization(organization) {
   }
 }
 </script>
-
+<style>
+.resetUserIdentityLinksDialog {
+    margin: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-width: 95%;
+    min-width: 450px;
+    width: 900px;
+    z-index: inherit;
+}
+</style>
 <style scoped>
 #user-name-tooltip-icon {
   margin-left: 10px;

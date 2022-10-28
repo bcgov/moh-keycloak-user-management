@@ -1,6 +1,9 @@
-keycloak:
+keycloak-moh:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
+keycloak-master:
+  admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms
+  base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master
 user-management-client:
   roles:
     view-clients: view-clients
@@ -31,20 +34,29 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${keycloak.base-oauth-url}
-          jwk-set-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/certs
+          issuer-uri: ${keycloak-moh.base-oauth-url}
+          jwk-set-uri: ${keycloak-moh.base-oauth-url}/protocol/openid-connect/certs
       client:
         registration:
-          keycloak:
+          keycloak-moh:
             client-id: USER-MANAGEMENT-SERVICE
             client-secret: ${UMS_CLIENT_SECRET}
             authorization-grant-type: client_credentials
             scope:
               - openid
+          keycloak-master:
+            client-id: ums-admin
+            client-secret: ${MASTER_UMS_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope:
+              - openid
         provider:
-          keycloak:
-            authorization-url: ${keycloak.base-oauth-url}/protocol/openid-connect/auth
-            token-uri: ${keycloak.base-oauth-url}/protocol/openid-connect/token
+          keycloak-moh:
+            authorization-url: ${keycloak-moh.base-oauth-url}/protocol/openid-connect/auth
+            token-uri: ${keycloak-moh.base-oauth-url}/protocol/openid-connect/token
+          keycloak-master:
+            authorization-url: ${keycloak-master.base-oauth-url}/protocol/openid-connect/auth
+            token-uri: ${keycloak-master.base-oauth-url}/protocol/openid-connect/token
 jasypt:
     encryptor:
         password: ${ums_encryptor_password}

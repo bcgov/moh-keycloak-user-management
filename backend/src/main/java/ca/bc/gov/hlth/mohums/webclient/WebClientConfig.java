@@ -22,8 +22,11 @@ public class WebClientConfig {
 
     private final Logger webClientLogger = LoggerFactory.getLogger("KC_WEB_CLIENT");
 
-    @Value("${keycloak.admin-api-url}")
-    private String keycloakAdminBaseUrl;
+    @Value("${keycloak-moh.admin-api-url}")
+    private String keycloakMohAdminBaseUrl;
+
+    @Value("${keycloak-master.admin-api-url}")
+    private String keycloakMasterAdminBaseUrl;
 
     @Value("${spring.codec.max-in-memory-size-mb}")
     int maxInMemorySize;
@@ -35,34 +38,50 @@ public class WebClientConfig {
 
         OAuth2AuthorizedClientProvider authorizedClientProvider
                 = OAuth2AuthorizedClientProviderBuilder.builder()
-                        .clientCredentials()
-                        .build();
+                .clientCredentials()
+                .build();
 
         DefaultOAuth2AuthorizedClientManager authorizedClientManager
                 = new DefaultOAuth2AuthorizedClientManager(
-                        clientRegistrationRepository, authorizedClientRepository);
+                clientRegistrationRepository, authorizedClientRepository);
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
         return authorizedClientManager;
     }
 
-    @Bean("kcAuthorizedWebClient")
+    @Bean("kcMohAuthorizedWebClient")
     public WebClient webClient(OAuth2AuthorizedClientManager authorizedClientManager) {
 
-        String registrationId = "keycloak";
+        String registrationId = "keycloak-moh";
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
+        return createWebClient(oauth, keycloakMohAdminBaseUrl);
+    }
 
+    @Bean("kcMasterAuthorizedWebClient")
+    public WebClient webClientMaster(OAuth2AuthorizedClientManager authorizedClientManager) {
+
+        String registrationId = "keycloak-master";
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
+        return createWebClient(oauth, keycloakMasterAdminBaseUrl);
+    }
+
+    private ServletOAuth2AuthorizedClientExchangeFilterFunction createOauthFilterFunction(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId) {
         ServletOAuth2AuthorizedClientExchangeFilterFunction oauth
                 = new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
         oauth.setDefaultClientRegistrationId(registrationId);
 
+        return oauth;
+    }
+
+    private WebClient createWebClient(ServletOAuth2AuthorizedClientExchangeFilterFunction oauth, String baseUrl) {
         return WebClient.builder()
-                .baseUrl(keycloakAdminBaseUrl)
+                .baseUrl(baseUrl)
                 .filter(oauth)
                 .filter(logRequest())
                 .exchangeStrategies(ExchangeStrategies.builder()
                         .codecs(configurer -> configurer
-                        .defaultCodecs()
-                        .maxInMemorySize(maxInMemorySize * 1024 * 1024))
+                                .defaultCodecs()
+                                .maxInMemorySize(maxInMemorySize * 1024 * 1024))
                         .build())
                 .build();
     }
