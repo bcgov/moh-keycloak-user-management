@@ -90,10 +90,15 @@
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
-              <span style="margin-right: 20px">
+              <span style="margin-right: 4px">
                 {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
               </span>
-              <v-icon @click="openResetIdentityProviderLinkDialog(identity.identityProvider)">mdi-link-variant-off</v-icon>
+              <v-tooltip right>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon small style="vertical-align: middle" @click="openResetIdentityProviderLinkDialog(identity.identityProvider)" v-bind="attrs" v-on="on">mdi-link-variant-off</v-icon>
+                </template>
+                <span>Reset Identity Provider Link</span>
+              </v-tooltip>
             </li>
           </ul>
         </v-col>
