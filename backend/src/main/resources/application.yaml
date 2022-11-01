@@ -45,7 +45,7 @@ spring:
             scope:
               - openid
           keycloak-master:
-            client-id: ums-admin
+            client-id: user-management-service-admin
             client-secret: ${MASTER_UMS_CLIENT_SECRET}
             authorization-grant-type: client_credentials
             scope:
