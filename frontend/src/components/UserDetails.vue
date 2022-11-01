@@ -217,7 +217,7 @@ export default {
         })
         .catch((error) => {
           this.$store.commit("alert/setAlert", {
-            message: "Error reseting identity provider link: " + error,
+            message: "Error resetting identity provider link: " + error,
             type: "error",
           });
         })
