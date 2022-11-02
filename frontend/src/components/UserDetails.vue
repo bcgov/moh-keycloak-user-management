@@ -90,12 +90,14 @@
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
-              <span style="margin-right: 4px">
+              <span>
                 {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
               </span>
               <v-tooltip right>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-icon small style="vertical-align: middle" @click="openResetIdentityProviderLinkDialog(identity.identityProvider)" v-bind="attrs" v-on="on">mdi-link-variant-off</v-icon>
+                  <v-btn icon v-bind="attrs" v-on="on" @click="openResetIdentityProviderLinkDialog(identity.identityProvider)">
+                    <v-icon small style="vertical-align: middle">mdi-link-variant-off</v-icon>
+                  </v-btn>
                 </template>
                 <span>Reset Identity Provider Link</span>
               </v-tooltip>
@@ -107,19 +109,20 @@
     </v-card>
     <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
       <v-card>
-               <v-card-title>
-                <span class="headline">Identity Provider Link Reset Confirmation</span>
-              </v-card-title>
-              <v-card-text>
-                Are you sure you want to reset {{ this.selectedIdentityProvider | formatIdentityProvider }} linked identity? Resetting a linked identity will retain existing roles for the user and the identity will be re-linked upon the user's next Keycloak login event.
-              </v-card-text>
-              <v-card-actions>
-                <v-btn class="primary" @click="resetIdentityProviderLink">Reset Identity Provider Link</v-btn>
-                <v-btn outlined class="primary--text" @click="closeResetIdentityProviderLinkDialog">
-                  Cancel
-                </v-btn>
-            </v-card-actions>
-            </v-card>
+        <v-card-title>
+          <span class="headline">Identity Provider Link Reset Confirmation</span>
+        </v-card-title>
+        <v-card-text>
+          <br />
+          Are you sure you want to reset the {{ this.selectedIdentityProvider | formatIdentityProvider }} linked identity for this user?
+          <br /><br />
+          Resetting a linked identity will retain all existing roles and details for the user and the identity will be re-linked upon the user's next Keycloak login event.
+        </v-card-text>
+        <v-card-actions>
+          <v-btn class="primary" @click="resetIdentityProviderLink">Reset Identity Provider Link</v-btn>
+          <v-btn outlined class="primary--text" @click="closeResetIdentityProviderLinkDialog">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
   </div>
 </template>
