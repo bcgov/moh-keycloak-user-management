@@ -1,6 +1,5 @@
 package ca.bc.gov.hlth.mohums.integration;
 
-import ca.bc.gov.hlth.mohums.model.Group;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -29,7 +28,6 @@ import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,14 +40,20 @@ public class MoHUmsIntegrationTests {
 
     private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
 
-    @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
+    @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
     String keycloakTokenUri;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
+    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-id}")
     String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
     String clientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
+    String masterRealmClientId;
+
+    @Value("${spring.security.oauth2.client.registration.keycloak-master.client-secret}")
+    String masterRealmClientSecret;
 
     @Value("${spring.datasource.url}")
     private String url;
@@ -694,6 +698,39 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
+    }
+
+    @Test
+    public void getUserFromIdirRealm() throws IOException, InterruptedException, ParseException {
+
+        String keycloakTokenUri = "https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master/protocol/openid-connect/token";
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(keycloakTokenUri))
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("cache-control", "no-cache")
+                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + masterRealmClientId + "&client_secret=" + masterRealmClientSecret))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
+        String access_token = responseBodyAsJson.get("access_token").toString();
+
+
+        String baseUrlIdirRealm = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/idir/";
+
+        webTestClient
+                .mutate()
+                .baseUrl(baseUrlIdirRealm)
+                .build()
+                .get()
+                .uri("users/0fe98ff5-3a8b-4336-9d77-d8377e11ba3d")//fflorek
+                .header("Authorization", "Bearer " + access_token)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Object.class);
+
     }
 
 }
