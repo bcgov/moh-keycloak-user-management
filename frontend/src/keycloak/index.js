@@ -8,7 +8,7 @@ let initOptions = {
     responseMode: 'fragment',
     flow: 'standard',
     onLoad: 'login-required',
-    pkceMethod: 'S256',
+    pkceMethod: 'S256'
 };
 
 
