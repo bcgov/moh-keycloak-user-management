@@ -5,7 +5,6 @@ import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
 import ca.bc.gov.hlth.mohums.webclient.WebClientService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -335,6 +334,11 @@ public class UsersController {
                                                    @AuthenticationPrincipal Jwt jwt) {
         return permissionsValidator.validateGroupManagementPermission(jwt, groupName) ?
                 webClientService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
+    }
+
+    @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
+    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
+        return webClientService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");

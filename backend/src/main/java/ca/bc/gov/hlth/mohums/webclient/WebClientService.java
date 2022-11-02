@@ -2,10 +2,13 @@ package ca.bc.gov.hlth.mohums.webclient;
 
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
+import net.minidev.json.parser.JSONParser;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
@@ -20,12 +23,18 @@ public class WebClientService {
     private final String clientsPath = "/clients";
     private final String usersPath = "/users";
     private final String groupsPath = "/groups";
+    private final String identityProviderLinksPath = "/federated-identity";
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
 
-    private final WebClient kcAuthorizedWebClient;
+    private final WebClient kcMohAuthorizedWebClient;
 
-    public WebClientService(WebClient kcAuthorizedWebClient) {
-        this.kcAuthorizedWebClient = kcAuthorizedWebClient;
+    private final WebClient kcMasterAuthorizedWebClient;
+
+    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
+
+    public WebClientService(WebClient kcMohAuthorizedWebClient, WebClient kcMasterAuthorizedWebClient) {
+        this.kcMohAuthorizedWebClient = kcMohAuthorizedWebClient;
+        this.kcMasterAuthorizedWebClient = kcMasterAuthorizedWebClient;
     }
 
     // Clients
@@ -45,7 +54,7 @@ public class WebClientService {
     }
 
     public ResponseEntity<List<Object>> getUsersInRole(String clientId, String roleName,
-            MultiValueMap<String, String> queryParams) {
+                                                       MultiValueMap<String, String> queryParams) {
         String path = String.format("%s/%s/roles/%s/users", clientsPath, clientId, roleName);
         return getList(path, queryParams);
     }
@@ -57,11 +66,12 @@ public class WebClientService {
         List<Group> groupList = groups.stream().map(g -> getGroupById(g.get("id").toString())).collect(Collectors.toList());
         return ResponseEntity.of(Optional.of(groupList));
     }
+
     // Group details
     private Group getGroupById(String groupId) {
         String path = String.format("%s/%s", groupsPath, groupId);
-        ResponseEntity<Object> response =  get(path, null);
-        return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap)response.getBody());
+        ResponseEntity<Object> response = get(path, null);
+        return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap) response.getBody());
     }
 
     // Users
@@ -132,29 +142,53 @@ public class WebClientService {
         return get("/admin-events", allParams);
     }
 
+    public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
+        String path = usersPath + "/" + userId + identityProviderLinksPath + "/" + identityProvider;
+        ResponseEntity<Object> deleteIDPLinkResponse = delete(path);
+        if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponse)) {
+            return deleteUserFromIdpRealm(userIdIdpRealm, identityProvider);
+        } else {
+            return deleteIDPLinkResponse;
+        }
+    }
+
+    private ResponseEntity<Object> deleteUserFromIdpRealm(String userIdIdpRealm, String identityProvider) {
+        String path = "/" + identityProvider + usersPath + "/" + userIdIdpRealm;
+        return kcMasterAuthorizedWebClient
+                .delete()
+                .uri(t -> t.path(path).build())
+                .exchange()
+                .block().toEntity(Object.class).block();
+    }
+
+    private boolean identityProviderLinkDeletedSuccessfully(ResponseEntity<Object> deleteIdentityProviderLinkResponse) {
+        return deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT);
+    }
+
     private ResponseEntity<Object> get(String path, MultiValueMap<String, String> queryParams) {
-        return kcAuthorizedWebClient
+        ClientResponse o = kcMohAuthorizedWebClient
                 .get()
                 .uri(t -> t
-                .path(path)
-                .queryParams(queryParams)
-                .build())
-                .exchange().block().toEntity(Object.class).block();
+                        .path(path)
+                        .queryParams(queryParams)
+                        .build())
+                .exchange().block();
+        return o.toEntity(Object.class).block();
     }
 
     private ResponseEntity<List<Object>> getList(String path, MultiValueMap<String, String> queryParams) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .get()
                 .uri(t -> t
-                .path(path)
-                .queryParams(queryParams)
-                .build())
+                        .path(path)
+                        .queryParams(queryParams)
+                        .build())
                 .exchange()
                 .block().toEntityList(Object.class).block();
     }
 
     private ResponseEntity<List<Object>> getList(String path) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .get()
                 .uri(t -> t.path(path).build())
                 .exchange()
@@ -162,7 +196,7 @@ public class WebClientService {
     }
 
     private ResponseEntity<Object> post(String path, Object data) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .post()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
@@ -171,7 +205,7 @@ public class WebClientService {
     }
 
     private ResponseEntity<Object> put(String path, Object data) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .put()
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)
@@ -180,7 +214,7 @@ public class WebClientService {
     }
 
     private ResponseEntity<Object> put(String path) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .put()
                 .uri(t -> t.path(path).build())
                 .exchange()
@@ -188,7 +222,7 @@ public class WebClientService {
     }
 
     private ResponseEntity<Object> delete(String path) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .delete()
                 .uri(t -> t.path(path).build())
                 .exchange()
@@ -196,7 +230,7 @@ public class WebClientService {
     }
 
     private ResponseEntity<Object> delete(String path, Object data) {
-        return kcAuthorizedWebClient
+        return kcMohAuthorizedWebClient
                 .method(HttpMethod.DELETE)
                 .uri(t -> t.path(path).build())
                 .bodyValue(data)

@@ -3,6 +3,7 @@ import { umsRequest } from "./Repository";
 const resource = "/users";
 const clientRoleMappings = "role-mappings/clients";
 const groups ="groups";
+const identityProviderLinks = "federated-identity";
 
 export default {
 
@@ -67,5 +68,9 @@ export default {
         const nameOfGroupToBeDeleted = { data: groupName }
         return umsRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${groups}/${groupId}`, nameOfGroupToBeDeleted));
     },
+    resetUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm) {
+        const userIdIdpRealmData = { data: userIdIdpRealm }
+        return umsRequest().then(axiosInstance => axiosInstance.delete(`${resource}/${userId}/${identityProviderLinks}/${identityProvider}`, userIdIdpRealmData));
+    }
 
 }

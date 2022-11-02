@@ -53,7 +53,7 @@
             v-if="totalNumberOfUsersLoadingStatus"
             ref="dashboardSkeleton"
             type="text"
-            max-width="60">
+            max-width="60px">
           </v-skeleton-loader>
         </div>
 
