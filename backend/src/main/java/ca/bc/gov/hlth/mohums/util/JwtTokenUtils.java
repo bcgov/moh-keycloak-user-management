@@ -1,6 +1,5 @@
 package ca.bc.gov.hlth.mohums.util;
 
-import net.minidev.json.JSONArray;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
@@ -20,6 +19,7 @@ public class JwtTokenUtils {
     public static boolean containsRole(Jwt jwt, String role) {
         return getUserRoles(jwt).contains(role);
     }
+
     /* The roles in the access token look like
        "resource_access": {
          "user-management-service": {

@@ -23,12 +23,13 @@ export default {
     return{
       dashboardPermission:false,
       userSearchPermission:false,
-      organizationsPermission:true,
+      organizationsPermission:false,
       }
   },
   async created() {
     this.checkDashboardPermission();
     this.checkUserSearchPermission();
+    this.checkOrganizationsPermission();
   },
   methods: {
     resetAlert: function () {
@@ -45,6 +46,9 @@ export default {
     },
     checkUserSearchPermission: function() {
         this.userSearchPermission = this.checkPermission(['view-users', 'view-clients', 'view-groups']);
+    },
+    checkOrganizationsPermission: function() {
+        this.organizationsPermission = this.checkPermission(['manage-org']);
     },
   }
 }

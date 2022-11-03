@@ -53,12 +53,18 @@ const routes = [
       {
         path: '',
         component: OrganizationsSearch,
-        name: 'OrganizationsSearch'
+        name: 'OrganizationsSearch',
+        meta: {
+          requiredRole: ['manage-org']
+        }
       },
       {
         path: 'create',
         component: OrganizationsCreate,
-        name: 'OrganizationsCreate'
+        name: 'OrganizationsCreate',
+        meta: {
+          requiredRole: ['manage-org']
+        }
       },
     ]
   },

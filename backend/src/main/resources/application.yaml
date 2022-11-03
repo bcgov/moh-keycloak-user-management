@@ -18,8 +18,7 @@ user-management-client:
     create-user: create-user
     manage-all-groups: manage-all-groups
     manage-own-groups: manage-own-groups
-    get-org: get-org
-    add-org: add-org
+    manage-org: manage-org
 config:
   # vanity-hostname: Sets the HTTP "Location" header for the service.
   vanity-hostname: "http://localhost:${server.port}"

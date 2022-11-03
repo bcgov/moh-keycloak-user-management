@@ -49,7 +49,7 @@ public class MoHUmsIntegrationTests {
 
     @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
     String clientSecret;
-    
+
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
     String masterRealmClientId;
 
@@ -178,9 +178,9 @@ public class MoHUmsIntegrationTests {
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         orgApiWebTestClient
                 .put()
-                .uri("/organizations/12345678")
+                .uri("/organizations/00001480")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"12345678\",\"name\":\"Test changed it\"}")
+                .bodyValue("{\"organizationId\":\"00002881\",\"name\":\"TimberWest Forest Company\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk();
