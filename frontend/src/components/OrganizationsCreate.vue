@@ -68,10 +68,13 @@
             });
           }).then(() => {
             this.$organizations.push(this.organization);
+            this.organization = { organizationId: '', name: ''}
+            this.$refs.form.reset()
           })
             .catch(error => {
+            const errorMessage = error.message.includes('409') ? error.message + ". Organization with given ID already exists." : error.message
             this.$store.commit("alert/setAlert", {
-              message: "Error creating organization: " + error,
+              message: "Error creating organization: " + errorMessage,
               type: "error"
             });
           })

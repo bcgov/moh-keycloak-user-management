@@ -4,6 +4,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -49,7 +50,7 @@ public class MoHUmsIntegrationTests {
 
     @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
     String clientSecret;
-    
+
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
     String masterRealmClientId;
 
@@ -120,10 +121,12 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void getOrganizationById() {
+        Assumptions.assumeTrue(isDevEnvironment());
+
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         Object organization = orgApiWebTestClient
                 .get()
-                .uri("/organizations/11301")
+                .uri("/organizations/00001480")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk() //HTTP 200
@@ -147,6 +150,8 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void addOrganizationSuccess() {
+        Assumptions.assumeTrue(isDevEnvironment());
+
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         String organizationId = UUID.randomUUID().toString();
         orgApiWebTestClient
@@ -162,12 +167,14 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void addOrganizationFailure() {
+        Assumptions.assumeTrue(isDevEnvironment());
+
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         orgApiWebTestClient
                 .post()
                 .uri("/organizations")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"11301\",\"name\":\"Hi Dad\"}")
+                .bodyValue("{\"organizationId\":\"00001480\",\"name\":\"Hi Dad\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
@@ -175,12 +182,14 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void editOrganizationSuccess() {
+        Assumptions.assumeTrue(isDevEnvironment());
+
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         orgApiWebTestClient
                 .put()
-                .uri("/organizations/12345678")
+                .uri("/organizations/00001480")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"12345678\",\"name\":\"Test changed it\"}")
+                .bodyValue("{\"organizationId\":\"00001480\",\"name\":\"TimberWest Forest Company\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk();
@@ -188,12 +197,14 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void editOrganizationFailure() {
+        Assumptions.assumeTrue(isDevEnvironment());
+
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
         orgApiWebTestClient
                 .post()
                 .uri("/organizations")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"11301\",\"name\":\"Hi Dad\"}")
+                .bodyValue("{\"organizationId\":\"00001480\",\"name\":\"Hi Dad\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
@@ -832,6 +843,10 @@ public class MoHUmsIntegrationTests {
                 .expectStatus().isOk()
                 .expectBody(Object.class);
 
+    }
+
+    private boolean isDevEnvironment(){
+        return organizationsApiBaseUrl.contains("dev");
     }
 
 }

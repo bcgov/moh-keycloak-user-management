@@ -53,11 +53,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.manage-own-groups}")
     private String manageOwnGroupsRole;
 
-    @Value("${user-management-client.roles.get-org}")
-    private String getOrganizationsRole;
-
-    @Value("${user-management-client.roles.add-org}")
-    private String addOrganizationsRole;
+    @Value("${user-management-client.roles.manage-org}")
+    private String manageOrganizationsRole;
 
     @Value("${config.allowed-origins}")
     private String allowedOrigins;
@@ -80,8 +77,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
                 .mvcMatchers(HttpMethod.GET,"/organizations/**").permitAll()
-                .mvcMatchers(HttpMethod.PUT,"/organizations/**").permitAll()
-                .mvcMatchers(HttpMethod.POST,"/organizations/**").permitAll()
+                .mvcMatchers(HttpMethod.PUT,"/organizations/**").hasRole(manageOrganizationsRole)
+                .mvcMatchers(HttpMethod.POST,"/organizations/**").hasRole(manageOrganizationsRole)
                 .mvcMatchers(HttpMethod.GET,"/users/{userId}/groups").access(String.format("hasRole('%s') and hasRole('%s')", viewUsersRole, viewGroupsRole))
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
                 .mvcMatchers(HttpMethod.POST, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
