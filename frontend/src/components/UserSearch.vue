@@ -407,7 +407,9 @@ export default {
         )).data;
         for (let e of results) {
           if (e.lastLogDate) {
-            e.lastLogDate = formatDate(e.lastLogDate);
+            if(e.lastLogDate !== 'Over a year ago'){
+              e.lastLogDate = formatDate(e.lastLogDate);
+            }
           }
         }
         this.setSearchResults(results);

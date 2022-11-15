@@ -109,12 +109,12 @@ public class UsersController {
             if (clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())) {
                 clientAndRolesJoins = Optional.of(
                         " JOIN KEYCLOAK.USER_ROLE_MAPPING urm ON urm.USER_ID = ee.USER_ID"
-                        + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
-                        + " JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT"
+                                + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
+                                + " JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT"
                 );
                 clientAndRolesCriteria = Optional.of(
                         " AND ee.CLIENT_ID = :clientName"
-                        + " AND kr.NAME IN (:selectedRoles)"
+                                + " AND kr.NAME IN (:selectedRoles)"
                 );
                 namedParameters.put("clientName", clientName.get());
                 namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
@@ -146,9 +146,53 @@ public class UsersController {
                     filteredUsersByLastLog.add(user);
                 }
             }
+
+            //Users who haven't logged in for over a year
+            String inactiveForOverYearSql = "";
+            List<Map<String, Object>> inactiveForOverYearQueryResult = new ArrayList<>();
+            if (lastLogBefore.isPresent()) {
+                if (clientName.isPresent() && clientId.isPresent()) {
+                    //Users who have those roles but no events connected to them
+                    inactiveForOverYearSql
+                            = "SELECT * FROM keycloak.USER_ENTITY ue "
+                            + "JOIN KEYCLOAK.USER_ROLE_MAPPING urm ON urm.USER_ID = ue.ID "
+                            + "JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
+                            + "JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT "
+                            + "LEFT JOIN KEYCLOAK.EVENT_ENTITY ee ON ue.ID = ee.USER_ID "
+                            + "WHERE ee.USER_ID IS NULL "
+                            + "AND c.CLIENT_ID = :clientName "
+                            + "AND kr.NAME IN (:selectedRoles) "
+                            + "AND ue.CREATED_TIMESTAMP < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
+
+                    namedParameters.remove("lastLogAfterEpoch");
+                    namedParameters.remove("lastLogBeforeEpoch");
+                    inactiveForOverYearQueryResult = namedParameterJdbcTemplate.queryForList(inactiveForOverYearSql, namedParameters);
+                } else {
+                    inactiveForOverYearSql
+                            = "SELECT ue.ID  FROM keycloak.USER_ENTITY ue "
+                            + "LEFT JOIN keycloak.EVENT_ENTITY ee ON ue.ID = ee.USER_ID "
+                            + "WHERE ee.USER_ID IS NULL "
+                            + "AND ue.CREATED_TIMESTAMP < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
+                    inactiveForOverYearQueryResult = namedParameterJdbcTemplate.getJdbcOperations().queryForList(inactiveForOverYearSql);
+                }
+
+                Map<String, Object> inactiveForOverYearIds = new HashMap<>();
+                for (Map<String, Object> o : inactiveForOverYearQueryResult) {
+                    inactiveForOverYearIds.put(o.get("ID").toString(), "Over a year ago");
+                }
+
+                List<Object> usersInactiveForOverYear = new ArrayList<>();
+                for (Object user : users) {
+                    String userId = ((LinkedHashMap) user).get("id").toString();
+                    if (!userId.isEmpty() && inactiveForOverYearIds.containsKey(userId)) {
+                        ((LinkedHashMap) user).put("lastLogDate", inactiveForOverYearIds.get(userId));
+                        usersInactiveForOverYear.add(user);
+                    }
+                }
+                filteredUsersByLastLog.addAll(usersInactiveForOverYear);
+            }
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
         }
-
         return searchResults;
     }
 
@@ -337,7 +381,7 @@ public class UsersController {
     }
 
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
-    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
+    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
         return webClientService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
     }
 
