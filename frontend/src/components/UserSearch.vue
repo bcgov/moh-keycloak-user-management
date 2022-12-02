@@ -406,7 +406,7 @@ export default {
           `?briefRepresentation=false&first=0&max=${maxSearch}` + queryParameters
         )).data;
         for (let e of results) {
-          if (e.lastLogDate) {
+          if (e.lastLogDate && e.lastLogDate !== 'Over a year ago') {
             e.lastLogDate = formatDate(e.lastLogDate);
           }
         }

@@ -93,28 +93,28 @@ public class UsersController {
 
         if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
             Map<String, Object> namedParameters = new HashMap<>();
-            String customDateCriteria = " AND event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
+            String customDateCriteria = " AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
             Optional<String> lastLogBeforeCriteria = Optional.empty();
             if (lastLogAfter.isPresent()) {
                 Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                customDateCriteria = " AND event_time > :lastLogAfterEpoch";
+                customDateCriteria = " AND ee.event_time > :lastLogAfterEpoch";
                 namedParameters.put("lastLogAfterEpoch", lastLogAfterEpoch);
             } else {
                 Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                lastLogBeforeCriteria = Optional.of(" HAVING MAX(event_time) < :lastLogBeforeEpoch");
+                lastLogBeforeCriteria = Optional.of(" HAVING MAX(ee.event_time) < :lastLogBeforeEpoch");
                 namedParameters.put("lastLogBeforeEpoch", lastLogBeforeEpoch);
             }
             Optional<String> clientAndRolesJoins = Optional.empty();
             Optional<String> clientAndRolesCriteria = Optional.empty();
             if (clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())) {
                 clientAndRolesJoins = Optional.of(
-                        " JOIN KEYCLOAK.USER_ROLE_MAPPING urm ON urm.USER_ID = ee.USER_ID"
-                        + " JOIN KEYCLOAK.KEYCLOAK_ROLE kr ON kr.ID = urm.ROLE_ID "
-                        + " JOIN KEYCLOAK.CLIENT c ON c.ID = kr.CLIENT"
+                        " JOIN keycloak.user_role_mapping urm ON urm.user_id = ue.id"
+                                + " JOIN keycloak.keycloak_role kr ON kr.id = urm.role_id"
+                                + " JOIN keycloak.client c ON c.id = kr.client"
                 );
                 clientAndRolesCriteria = Optional.of(
-                        " AND ee.CLIENT_ID = :clientName"
-                        + " AND kr.NAME IN (:selectedRoles)"
+                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientName) OR (ee.client_id IS NULL AND c.client_id = :clientName))"
+                                + " AND kr.name IN (:selectedRoles)"
                 );
                 namedParameters.put("clientName", clientName.get());
                 namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
@@ -122,20 +122,20 @@ public class UsersController {
             final String DO_NOT_INCLUDE = "";
 
             String sql
-                    = "SELECT ee.user_id, MAX(ee.event_time) AS last_login"
-                    + " FROM keycloak.event_entity ee"
+                    = "SELECT ue.id, MAX(ee.event_time) AS LAST_LOGIN"
+                    + "  FROM keycloak.user_entity ue"
+                    + "  JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
                     + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
-                    + " WHERE ee.type='LOGIN'"
-                    + " AND ee.user_id IS NOT NULL" + customDateCriteria
+                    + " WHERE ee.type='LOGIN'" + customDateCriteria
                     + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
-                    + " GROUP BY ee.user_id"
+                    + " GROUP BY ue.id"
                     + lastLogBeforeCriteria.orElse(DO_NOT_INCLUDE);
 
             List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
 
             Map<String, Object> usersLastLogin = new HashMap<>();
             for (Map<String, Object> o : queryResult) {
-                usersLastLogin.put(o.get("USER_ID").toString(), o.get("LAST_LOGIN"));
+                usersLastLogin.put(o.get("id").toString(), o.get("LAST_LOGIN"));
             }
 
             List<Object> filteredUsersByLastLog = new ArrayList<>();
@@ -146,9 +146,38 @@ public class UsersController {
                     filteredUsersByLastLog.add(user);
                 }
             }
+
+            //Users who haven't logged in for over a year
+            if (lastLogBefore.isPresent()) {
+                //Users who have those roles but no events connected to them
+                sql
+                    = "SELECT ue.id"
+                    + "  FROM keycloak.user_entity ue"
+                    + "  LEFT JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
+                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
+                    + " WHERE ee.user_id IS NULL"
+                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
+                    + "   AND ue.created_timestamp < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
+
+                queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
+
+                Map<String, Object> inactiveForOverYearIds = new HashMap<>();
+                for (Map<String, Object> o : queryResult) {
+                    inactiveForOverYearIds.put(o.get("id").toString(), "Over a year ago");
+                }
+
+                List<Object> usersInactiveForOverYear = new ArrayList<>();
+                for (Object user : users) {
+                    String userId = ((LinkedHashMap) user).get("id").toString();
+                    if (!userId.isEmpty() && inactiveForOverYearIds.containsKey(userId)) {
+                        ((LinkedHashMap) user).put("lastLogDate", inactiveForOverYearIds.get(userId));
+                        usersInactiveForOverYear.add(user);
+                    }
+                }
+                filteredUsersByLastLog.addAll(usersInactiveForOverYear);
+            }
             searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
         }
-
         return searchResults;
     }
 
@@ -337,7 +366,7 @@ public class UsersController {
     }
 
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
-    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
+    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
         return webClientService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
     }
 
