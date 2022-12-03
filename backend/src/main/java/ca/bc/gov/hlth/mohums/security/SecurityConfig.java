@@ -77,7 +77,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET,"/users/**").hasRole(viewUsersRole)
                 .mvcMatchers(HttpMethod.POST, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
                 .mvcMatchers(HttpMethod.POST,"/users/**").hasRole(createUserRole)
-                .mvcMatchers(HttpMethod.PUT,"/users/**").hasRole(manageUserDetailsRole)
+                .mvcMatchers(HttpMethod.PUT,"/users/{userId}").hasRole(manageUserDetailsRole)
                 .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
                 .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
                 .mvcMatchers(HttpMethod.DELETE, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
