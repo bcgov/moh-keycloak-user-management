@@ -358,6 +358,7 @@
     {"id" : "00001378", "name" :  "Aragon Development Corporation"},
     {"id" : "00001381", "name" :  "PacificCARE Family Enrichment Society"},
     {"id" : "00001392", "name" :  "Cermaq Canada Ltd."},
+    {"id" : "00001394", "name" :  "District of 100 Mile House"},
     {"id" : "00001395", "name" :  "Town of Ladysmith"},
     {"id" : "00001398", "name" :  "Campbell River And District Hospital"},
     {"id" : "00001401", "name" :  "Vision33 Canada Inc."},
@@ -4036,5 +4037,6 @@
     {"id" : "00025203", "name" :  "A.B. Sea Towing Ltd."},
     {"id" : "00025248", "name" :  "Community Legal Assistance Society"},
     {"id" : "00025349", "name" :  "B.C. Association of Pregnancy Outreach Programs"},
-    {"id" : "00025365", "name" :  "Matcon Civil Constructors Inc."}
+    {"id" : "00025365", "name" :  "Matcon Civil Constructors Inc."},
+    {"id" : "00025379", "name" :  "Ironwood Clay Company Inc."}
 ]

@@ -4,6 +4,7 @@
     {"id" : "00000032", "name" :  "Providence Health Care"},
     {"id" : "00000101", "name" :  "R W Large Memorial Hospital - Bella Bella"},
     {"id" : "00000555", "name" :  "Dr Mary Loewen"},
+    {"id" : "00001394", "name" :  "District of 100 Mile House"},
     {"id" : "00001480", "name" :  "TimberWest Forest Company"},
     {"id" : "00001762", "name" :  "Northern Health Authority"},
     {"id" : "00001763", "name" :  "Interior Health Authority"},
@@ -41,5 +42,6 @@
     {"id" : "00020811", "name" :  "Lower Mainland- HIM - PRS Test"},
     {"id" : "00022061", "name" :  "The College of Podiatric Surgeons of BC - TEST"},
     {"id" : "00022164", "name" :  "Social Development and Poverty Reduction"},
-    {"id" : "00023752", "name" :  "MOH - PRIME - PLR / TEST"}
+    {"id" : "00023752", "name" :  "MOH - PRIME - PLR / TEST"},
+    {"id" : "00025379", "name" :  "Ironwood Clay Company Inc."}
 ]
