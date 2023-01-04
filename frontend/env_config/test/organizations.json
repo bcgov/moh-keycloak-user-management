@@ -4,6 +4,7 @@
     {"id" : "00000032", "name" :  "Providence Health Care"},
     {"id" : "00000101", "name" :  "R W Large Memorial Hospital - Bella Bella"},
     {"id" : "00000555", "name" :  "Dr Mary Loewen"},
+    {"id" : "00001394", "name" :  "District of 100 Mile House"},
     {"id" : "00001480", "name" :  "TimberWest Forest Company"},
     {"id" : "00001762", "name" :  "Northern Health Authority"},
     {"id" : "00001763", "name" :  "Interior Health Authority"},
@@ -26,6 +27,7 @@
     {"id" : "00002887", "name" :  "unknown"},
     {"id" : "00004252", "name" :  "PRS RegAdmin"},
     {"id" : "00005502", "name" :  "ICBC - Head Office"},
+    {"id" : "00006107", "name" :  "Canadian Legion BC Command"},
     {"id" : "00006501", "name" :  "Belkorp Industries Inc - Parent"},
     {"id" : "00006724", "name" :  "MAXIMUS BC Health Inc"},
     {"id" : "00012509", "name" :  "PRS - CareConnect - TEST"},
@@ -37,9 +39,11 @@
     {"id" : "00015824", "name" :  "First Nations Health Authority - Employees"},
     {"id" : "00017583", "name" :  "PHSA C&P Solution - PRS Test"},
     {"id" : "00018228", "name" :  "Ministry of Health  - PRS Test"},
+    {"id" : "00018937", "name" :  "Sierra Landscaping Ltd."},
     {"id" : "00019319", "name" :  "VPP Cerner - Stage"},
     {"id" : "00020811", "name" :  "Lower Mainland- HIM - PRS Test"},
     {"id" : "00022061", "name" :  "The College of Podiatric Surgeons of BC - TEST"},
     {"id" : "00022164", "name" :  "Social Development and Poverty Reduction"},
-    {"id" : "00023752", "name" :  "MOH - PRIME - PLR / TEST"}
+    {"id" : "00023752", "name" :  "MOH - PRIME - PLR / TEST"},
+    {"id" : "00025379", "name" :  "Ironwood Clay Company Inc."}
 ]
