@@ -634,6 +634,7 @@
     {"id" : "00002534", "name" :  "Kohler Ltd"},
     {"id" : "00002539", "name" :  "Gaumont Residence"},
     {"id" : "00002544", "name" :  "Precision Orthotic Laboratory"},
+    {"id" : "00002546", "name" :  "Bandstra Transporation Systems Ltd"},
     {"id" : "00002559", "name" :  "Method Innovation Partners Inc"},
     {"id" : "00002565", "name" :  "Westwinn Group Enterprises Inc."},
     {"id" : "00002568", "name" :  "Ann Davis Transition Society"},
@@ -2730,6 +2731,7 @@
     {"id" : "00018828", "name" :  "Iridia Medical Inc."},
     {"id" : "00018830", "name" :  "Global Port Machinery ltd."},
     {"id" : "00018831", "name" :  "PACIFIC BOLT MANUFACTURING LTD."},
+    {"id" : "00018835", "name" :  "City Centre Care Society"},
     {"id" : "00018838", "name" :  "Ginqo Consulting Ltd"},
     {"id" : "00018839", "name" :  "Legion Manor Victoria"},
     {"id" : "00018848", "name" :  "British Columbia Wine Authority"},
@@ -3891,5 +3893,6 @@
     {"id" : "00025365", "name" :  "Matcon Civil Constructors Inc."},
     {"id" : "00025378", "name" :  "Solutions Staffing Inc."},
     {"id" : "00025379", "name" :  "Ironwood Clay Company Inc."},
+    {"id" : "00025383", "name" :  "Alexander Academy Corporation"},
     {"id" : "00025395", "name" :  "BCSS PG Branch"}
 ]
