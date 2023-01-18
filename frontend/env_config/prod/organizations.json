@@ -2916,6 +2916,7 @@
     {"id" : "00020539", "name" :  "WARMAC VENTURES LTD"},
     {"id" : "00020548", "name" :  "DISTRICT OF BARRIERE"},
     {"id" : "00020623", "name" :  "Frances Andrew Site Furnishings Ltd."},
+    {"id" : "00020625", "name" :  "D.L. Watts Floorings Ltd"},
     {"id" : "00020634", "name" :  "Ross Place Seniors Residence Society"},
     {"id" : "00020635", "name" :  "CAMBRIDGE MERCANTILE CORP"},
     {"id" : "00020659", "name" :  "Tickit Health Ltd."},
@@ -3970,5 +3971,8 @@
     {"id" : "00025395", "name" :  "BCSS PG Branch"},
     {"id" : "00025403", "name" :  "Lu'ma Native BCH Housing Society"},
     {"id" : "00025404", "name" :  "John Howard Society of Okanagan and Kootenay"},
-    {"id" : "00025432", "name" :  "Aboriginal Coalition to End Homelessness Society"}
+    {"id" : "00025432", "name" :  "Aboriginal Coalition to End Homelessness Society"},
+    {"id" : "00025433", "name" :  "Cedars Discovery Centre Ltd"},
+    {"id" : "00025434", "name" :  "Copper Island Care Inc."},
+    {"id" : "00025435", "name" :  "Campbell River Head Injury Support Society"}
 ]
