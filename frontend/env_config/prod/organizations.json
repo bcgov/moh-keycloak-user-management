@@ -735,6 +735,7 @@
     {"id" : "00002811", "name" :  "Whitelaw Twining Law Corporation"},
     {"id" : "00002815", "name" :  "Protec Orthodontic Lab"},
     {"id" : "00002823", "name" :  "VantageOne Credit Union"},
+    {"id" : "00002825", "name" :  "Astra Concrete Ltd."},
     {"id" : "00002832", "name" :  "First Truck Centre Vancouver Inc."},
     {"id" : "00002834", "name" :  "Slegg Developments Ltd"},
     {"id" : "00002835", "name" :  "British Columbia Lung Association"},
@@ -1699,6 +1700,7 @@
     {"id" : "00009364", "name" :  "Pacific Radiator Mfg. Ltd."},
     {"id" : "00009365", "name" :  "Pacific Centre for Reproductive Medicine"},
     {"id" : "00009375", "name" :  "Wexxar Packaging Inc."},
+    {"id" : "00009379", "name" :  "Alka Pool Construction Ltd"},
     {"id" : "00009384", "name" :  "Thompson Creek Metals"},
     {"id" : "00009397", "name" :  "Brian Jessel BMW"},
     {"id" : "00009414", "name" :  "Comox Valley Mental Health and Addiction Services"},
@@ -2147,6 +2149,7 @@
     {"id" : "00013121", "name" :  "Sony Pictures Imageworks Canada Inc"},
     {"id" : "00013122", "name" :  "Silvercorp Metals Inc"},
     {"id" : "00013149", "name" :  "BMC Networks Inc."},
+    {"id" : "00013150", "name" :  "Pacific Chevrolet Buick GMC Ltd."},
     {"id" : "00013152", "name" :  "Canusa Wood Products Limited"},
     {"id" : "00013157", "name" :  "Westcana Electric Inc"},
     {"id" : "00013179", "name" :  "PJS Systems Inc"},
@@ -3974,5 +3977,6 @@
     {"id" : "00025432", "name" :  "Aboriginal Coalition to End Homelessness Society"},
     {"id" : "00025433", "name" :  "Cedars Discovery Centre Ltd"},
     {"id" : "00025434", "name" :  "Copper Island Care Inc."},
-    {"id" : "00025435", "name" :  "Campbell River Head Injury Support Society"}
+    {"id" : "00025435", "name" :  "Campbell River Head Injury Support Society"},
+    {"id" : "00025439", "name" :  "Lift Community Services of Qathet Society"}
 ]
