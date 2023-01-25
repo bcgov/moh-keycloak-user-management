@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
@@ -16,6 +17,8 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.ProxyProvider;
 
 @Configuration
 public class WebClientConfig {
@@ -33,6 +36,15 @@ public class WebClientConfig {
 
     @Value("${spring.codec.max-in-memory-size-mb}")
     int maxInMemorySize;
+
+    @Value("${proxy.type}")
+    private String proxyType;
+
+    @Value("${proxy.host}")
+    private String proxyHost;
+
+    @Value("${proxy.port}")
+    private int proxyPort;
 
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
@@ -72,7 +84,12 @@ public class WebClientConfig {
     public WebClient organizationsApiWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
         String registrationId = "keycloak-moh";
         ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
-        return createWebClient(oauth, organizationsApiBaseUrl);
+
+        if (isLocalEnvironment()) {
+            return createWebClient(oauth, organizationsApiBaseUrl);
+        } else {
+            return createWebClientWithProxy(oauth, organizationsApiBaseUrl);
+        }
     }
 
     private ServletOAuth2AuthorizedClientExchangeFilterFunction createOauthFilterFunction(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId) {
@@ -81,6 +98,10 @@ public class WebClientConfig {
         oauth.setDefaultClientRegistrationId(registrationId);
 
         return oauth;
+    }
+
+    private boolean isLocalEnvironment() {
+        return proxyType.equals("DIRECT");
     }
 
     private WebClient createWebClient(ServletOAuth2AuthorizedClientExchangeFilterFunction oauth, String baseUrl) {
@@ -96,6 +117,23 @@ public class WebClientConfig {
                 .build();
     }
 
+    private WebClient createWebClientWithProxy(ServletOAuth2AuthorizedClientExchangeFilterFunction oauth, String baseUrl) {
+        ReactorClientHttpConnector connector = new ReactorClientHttpConnector(configureProxy());
+        return createWebClient(oauth, baseUrl).mutate().clientConnector(connector).build();
+    }
+
+    /*
+     * For local development set proxy.type variable in application properties to DIRECT
+     */
+    private HttpClient configureProxy() {
+        return HttpClient.create()
+                .tcpConfiguration(tcpClient -> tcpClient
+                        .proxy(proxy -> proxy
+                                .type(ProxyProvider.Proxy.valueOf(proxyType))
+                                .host(proxyHost)
+                                .port(proxyPort)));
+    }
+
     /*
      * Log request details for the downstream web service calls
      */
@@ -106,5 +144,5 @@ public class WebClientConfig {
             return Mono.just(c);
         });
     }
-    
+
 }

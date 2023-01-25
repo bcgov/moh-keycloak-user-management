@@ -63,7 +63,7 @@
           OrganizationsRepository.createOrganization(this.organization)
               .then(() => {
             this.$store.commit("alert/setAlert", {
-              message: "Organization created successfully",
+              message: `Organization created successfully! Details: ${this.organization.organizationId}, ${this.organization.name}`,
               type: "success"
             });
           }).then(() => {
@@ -72,9 +72,9 @@
             this.$refs.form.reset()
           })
             .catch(error => {
-            const errorMessage = error.message.includes('409') ? error.message + ". Organization with given ID already exists." : error.message
+            const errorMessage = error.message.includes('409') ? `${error.message}. Organization with given ID already exists.` : error.message
             this.$store.commit("alert/setAlert", {
-              message: "Error creating organization: " + errorMessage,
+              message: `Error creating organization: ${errorMessage}`,
               type: "error"
             });
           })

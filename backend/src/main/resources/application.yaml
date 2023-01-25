@@ -5,6 +5,10 @@ keycloak-moh:
 keycloak-master:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master
+proxy:
+  type: HTTP
+  host: apiproxyd.hlth.gov.bc.ca
+  port: 80
 user-management-client:
   roles:
     view-clients: view-clients
