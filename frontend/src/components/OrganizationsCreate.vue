@@ -1,7 +1,8 @@
 <template>
     <div id="organization">
+      <h1>Create New Organization</h1>
       <v-card outlined class="subgroup">
-        <h2>Organization Create</h2>
+        <h2>Organization Details</h2>
         <v-row no-gutters>
           <v-col class="col-7">
             <v-form ref="form">

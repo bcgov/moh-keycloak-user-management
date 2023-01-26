@@ -21,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -153,7 +154,7 @@ public class MoHUmsIntegrationTests {
         Assumptions.assumeTrue(isDevEnvironment());
 
         WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        String organizationId = UUID.randomUUID().toString();
+        String organizationId = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 16)).substring(0, 8);
         orgApiWebTestClient
                 .post()
                 .uri("/organizations")
