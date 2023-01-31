@@ -4,6 +4,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -181,7 +182,9 @@ public class MoHUmsIntegrationTests {
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
 
+    /* test ignored until further talks about editing organizations */
     @Test
+    @Ignore
     public void editOrganizationSuccess() {
         Assumptions.assumeTrue(isDevEnvironment());
 
@@ -194,21 +197,6 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk();
-    }
-
-    @Test
-    public void editOrganizationFailure() {
-        Assumptions.assumeTrue(isDevEnvironment());
-
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        orgApiWebTestClient
-                .post()
-                .uri("/organizations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"00001480\",\"name\":\"Hi Dad\"}")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
 
     @Test

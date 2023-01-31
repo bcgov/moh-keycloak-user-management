@@ -36,13 +36,13 @@
             :loading="organizationSearchLoadingStatus"
             loading-text="Searching for organizations"
           >
-            <!-- HIDDEN UNTIL FURTHER DECISION REGARDING ORG NAME EDIT
-              <template #item.actions="{ item }">
+          
+            <template #item.actions="{ item }">
               <v-icon small @click="openEditOrganizationDialog(item)">
                 mdi-pencil
               </v-icon>
             </template> 
-            -->
+            
           </v-data-table>
 
           <v-dialog content-class="updateOrganizationDialog" v-model="dialog">
@@ -99,7 +99,7 @@
         headers: [
           { text: "ID", value: "organizationId", class: "table-header" },
           { text: "Name", value: "name", class: "table-header" },
-          // { text: "Actions", value: "actions", class: "table-header"}
+          // { text: "Actions", value: "actions", class: "table-header"} disabled until further talks about org edit
         ],
         organizations: this.$organizations,
         organizationToEdit: {
