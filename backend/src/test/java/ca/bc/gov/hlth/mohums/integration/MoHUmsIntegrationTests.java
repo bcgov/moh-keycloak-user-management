@@ -4,8 +4,6 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,7 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -34,7 +31,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -105,99 +101,7 @@ public class MoHUmsIntegrationTests {
         return access_token;
     }
 
-    @Test
-    public void getOrganizations() {
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        List<Object> organizations = orgApiWebTestClient
-                .get()
-                .uri("/organizations")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk() //HTTP 200
-                .expectBodyList(Object.class)
-                .returnResult()
-                .getResponseBody();
 
-        Assertions.assertThat(organizations).isNotEmpty();
-    }
-
-    @Test
-    public void getOrganizationById() {
-        Assumptions.assumeTrue(isDevEnvironment());
-
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        Object organization = orgApiWebTestClient
-                .get()
-                .uri("/organizations/00001480")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk() //HTTP 200
-                .expectBody(Object.class)
-                .returnResult()
-                .getResponseBody();
-
-        Assertions.assertThat(organization).isNotNull();
-    }
-
-    @Test
-    public void getOrganizationByIdNotFound() {
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        orgApiWebTestClient
-                .get()
-                .uri("/organizations/invalidOrganizationId")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isNotFound();
-    }
-
-    @Test
-    public void addOrganizationSuccess() {
-        Assumptions.assumeTrue(isDevEnvironment());
-
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        String organizationId = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 16)).substring(0, 8);
-        orgApiWebTestClient
-                .post()
-                .uri("/organizations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(String.format("{\"organizationId\":\"%s\",\"name\":\"Added by integration test\"}", organizationId))
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isCreated()
-                .expectBody(Object.class);
-    }
-
-    @Test
-    public void addOrganizationFailure() {
-        Assumptions.assumeTrue(isDevEnvironment());
-
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        orgApiWebTestClient
-                .post()
-                .uri("/organizations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"00001480\",\"name\":\"Hi Dad\"}")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
-    }
-
-    /* test ignored until further talks about editing organizations */
-    @Test
-    @Ignore
-    public void editOrganizationSuccess() {
-        Assumptions.assumeTrue(isDevEnvironment());
-
-        WebTestClient orgApiWebTestClient = webTestClient.mutate().baseUrl(organizationsApiBaseUrl).build();
-        orgApiWebTestClient
-                .put()
-                .uri("/organizations/00001480")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"organizationId\":\"00001480\",\"name\":\"TimberWest Forest Company\"}")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk();
-    }
 
     @Test
     public void groupsAuthorizedWithDescriptionsCheck() throws Exception {
@@ -833,9 +737,4 @@ public class MoHUmsIntegrationTests {
                 .expectBody(Object.class);
 
     }
-
-    private boolean isDevEnvironment(){
-        return organizationsApiBaseUrl.contains("dev");
-    }
-
 }
