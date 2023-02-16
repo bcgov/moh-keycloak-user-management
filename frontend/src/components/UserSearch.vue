@@ -105,7 +105,7 @@
             id="org-details"
             v-model="organizationInput"
             :items="organizations"
-            item-value="id"
+            item-value="organizationId"
             outlined
             dense
             clearable
