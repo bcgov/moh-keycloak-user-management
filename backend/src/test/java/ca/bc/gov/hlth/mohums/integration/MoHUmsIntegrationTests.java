@@ -55,6 +55,9 @@ public class MoHUmsIntegrationTests {
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-secret}")
     String masterRealmClientSecret;
 
+    @Value("${keycloak-moh.organizations-api-url}")
+    private String organizationsApiBaseUrl;
+
     @Value("${spring.datasource.url}")
     private String url;
 
@@ -98,6 +101,8 @@ public class MoHUmsIntegrationTests {
         return access_token;
     }
 
+
+
     @Test
     public void groupsAuthorizedWithDescriptionsCheck() throws Exception {
         List<Object> groups = webTestClient
@@ -112,7 +117,7 @@ public class MoHUmsIntegrationTests {
 
         Assertions.assertThat(groups).isNotEmpty();
 
-        groups.stream().map(g -> (LinkedHashMap)g)
+        groups.stream().map(g -> (LinkedHashMap) g)
                 .forEach(g -> Assertions.assertThat(g.get("description")).isNotNull());
     }
 
@@ -227,10 +232,10 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().value(status -> Assertions.assertThat(status).isIn(
-                // CREATED is returned when the user does not already exist.
-                HttpStatus.CREATED.value(),
-                // CONFLICT is returned when the user already exists.
-                HttpStatus.CONFLICT.value()));
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
 
         // ... and another test user with the same e-mail but no Org. ID, ...
         webTestClient
@@ -241,19 +246,19 @@ public class MoHUmsIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().value(status -> Assertions.assertThat(status).isIn(
-                // CREATED is returned when the user does not already exist.
-                HttpStatus.CREATED.value(),
-                // CONFLICT is returned when the user already exists.
-                HttpStatus.CONFLICT.value()));
+                        // CREATED is returned when the user does not already exist.
+                        HttpStatus.CREATED.value(),
+                        // CONFLICT is returned when the user already exists.
+                        HttpStatus.CONFLICT.value()));
 
         // ... when a search is made on that e-mail address AND filtering by Org. ID, ...
         final List<Object> filteredUsers = webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                .path("/users")
-                .queryParam("email", "test@domain.com")
-                .queryParam("org", "00001763")
-                .build())
+                        .path("/users")
+                        .queryParam("email", "test@domain.com")
+                        .queryParam("org", "00001763")
+                        .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -265,7 +270,7 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(filteredUsers).isNotEmpty()
                 // with username = "testWithoutOrgId"
                 .anySatisfy(filteredUser -> Assertions.assertThat(filteredUser)
-                .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
+                        .extracting("username").asString().isEqualToIgnoringCase("testWithOrgId"));
     }
 
     @Test
@@ -273,9 +278,9 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                .path("/users")
-                .queryParam("org", "non_existing_org_id")
-                .build())
+                        .path("/users")
+                        .queryParam("org", "non_existing_org_id")
+                        .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -732,5 +737,4 @@ public class MoHUmsIntegrationTests {
                 .expectBody(Object.class);
 
     }
-
 }
