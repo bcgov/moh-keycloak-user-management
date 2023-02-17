@@ -8,6 +8,9 @@
         <li v-if=dashboardPermission :class="($route.name == 'Dashboard') ? 'active' : 'inactive'">
             <router-link @click.native="resetAlert" :to="{ name: 'Dashboard'}">Dashboard</router-link>
         </li>
+        <li v-if=organizationsPermission :class="($route.name == 'Organizations') ? 'active' : 'inactive'">
+            <router-link @click.native="resetAlert" :to="{ name: 'OrganizationsSearch'}">Organizations</router-link>
+        </li>
       </ul>
     </div>
   </nav>
@@ -20,18 +23,20 @@ export default {
     return{
       dashboardPermission:false,
       userSearchPermission:false,
+      organizationsPermission:false,
       }
   },
   async created() {
     this.checkDashboardPermission();
     this.checkUserSearchPermission();
+    this.checkOrganizationsPermission();
   },
   methods: {
     resetAlert: function () {
       this.$store.commit("alert/dismissAlert");
     },
     checkPermission: function(requiredRoles) {
-      if (requiredRoles.every(role => this.$keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE'].roles.includes(role))) {
+      if (requiredRoles.every(role => this.$keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE']?.roles.includes(role))) {
         return true;
       }
       return false;
@@ -41,6 +46,9 @@ export default {
     },
     checkUserSearchPermission: function() {
         this.userSearchPermission = this.checkPermission(['view-users', 'view-clients', 'view-groups']);
+    },
+    checkOrganizationsPermission: function() {
+        this.organizationsPermission = this.checkPermission(['manage-org']);
     },
   }
 }

@@ -5,6 +5,9 @@ import UserSearch from '../components/UserSearch.vue'
 import UserUpdate from '../components/UserUpdate.vue'
 import UserCreate from '../components/UserCreate.vue'
 import Dashboard from '../components/Dashboard.vue'
+import Organizations from '../views/Organizations.vue'
+import OrganizationsSearch from '../components/OrganizationsSearch.vue'
+import OrganizationsCreate from '../components/OrganizationsCreate.vue'
 import NotFound from  '../views/NotFound.vue'
 import AccessDenied from  '../views/AccessDenied.vue'
 import keycloak from '../keycloak';
@@ -44,6 +47,28 @@ const routes = [
     ]
   },
   {
+    path: '/organizations',
+    component: Organizations,
+    children: [
+      {
+        path: '',
+        component: OrganizationsSearch,
+        name: 'OrganizationsSearch',
+        meta: {
+          requiredRole: ['manage-org']
+        }
+      },
+      {
+        path: 'create',
+        component: OrganizationsCreate,
+        name: 'OrganizationsCreate',
+        meta: {
+          requiredRole: ['manage-org']
+        }
+      },
+    ]
+  },
+  {
     path: '/dashboard',
     component: Dashboard,
     name: 'Dashboard',
@@ -68,7 +93,7 @@ const router = new VueRouter({
 });
 
 const checkAccess = (requiredRoles) => {
-  return !!requiredRoles.every(r => keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE'].roles.includes(r))
+  return !!requiredRoles.every(r => keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE']?.roles.includes(r))
 }
 
 router.beforeEach((to, from, next) => {
