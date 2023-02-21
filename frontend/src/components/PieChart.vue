@@ -63,16 +63,16 @@ export default {
         datasets: [
           {
             backgroundColor: [
-              "#003366",
-              "#134575",
-              "#265784",
-              "#396a94",
-              "#4c7ca3",
-              "#5f8eb2",
-              "#72a0c1",
-              "#85b3d1",
-              "#98c5e0",
-              "#abd7ef",
+              "#1B9CFC",
+              "#FFBC19",
+              "#C75342",
+              "#BF8D13",
+              "#218C74",
+              "#574B90",
+              "#CA6F2B",
+              "#546DE5",
+              "#9AECDB",
+              "#AAA69D",
             ],
             data: this.pieChartData["UNIQUE_USER_COUNT"],
             datalabels: {
@@ -87,7 +87,7 @@ export default {
               },
               font: {
                 family: "BCSans",
-                size: 11, 
+                size: 11,
               },
               offset: (context) => {
                 return chartPct(context) < minPct ? -5 : -45;
@@ -111,10 +111,10 @@ export default {
               label: function (context) {
                 let label = context.label.trim();
                 if (label) {
-                    label += ': ';
+                  label += ': ';
                 }
                 if (context.parsed !== null) {
-                    label += context.parsed + ' [' + chartPct(context).toFixed(1) + '%]';
+                  label += context.parsed + ' [' + chartPct(context).toFixed(1) + '%]';
                 }
                 return label;
               }
@@ -156,4 +156,5 @@ export default {
 </script>
 
 <style scoped>
+
 </style>
