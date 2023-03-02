@@ -1,7 +1,9 @@
 {
   "max_search": 10000,
   "max_results": 1000,
-  "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://user-management-test.hlth.gov.bc.ca",
+  "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi",
+  "keycloak_logout": "https://common-logon-test.hlth.gov.bc.ca/auth/realms/moh_applications/protocol/openid-connect/logout",
+  "redirect_uri": "https://user-management-test.hlth.gov.bc.ca",
   "service_url": "https://user-management-test.api.hlth.gov.bc.ca",
   "sfds_url": "https://sfdstst.hlth.gov.bc.ca/sfds-api",
   "app_title": "MoH User Management (Test)"
