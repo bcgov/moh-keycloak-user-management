@@ -30,7 +30,7 @@
     "@vue/cli-plugin-router": "^4.5.12",
     "@vue/cli-plugin-unit-jest": "^5.0.4",
     "@vue/cli-plugin-vuex": "^4.5.12",
-    "@vue/cli-service": "~4.3.0",
+    "@vue/cli-service": "~5.0.8",
     "@vue/test-utils": "^1.1.4",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
@@ -38,7 +38,7 @@
     "eslint-plugin-vue": "^6.2.2",
     "sass": "^1.32.8",
     "sass-loader": "^8.0.0",
-    "testcafe": "^1.14.0",
+    "testcafe": "^15.1.317922",
     "vue-cli-plugin-vuetify": "^2.3.1",
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.7.2"
