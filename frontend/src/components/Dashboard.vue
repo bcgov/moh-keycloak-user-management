@@ -104,7 +104,7 @@
         <div class="heading">
           <p>Active Total User Count</p>
         </div>
-        <div class="btn-group">
+        <div class="line-chart-btn-group">
           <v-btn
             v-for="format in ['7D', '1M', '6M', '1Y']"
             :key="format"
@@ -330,11 +330,11 @@ tbody {
   color: #003366;
 }
 
-.btn-group {
+.line-chart-btn-group {
   margin-bottom: 10px;
 }
 
-.btn {
+.line-chart-btn-group > button {
   margin-right: 12px;
 }
 </style>

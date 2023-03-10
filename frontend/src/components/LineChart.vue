@@ -3,7 +3,7 @@
     <LineChartGenerator :chartOptions="chartOptions" :chartData="chartData" />
   </div>
 </template>
- 
+
 <script>
 import {
   Chart as ChartJS,
@@ -13,9 +13,9 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
-} from 'chart.js';
-import { Line as LineChartGenerator } from 'vue-chartjs/legacy';
+  Legend,
+} from "chart.js";
+import { Line as LineChartGenerator } from "vue-chartjs/legacy";
 
 ChartJS.register(
   CategoryScale,
@@ -28,7 +28,7 @@ ChartJS.register(
 );
 
 export default {
-  name: 'LineChart',
+  name: "LineChart",
   components: { LineChartGenerator },
   props: {
     lineChartData: {
@@ -40,13 +40,15 @@ export default {
     return {
       chartData: {
         labels: this.lineChartData["DATEE"],
-        datasets: [{
-          label: 'Total user',
-          data: this.lineChartData["ACTIVE_USER_COUNT"],
-          fill: false,
-          borderColor: 'rgb(75, 192, 192)',
-          tension: 0.1
-        }]
+        datasets: [
+          {
+            label: "Total user",
+            data: this.lineChartData["ACTIVE_USER_COUNT"],
+            fill: false,
+            borderColor: "rgb(75, 192, 192)",
+            tension: 0.1,
+          },
+        ],
       },
       chartOptions: {
         animation: true,
@@ -54,23 +56,23 @@ export default {
         maintainAspectRatio: false,
         interaction: {
           intersect: false,
-          mode: 'index',
+          mode: "index",
         },
         plugins: {
           legend: {
-            display: false
+            display: false,
           },
           datalabels: {
-            display: false
+            display: false,
           },
           decimation: {
             enabled: true,
-            algorithm: 'min-max'
-          }
-        }
-      }
-    }
-  }
+            algorithm: "min-max",
+          },
+        },
+      },
+    };
+  },
 };
 </script>
 
