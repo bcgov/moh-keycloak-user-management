@@ -70,8 +70,8 @@
           <p>Active Total User Count</p>
         </div>
         <div class="btn-group">
-          <v-btn class="btn" v-bind:class="getActiveClass('7D')" @click="loadActiveTotalUser('7D')" small
-            rounded>7D</v-btn>
+          <v-btn class="btn" v-bind:class="getActiveClass('7D')" small rounded
+            @click="loadActiveTotalUser('7D')">7D</v-btn>
           <v-btn class="btn" v-bind:class="getActiveClass('1M')" small rounded
             @click="loadActiveTotalUser('1M')">1M</v-btn>
           <v-btn class="btn" v-bind:class="getActiveClass('6M')" small rounded

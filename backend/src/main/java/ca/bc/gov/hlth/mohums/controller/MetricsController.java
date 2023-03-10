@@ -72,35 +72,38 @@ public class MetricsController {
                 + " GROUP BY DATEE"
                 + " ORDER BY DATEE ASC";
 
-        String sqlMonth = " SELECT DATEE, COUNT(1) AS ACTIVE_USER_COUNT" +
-                " FROM (" +
-                " SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS DATEE" +
-                " FROM keycloak.event_entity" +
-                " WHERE type = 'LOGIN'" +
-                " )" +
-                " WHERE DATEE > ADD_MONTHS(CURRENT_DATE, -1) " +
-                " GROUP BY DATEE" +
-                " ORDER BY DATEE ASC";
+        String sqlMonth
+                = " SELECT DATEE, COUNT(1) AS ACTIVE_USER_COUNT"
+                + " FROM ("
+                + "   SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS DATEE"
+                + "   FROM keycloak.event_entity"
+                + "   WHERE type = 'LOGIN'"
+                + " )"
+                + " WHERE DATEE > ADD_MONTHS(CURRENT_DATE, -1) "
+                + " GROUP BY DATEE"
+                + " ORDER BY DATEE ASC";
 
-        String sqlSixMonth = " SELECT DATEE, COUNT(1) AS ACTIVE_USER_COUNT" +
-                " FROM (" +
-                " SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS DATEE" +
-                " FROM keycloak.event_entity" +
-                " WHERE type = 'LOGIN'" +
-                " )" +
-                " WHERE DATEE > ADD_MONTHS(CURRENT_DATE, -6)" +
-                " GROUP BY DATEE" +
-                " ORDER BY DATEE ASC";
+        String sqlSixMonth
+                = " SELECT DATEE, COUNT(1) AS ACTIVE_USER_COUNT"
+                + " FROM ("
+                + "   SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS DATEE"
+                + "   FROM keycloak.event_entity"
+                + "   WHERE type = 'LOGIN'"
+                + " )"
+                + " WHERE DATEE > ADD_MONTHS(CURRENT_DATE, -6)"
+                + " GROUP BY DATEE"
+                + " ORDER BY DATEE ASC";
 
-        String sqlYear = "  SELECT DATEE, COUNT(1) AS ACTIVE_USER_COUNT" +
-                "  FROM (" +
-                "  SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS DATEE" +
-                "  FROM keycloak.event_entity" +
-                "  WHERE type = 'LOGIN'" +
-                "  )" +
-                "  WHERE DATEE > ADD_MONTHS(CURRENT_DATE, -12)" +
-                "  GROUP BY DATEE" +
-                "  ORDER BY DATEE ASC";
+        String sqlYear
+                = "  SELECT DATEE, COUNT(1) AS ACTIVE_USER_COUNT"
+                + "  FROM ("
+                + "    SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS DATEE"
+                + "    FROM keycloak.event_entity"
+                + "    WHERE type = 'LOGIN'"
+                + "  )"
+                + "  WHERE DATEE > ADD_MONTHS(CURRENT_DATE, -12)"
+                + "  GROUP BY DATEE"
+                + "  ORDER BY DATEE ASC";
 
         switch (format) {
             case "1M":
