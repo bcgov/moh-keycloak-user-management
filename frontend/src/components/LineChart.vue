@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       chartData: {
-        labels: this.lineChartData["DATEE"],
+        labels: this.lineChartData["EVENT_DATE"],
         datasets: [
           {
             label: "Total user",

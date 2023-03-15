@@ -106,10 +106,10 @@
         </div>
         <div class="line-chart-btn-group">
           <v-btn
-            v-for="format in ['7D', '1M', '6M', '1Y']"
+            v-for="format in lineChartFormats"
             :key="format"
             class="btn"
-            v-bind:class="getActiveClass(format)"
+            v-bind:class="getLineChartBtnClass(format)"
             small
             rounded
             @click="loadActiveTotalUser(format)"
@@ -171,6 +171,7 @@ export default {
       uniqueUserCountByIDPLoadingStatus: true,
       uniqueUserCountByRealmLoadingStatus: true,
       totalUserCountLoadingStatus: true,
+      lineChartFormats: ["7D", "1M", "6M", "1Y"],
     };
   },
   async created() {
@@ -183,7 +184,7 @@ export default {
     this.mergeActiveUsersCountWithRealmsInfo();
   },
   methods: {
-    getActiveClass(name) {
+    getLineChartBtnClass(name) {
       return this.totalUserCountSelectedFormat == name
         ? "primary"
         : "secondary";
@@ -234,16 +235,14 @@ export default {
     async loadActiveTotalUser(format) {
       this.totalUserCountSelectedFormat = format;
       this.totalUserCountLoadingStatus = true;
-      const response = await MetricsRepository.get(
-        "total-active-user-count/" + format
-      );
+      const response = await MetricsRepository.getTotalActiveUserCount(format);
       const labels = [];
       const dataset = [];
-      for (var key of response.data.entries()) {
-        labels.push(new Date(key[1]["DATEE"]).toISOString().split("T")[0]);
+      for (var key of response.entries()) {
+        labels.push(new Date(key[1]["EVENT_DATE"]).toISOString().split("T")[0]);
         dataset.push(key[1]["ACTIVE_USER_COUNT"]);
       }
-      this.totalUserCount["DATEE"] = labels;
+      this.totalUserCount["EVENT_DATE"] = labels;
       this.totalUserCount["ACTIVE_USER_COUNT"] = dataset;
       this.totalUserCountLoadingStatus = false;
     },
