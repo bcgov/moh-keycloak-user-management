@@ -59,8 +59,7 @@
             v-if="totalNumberOfUsersLoadingStatus"
             ref="dashboardSkeleton"
             type="text"
-            max-width="60px"
-          >
+            max-width="60px">
           </v-skeleton-loader>
         </div>
 
@@ -102,7 +101,7 @@
     <div class="flex">
       <div class="tile" style="width: 1100px">
         <div class="heading">
-          <p>Active Total User Count</p>
+          <p>User Login Events per Day</p>
         </div>
         <div class="line-chart-btn-group">
           <v-btn
@@ -110,11 +109,11 @@
             :key="format"
             class="btn"
             v-bind:class="getLineChartBtnClass(format)"
+            v-bind:title="getLineChartTitle(format)"
+            @click="loadActiveTotalUser(format)"
             small
             rounded
-            @click="loadActiveTotalUser(format)"
-            >{{ format }}</v-btn
-          >
+            >{{ format }}</v-btn>
         </div>
         <LineChart
           :lineChartData="totalUserCount"
@@ -175,12 +174,12 @@ export default {
     };
   },
   async created() {
+    this.loadActiveTotalUser("7D");
     await this.loadActiveUserCount();
     await this.loadRealmsInfo();
     this.loadTotalNumberOfUsers();
     this.loadUniqueUserCountByIDP();
     this.loadUniqueUserCountByRealm();
-    this.loadActiveTotalUser("7D");
     this.mergeActiveUsersCountWithRealmsInfo();
   },
   methods: {
@@ -188,6 +187,19 @@ export default {
       return this.totalUserCountSelectedFormat == name
         ? "primary"
         : "secondary";
+    },
+    getLineChartTitle(format) {
+      const prefix = "Login events from past ";
+      switch (format) {
+        case '1M':
+          return prefix + "one month."
+        case '6M':
+          return prefix + "six months."
+        case '1Y':
+          return prefix + "one year."
+        default:
+          return prefix + "seven days."
+      }
     },
     async loadRealmsInfo() {
       const response = await RealmsRepository.get();

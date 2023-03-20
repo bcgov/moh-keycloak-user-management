@@ -58,6 +58,13 @@ export default {
           intersect: false,
           mode: "index",
         },
+        scales: {
+          xAxis: {
+            ticks: {
+              maxTicksLimit: 24
+            }
+          }
+        },
         plugins: {
           legend: {
             display: false,

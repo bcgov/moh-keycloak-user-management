@@ -59,34 +59,20 @@ public class MetricsController {
         return jdbcTemplate.queryForList(sql);
     }
 
-    @GetMapping("/metrics/total-active-user-count/{format}")
-    public List<Map<String, Object>> getTotalActiveUserCountWeek(@PathVariable String format) throws SQLException {
-        String sqlBase
+    @GetMapping("/metrics/total-active-user-count")
+    public List<Map<String, Object>> getTotalActiveUserCountYear() throws SQLException {
+        String sql
                 = " SELECT EVENT_DATE, COUNT(1) AS ACTIVE_USER_COUNT"
                 + " FROM ("
                 + "    SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS EVENT_DATE"
                 + "    FROM keycloak.event_entity"
                 + "    WHERE type = 'LOGIN'"
                 + "  )"
-                + " %s"
+                + " WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -12)"
                 + " GROUP BY EVENT_DATE"
                 + " ORDER BY EVENT_DATE ASC";
 
-        String sqlWhereWeek = "WHERE EVENT_DATE > to_date(CURRENT_DATE - 7)";
-        String sqlWhereMonth = "WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -1)";
-        String sqlWhereSixMonths = "WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -6)";
-        String sqlWhereYear = "WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -12)";
-
-        switch (format) {
-            case "1M":
-                return jdbcTemplate.queryForList(String.format(sqlBase, sqlWhereMonth));
-            case "6M":
-                return jdbcTemplate.queryForList(String.format(sqlBase, sqlWhereSixMonths));
-            case "1Y":
-                return jdbcTemplate.queryForList(String.format(sqlBase, sqlWhereYear));
-            default:
-                return jdbcTemplate.queryForList(String.format(sqlBase, sqlWhereWeek));
-        }
+        return jdbcTemplate.queryForList(sql);
     }
 
     @GetMapping("/metrics/total-number-of-users")
