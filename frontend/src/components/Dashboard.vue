@@ -109,7 +109,7 @@
             :key="format"
             class="btn"
             v-bind:class="getLineChartBtnClass(format)"
-            v-bind:title="getLineChartTitle(format)"
+            v-bind:title="getLineChartBtnTitle(format)"
             @click="loadActiveTotalUser(format)"
             small
             rounded
@@ -188,7 +188,7 @@ export default {
         ? "primary"
         : "secondary";
     },
-    getLineChartTitle(format) {
+    getLineChartBtnTitle(format) {
       const prefix = "Login events from past ";
       switch (format) {
         case '1M':
