@@ -8,13 +8,13 @@ export default {
         return umsRequest().then(axiosInstance => axiosInstance.get(`${resource}/${queryParams}`));
     },
     async getTotalActiveUserCount(format) {
-        let yearOfActiveUserCount = Vue.prototype.UserCountCache;
+        let yearOfActiveUserCount = Vue.prototype.$UserCountCache;
         if (Object.keys(yearOfActiveUserCount).length === 0) {
           yearOfActiveUserCount = await umsRequest().then((axiosInstance) =>
             axiosInstance
               .get(`${resource}/total-active-user-count`)
               .then((responce) => {
-                Vue.prototype.UserCountCache = responce.data;
+                Vue.prototype.$UserCountCache = responce.data;
                 return responce.data;
               })
           );
