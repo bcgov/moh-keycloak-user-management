@@ -11,6 +11,7 @@ import OrganizationsRepository from './api/OrganizationsRepository';
 
 Vue.config.productionTip = false
 Vue.prototype.$keycloak = keycloak;
+Vue.prototype.$UserCountCache = {};
 Vue.component('downloadCsv', JsonCSV)
 
 keycloak.onAuthSuccess = async function () {
