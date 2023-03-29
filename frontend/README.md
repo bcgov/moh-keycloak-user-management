@@ -23,16 +23,19 @@ npm install
 ```
 
 ### Compiles and hot-reloads for development
+
 ```
 npm run serve
 ```
 
 ### Compiles and minifies for production
+
 ```
 npm run build
 ```
 
 ### Run your unit tests
+
 ```
 npm run test:unit
 ```
@@ -56,10 +59,19 @@ The end-to-end tests require LDAP user credentials. The username `testcafe`, and
 
 Note that these instructions only apply to the MoH's Keycloak server which has an LDAP identify provider configured. To use a different Keycloak server you would need to update the "login" portion of the tests to use your identity provider.
 
-### Lints and fixes files
-```
-npm run lint
-```
+### Lints and format files
+
+Using VSCode, install the recommended extension (voltar + prettier) to be able to auto-format to the standard.
+
+To check lint on all files :
+`npm run lint`
+
+To check if all files are formated :
+`npm run format:check`
+
+To format all the files to the standard :
+`npm run format:run`
 
 ### Customize configuration
+
 See [Configuration Reference](https://cli.vuejs.org/config/).
