@@ -58,6 +58,22 @@ public class MetricsController {
         return jdbcTemplate.queryForList(sql);
     }
 
+    @GetMapping("/metrics/total-active-user-count")
+    public List<Map<String, Object>> getTotalActiveUserCountYear() throws SQLException {
+        String sql
+                = " SELECT EVENT_DATE, COUNT(1) AS ACTIVE_USER_COUNT"
+                + " FROM ("
+                + "    SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS EVENT_DATE"
+                + "    FROM keycloak.event_entity"
+                + "    WHERE type = 'LOGIN'"
+                + "  )"
+                + " WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -12)"
+                + " GROUP BY EVENT_DATE"
+                + " ORDER BY EVENT_DATE ASC";
+
+        return jdbcTemplate.queryForList(sql);
+    }
+
     @GetMapping("/metrics/total-number-of-users")
     public Object getTotalNumberOfUsers() throws SQLException {
         String sql

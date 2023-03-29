@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="dashboard">
+    <div class="flex">
       <div class="column">
         <div class="tile" style="width: 620px">
           <div class="heading">
@@ -17,25 +17,28 @@
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
           >
-           <template #item.REALM="{item}">
-              <v-tooltip bottom :disabled="!item.REALM_DESCRIPTION" max-width="300px">
+            <template #item.REALM="{ item }">
+              <v-tooltip
+                bottom
+                :disabled="!item.REALM_DESCRIPTION"
+                max-width="300px"
+              >
                 <template v-slot:activator="{ on }">
-                  <span v-on="on">{{item.REALM}}</span>
+                  <span v-on="on">{{ item.REALM }}</span>
                 </template>
-                <span>{{item.REALM_DESCRIPTION}}</span>
+                <span>{{ item.REALM_DESCRIPTION }}</span>
               </v-tooltip>
             </template>
-            <template #item.CLIENT="{item}">
-               <v-tooltip bottom :disabled="!item.DESCRIPTION" max-width="300px">
+            <template #item.CLIENT="{ item }">
+              <v-tooltip bottom :disabled="!item.DESCRIPTION" max-width="300px">
                 <template v-slot:activator="{ on }">
-                  <span v-on="on">{{item.CLIENT}}</span>
+                  <span v-on="on">{{ item.CLIENT }}</span>
                 </template>
-                <span>{{item.DESCRIPTION}}</span>
+                <span>{{ item.DESCRIPTION }}</span>
               </v-tooltip>
             </template>
           </v-data-table>
         </div>
-
       </div>
       <div class="column">
         <div class="tile">
@@ -45,7 +48,10 @@
               <template v-slot:activator="{ on }">
                 <v-icon v-on="on" small>mdi-help-circle</v-icon>
               </template>
-             <p class="tooltip">Total Unique User Count by IDP + MHSU Realms that do not use an IDP</p>
+              <p class="tooltip">
+                Total Unique User Count by IDP + MHSU Realms that do not use an
+                IDP
+              </p>
             </v-tooltip>
           </div>
           <p class="single-stat">{{ totalNumberOfUsers }}</p>
@@ -61,17 +67,17 @@
           <div class="heading">
             <p>Unique User Count (By IDP)</p>
           </div>
-            <PieChart
+          <PieChart
             :pieChartData="uniqueUserCountByIDP"
-            v-if="!uniqueUserCountByIDPLoadingStatus" 
-            /> 
-            <v-skeleton-loader
+            v-if="!uniqueUserCountByIDPLoadingStatus"
+          />
+          <v-skeleton-loader
             v-if="uniqueUserCountByIDPLoadingStatus"
             ref="dashboardSkeleton"
-            width=''
+            width=""
             type="image"
-            >
-            </v-skeleton-loader>
+          >
+          </v-skeleton-loader>
         </div>
 
         <div class="tile">
@@ -82,26 +88,57 @@
             :pieChartData="uniqueUserCountByRealm"
             v-if="!uniqueUserCountByRealmLoadingStatus"
           />
-            <v-skeleton-loader
+          <v-skeleton-loader
             v-if="uniqueUserCountByIDPLoadingStatus"
             ref="dashboardSkeleton"
-            width=''
-            type="image">
+            width=""
+            type="image"
+          >
           </v-skeleton-loader>
         </div>
+      </div>
+    </div>
+    <div class="flex">
+      <div class="tile" style="width: 1100px">
+        <div class="heading">
+          <p>User Login Events per Day</p>
+        </div>
+        <div class="line-chart-btn-group">
+          <v-btn
+            v-for="format in lineChartFormats"
+            :key="format"
+            class="btn"
+            v-bind:class="getLineChartBtnClass(format)"
+            v-bind:title="getLineChartBtnTitle(format)"
+            @click="loadActiveTotalUser(format)"
+            small
+            rounded
+            >{{ format }}</v-btn>
+        </div>
+        <LineChart
+          :lineChartData="totalUserCount"
+          v-if="!totalUserCountLoadingStatus"
+        />
+        <v-skeleton-loader
+          v-if="totalUserCountLoadingStatus"
+          ref="dashboardSkeleton"
+          width=""
+          type="image"
+        >
+        </v-skeleton-loader>
       </div>
     </div>
   </div>
 </template>
 
-
 <script>
 import MetricsRepository from "@/api/MetricsRepository";
 import RealmsRepository from "@/api/RealmsRepository";
-import PieChart from '@/components/PieChart'
+import PieChart from "@/components/PieChart";
+import LineChart from "@/components/LineChart";
 
 export default {
-  components: { PieChart },
+  components: { PieChart, LineChart },
   data() {
     return {
       headerActiveUserCount: [
@@ -125,23 +162,46 @@ export default {
       activeUserCount: [],
       uniqueUserCountByIDP: {},
       uniqueUserCountByRealm: {},
+      totalUserCount: {},
+      totalUserCountSelectedFormat: "7D",
       realmsInfo: [],
-      totalNumberOfUsersLoadingStatus:true,
+      totalNumberOfUsersLoadingStatus: true,
       activeUserCountLoadingStatus: true,
       uniqueUserCountByIDPLoadingStatus: true,
       uniqueUserCountByRealmLoadingStatus: true,
+      totalUserCountLoadingStatus: true,
+      lineChartFormats: ["7D", "1M", "6M", "1Y"],
     };
   },
   async created() {
-      await this.loadActiveUserCount();
-      await this.loadRealmsInfo();
-      this.loadTotalNumberOfUsers();
-      this.loadUniqueUserCountByIDP();
-      this.loadUniqueUserCountByRealm();
-      this.mergeActiveUsersCountWithRealmsInfo();
+    this.loadActiveTotalUser("7D");
+    await this.loadActiveUserCount();
+    await this.loadRealmsInfo();
+    this.loadTotalNumberOfUsers();
+    this.loadUniqueUserCountByIDP();
+    this.loadUniqueUserCountByRealm();
+    this.mergeActiveUsersCountWithRealmsInfo();
   },
   methods: {
-     async loadRealmsInfo() {
+    getLineChartBtnClass(name) {
+      return this.totalUserCountSelectedFormat == name
+        ? "primary"
+        : "secondary";
+    },
+    getLineChartBtnTitle(format) {
+      const prefix = "Login events from past ";
+      switch (format) {
+        case '1M':
+          return prefix + "one month."
+        case '6M':
+          return prefix + "six months."
+        case '1Y':
+          return prefix + "one year."
+        default:
+          return prefix + "seven days."
+      }
+    },
+    async loadRealmsInfo() {
       const response = await RealmsRepository.get();
       this.realmsInfo = response.data;
       this.activeUserCountLoadingStatus = false;
@@ -161,8 +221,8 @@ export default {
       const labels = [];
       const dataset = [];
       for (var key of response.data.entries()) {
-        labels.push(key[1]["IDP"].padEnd(20))
-        dataset.push(key[1]["UNIQUE_USER_COUNT"])
+        labels.push(key[1]["IDP"].padEnd(20));
+        dataset.push(key[1]["UNIQUE_USER_COUNT"]);
       }
 
       this.uniqueUserCountByIDP["labels"] = labels;
@@ -170,41 +230,60 @@ export default {
       this.uniqueUserCountByIDPLoadingStatus = false;
     },
     async loadUniqueUserCountByRealm() {
-      const response = await MetricsRepository.get("unique-user-count-by-realm");
+      const response = await MetricsRepository.get(
+        "unique-user-count-by-realm"
+      );
       const labels = [];
       const dataset = [];
       for (var key of response.data.entries()) {
-        labels.push(key[1]["REALM"].padEnd(20))
-        dataset.push(key[1]["UNIQUE_USER_COUNT"])
+        labels.push(key[1]["REALM"].padEnd(20));
+        dataset.push(key[1]["UNIQUE_USER_COUNT"]);
       }
 
       this.uniqueUserCountByRealm["labels"] = labels;
       this.uniqueUserCountByRealm["UNIQUE_USER_COUNT"] = dataset;
       this.uniqueUserCountByRealmLoadingStatus = false;
     },
+    async loadActiveTotalUser(format) {
+      this.totalUserCountSelectedFormat = format;
+      this.totalUserCountLoadingStatus = true;
+      const response = await MetricsRepository.getTotalActiveUserCount(format);
+      const labels = [];
+      const dataset = [];
+      for (var key of response.entries()) {
+        labels.push(new Date(key[1]["EVENT_DATE"]).toISOString().split("T")[0]);
+        dataset.push(key[1]["ACTIVE_USER_COUNT"]);
+      }
+      this.totalUserCount["EVENT_DATE"] = labels;
+      this.totalUserCount["ACTIVE_USER_COUNT"] = dataset;
+      this.totalUserCountLoadingStatus = false;
+    },
     mergeActiveUsersCountWithRealmsInfo() {
-      this.activeUserCount = this.activeUserCount.map(item => {
-        return{...item, REALM_DESCRIPTION: this.realmsInfo.find(realm => realm.REALM === item.REALM).DESCRIPTION}
-      })
+      this.activeUserCount = this.activeUserCount.map((item) => {
+        return {
+          ...item,
+          REALM_DESCRIPTION: this.realmsInfo.find(
+            (realm) => realm.REALM === item.REALM
+          )?.DESCRIPTION,
+        };
+      });
     },
     handleError(message, error) {
       this.$store.commit("alert/setAlert", {
         message: message + ": " + error,
-        type: "error"
+        type: "error",
       });
       window.scrollTo(0, 0);
     },
     checkEmpty() {
       return true;
-    }
+    },
   },
 };
 </script>
 
-
-
 <style scoped>
-.dashboard {
+.flex {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -241,9 +320,9 @@ export default {
   color: #003366;
 }
 
-.tooltip{
-    color:white;
-    margin: 0px;
+.tooltip {
+  color: white;
+  margin: 0px;
 }
 
 .tile .tile-table {
@@ -260,5 +339,13 @@ tbody {
   font-weight: bold;
   font-size: 25px;
   color: #003366;
+}
+
+.line-chart-btn-group {
+  margin-bottom: 10px;
+}
+
+.line-chart-btn-group > button {
+  margin-right: 12px;
 }
 </style>
