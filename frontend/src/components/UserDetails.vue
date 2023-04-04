@@ -6,21 +6,63 @@
       <v-row no-gutters>
         <v-col class="col-7">
           <v-form ref="form">
-            <label for="user-name" :disabled="!!userId || !editUserDetailsPermission" class="required">Username</label>
+            <label
+              for="user-name"
+              :disabled="!!userId || !editUserDetailsPermission"
+              class="required"
+            >
+              Username
+            </label>
             <v-tooltip right v-if="!userId">
               <template v-slot:activator="{ on }">
-                <v-icon id="user-name-tooltip-icon" v-on="on" small>mdi-help-circle</v-icon>
+                <v-icon id="user-name-tooltip-icon" v-on="on" small>
+                  mdi-help-circle
+                </v-icon>
               </template>
-              <span>Username should include the corresponding prefix or suffix in alignment with the id type.
+              <span>
+                Username should include the corresponding prefix or suffix in
+                alignment with the id type.
                 <ul>
-                  <li>IDIR: username<strong>@idir</strong></li>
-                  <li>Business BCeID: username<strong>@bceid_business</strong></li>
-                  <li>Fraser Health: <strong>sfhr\</strong>username</li>
-                  <li>Interior Health: <strong>iha\</strong>username</li>
-                  <li>Northern Health: <strong>nirhb\</strong>username</li>
-                  <li>Provincial Health: <strong>phsabc\</strong>username</li>
-                  <li>Vancouver Coastal Health: <strong>vch\</strong>username or <strong>vrhb\</strong>username</li>
-                  <li>Vancouver Island Health: <strong>viha\</strong>username</li>
+                  <li>
+                    IDIR: username
+                    <strong>@idir</strong>
+                  </li>
+                  <li>
+                    Business BCeID: username
+                    <strong>@bceid_business</strong>
+                  </li>
+                  <li>
+                    Fraser Health:
+                    <strong>sfhr\</strong>
+                    username
+                  </li>
+                  <li>
+                    Interior Health:
+                    <strong>iha\</strong>
+                    username
+                  </li>
+                  <li>
+                    Northern Health:
+                    <strong>nirhb\</strong>
+                    username
+                  </li>
+                  <li>
+                    Provincial Health:
+                    <strong>phsabc\</strong>
+                    username
+                  </li>
+                  <li>
+                    Vancouver Coastal Health:
+                    <strong>vch\</strong>
+                    username or
+                    <strong>vrhb\</strong>
+                    username
+                  </li>
+                  <li>
+                    Vancouver Island Health:
+                    <strong>viha\</strong>
+                    username
+                  </li>
                 </ul>
               </span>
             </v-tooltip>
@@ -31,10 +73,16 @@
               id="user-name"
               v-model.trim="user.username"
               required
-              :rules="[v => !!v || 'Username is required']"
+              :rules="[(v) => !!v || 'Username is required']"
             />
 
-            <label :disabled="!editUserDetailsPermission" for="first-name" class="required">First Name</label>
+            <label
+              :disabled="!editUserDetailsPermission"
+              for="first-name"
+              class="required"
+            >
+              First Name
+            </label>
             <v-text-field
               dense
               outlined
@@ -42,10 +90,16 @@
               id="first-name"
               v-model="user.firstName"
               required
-              :rules="[v => !!v || 'First Name is required']"
+              :rules="[(v) => !!v || 'First Name is required']"
             />
 
-            <label :disabled="!editUserDetailsPermission" for="last-name" class="required">Last Name</label>
+            <label
+              :disabled="!editUserDetailsPermission"
+              for="last-name"
+              class="required"
+            >
+              Last Name
+            </label>
             <v-text-field
               dense
               outlined
@@ -53,10 +107,16 @@
               id="last-name"
               v-model="user.lastName"
               required
-              :rules="[v => !!v || 'Last Name is required']"
+              :rules="[(v) => !!v || 'Last Name is required']"
             />
 
-            <label :disabled="!editUserDetailsPermission" for="email" class="required">Email Address</label>
+            <label
+              :disabled="!editUserDetailsPermission"
+              for="email"
+              class="required"
+            >
+              Email Address
+            </label>
             <v-text-field
               dense
               outlined
@@ -68,35 +128,74 @@
               type="email"
             />
 
-            <label :disabled="!editUserDetailsPermission" for="phone">Telephone Number</label>
-            <v-text-field dense outlined :disabled="!editUserDetailsPermission" id="phone" v-model="user.attributes.phone" />
+            <label :disabled="!editUserDetailsPermission" for="phone">
+              Telephone Number
+            </label>
+            <v-text-field
+              dense
+              outlined
+              :disabled="!editUserDetailsPermission"
+              id="phone"
+              v-model="user.attributes.phone"
+            />
 
-            <label :disabled="!editUserDetailsPermission" for="org-details">Organization</label>
+            <label :disabled="!editUserDetailsPermission" for="org-details">
+              Organization
+            </label>
             <v-autocomplete
-                id="org-details"
-                :disabled="!editUserDetailsPermission"
-                v-model="user.attributes.org_details"
-                :items="organizations"
-                dense
-                outlined
+              id="org-details"
+              :disabled="!editUserDetailsPermission"
+              v-model="user.attributes.org_details"
+              :items="organizations"
+              dense
+              outlined
             ></v-autocomplete>
 
-            <label :disabled="!editUserDetailsPermission" for="notes">Notes</label>
-            <v-textarea outlined dense id="notes" :disabled="!editUserDetailsPermission" v-model="user.attributes.access_team_notes" maxlength="255" />
-
+            <label :disabled="!editUserDetailsPermission" for="notes">
+              Notes
+            </label>
+            <v-textarea
+              outlined
+              dense
+              id="notes"
+              :disabled="!editUserDetailsPermission"
+              v-model="user.attributes.access_team_notes"
+              maxlength="255"
+            />
           </v-form>
         </v-col>
-        <v-col class="col-4" style="margin-left: 30px; padding-left: 20px; border-left: 1px solid #efefef" v-if="this.userId">
+        <v-col
+          class="col-4"
+          style="
+            margin-left: 30px;
+            padding-left: 20px;
+            border-left: 1px solid #efefef;
+          "
+          v-if="this.userId"
+        >
           <label for="linked-idps">Linked Identity Types</label>
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
               <span>
-                {{ identity.identityProvider | formatIdentityProvider }} [{{ identity.userName }}]
+                {{ identity.identityProvider | formatIdentityProvider }} [{{
+                  identity.userName
+                }}]
               </span>
               <v-tooltip right>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon v-bind="attrs" v-on="on" @click="openResetIdentityProviderLinkDialog(identity.identityProvider)">
-                    <v-icon small style="vertical-align: middle">mdi-link-variant-off</v-icon>
+                  <v-btn
+                    icon
+                    v-bind="attrs"
+                    v-on="on"
+                    @click="
+                      openResetIdentityProviderLinkDialog(
+                        identity.identityProvider
+                      )
+                    "
+                  >
+                    <v-icon small style="vertical-align: middle">
+                      mdi-link-variant-off
+                    </v-icon>
                   </v-btn>
                 </template>
                 <span>Reset Identity Provider Link</span>
@@ -105,22 +204,45 @@
           </ul>
         </v-col>
       </v-row>
-      <v-btn id="submit-button" v-if="editUserDetailsPermission" class="primary" medium @click="updateUser">{{ updateOrCreate }} User</v-btn>
+      <v-btn
+        id="submit-button"
+        v-if="editUserDetailsPermission"
+        class="primary"
+        medium
+        @click="updateUser"
+      >
+        {{ updateOrCreate }} User
+      </v-btn>
     </v-card>
     <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
       <v-card>
         <v-card-title>
-          <span class="headline">Identity Provider Link Reset Confirmation</span>
+          <span class="headline">
+            Identity Provider Link Reset Confirmation
+          </span>
         </v-card-title>
         <v-card-text>
           <br />
-          Are you sure you want to reset the {{ this.selectedIdentityProvider | formatIdentityProvider }} linked identity for this user?
-          <br /><br />
-          Resetting a linked identity will retain all existing roles and details for the user and the identity will be re-linked upon the user's next Keycloak login event.
+          Are you sure you want to reset the
+          {{ this.selectedIdentityProvider | formatIdentityProvider }} linked
+          identity for this user?
+          <br />
+          <br />
+          Resetting a linked identity will retain all existing roles and details
+          for the user and the identity will be re-linked upon the user's next
+          Keycloak login event.
         </v-card-text>
         <v-card-actions>
-          <v-btn class="primary" @click="resetIdentityProviderLink">Reset Identity Provider Link</v-btn>
-          <v-btn outlined class="primary--text" @click="closeResetIdentityProviderLinkDialog">Cancel</v-btn>
+          <v-btn class="primary" @click="resetIdentityProviderLink">
+            Reset Identity Provider Link
+          </v-btn>
+          <v-btn
+            outlined
+            class="primary--text"
+            @click="closeResetIdentityProviderLinkDialog"
+          >
+            Cancel
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -128,166 +250,183 @@
 </template>
 
 <script>
-import UsersRepository from "@/api/UsersRepository";
+  import UsersRepository from "@/api/UsersRepository";
 
-export default {
-  name: "UserDetails",
-  props: ['userId', 'updateOrCreate'],
-  data() {
-    return {
-      organizations: this.$organizations.map((item) => {
-        item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`
-            item.text = `${item.organizationId} - ${item.name}`;
-        return item;
-      }),
-      emailRules: [
-        v => !!v || "Email is required",
-        v => /^\S+@\S+$/.test(v) || "Email is not valid"
-      ],
-      user: {
-        username: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        enabled: true,
-        attributes: {
-          phone: null,
-          org_details: null,
-          access_team_notes: null
+  export default {
+    name: "UserDetails",
+    props: ["userId", "updateOrCreate"],
+    data() {
+      return {
+        organizations: this.$organizations.map((item) => {
+          item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
+          item.text = `${item.organizationId} - ${item.name}`;
+          return item;
+        }),
+        emailRules: [
+          (v) => !!v || "Email is required",
+          (v) => /^\S+@\S+$/.test(v) || "Email is not valid",
+        ],
+        user: {
+          username: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          enabled: true,
+          attributes: {
+            phone: null,
+            org_details: null,
+            access_team_notes: null,
+          },
+          federatedIdentities: null,
         },
-        federatedIdentities: null
-      },
-      dialog: false,
-      selectedIdentityProvider: ""
-    };
-  },
-  async created() {
-    //Create global ref to allow role update from UserUpdateRoles
-    this.$root.$refs.UserDetails = this;
-    // TODO error handling
-    this.$store.commit("user/resetState");
-    if (this.userId) {
-      await this.getUser();
-    }
-  },
-  computed: {
-    editUserDetailsPermission: function() {
-      const onCreateUserPage = !this.userId;
-
-      const umsClientId = "USER-MANAGEMENT-SERVICE";
-      const manageUserDetailsRoleName = "manage-user-details";
-      const createUserRoleName = "create-user";
-
-      const hasManageUserDetails = this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(manageUserDetailsRoleName);
-      const hasCreateUser = this.$keycloak.tokenParsed.resource_access[umsClientId].roles.includes(createUserRoleName);
-
-      if (onCreateUserPage && hasCreateUser) {
-        return true
-      } else if (!onCreateUserPage && hasManageUserDetails) {
-        return true
+        dialog: false,
+        selectedIdentityProvider: "",
+      };
+    },
+    async created() {
+      //Create global ref to allow role update from UserUpdateRoles
+      this.$root.$refs.UserDetails = this;
+      // TODO error handling
+      this.$store.commit("user/resetState");
+      if (this.userId) {
+        await this.getUser();
       }
-      return false
-    }
-  },
-  methods: {
-    openResetIdentityProviderLinkDialog: function(provider) {
-        this.dialog = true;
-        if(this.dialog){
-          this.selectedIdentityProvider = provider
+    },
+    computed: {
+      editUserDetailsPermission: function () {
+        const onCreateUserPage = !this.userId;
+
+        const umsClientId = "USER-MANAGEMENT-SERVICE";
+        const manageUserDetailsRoleName = "manage-user-details";
+        const createUserRoleName = "create-user";
+
+        const hasManageUserDetails = this.$keycloak.tokenParsed.resource_access[
+          umsClientId
+        ].roles.includes(manageUserDetailsRoleName);
+        const hasCreateUser =
+          this.$keycloak.tokenParsed.resource_access[
+            umsClientId
+          ].roles.includes(createUserRoleName);
+
+        if (onCreateUserPage && hasCreateUser) {
+          return true;
+        } else if (!onCreateUserPage && hasManageUserDetails) {
+          return true;
         }
+        return false;
+      },
     },
-    closeResetIdentityProviderLinkDialog: function() {
-      this.dialog = false;
-      this.selectedIdentityProvider = "";
-    },
-    updateUserFederatedIdetities: function(deletedIdentityProvider) {
-      console.log(deletedIdentityProvider);
-      console.log(this.user.federatedIdentities);
-      this.user.federatedIdentities = this.user.federatedIdentities.filter(fi => fi.identityProvider !== deletedIdentityProvider);
-      console.log(this.user.federatedIdentities);
-    },
-    resetIdentityProviderLink: function() {
-      const userIdIdpRealm = this.user.federatedIdentities.find(fi => fi.identityProvider === this.selectedIdentityProvider).userId;
-      console.log(userIdIdpRealm);
-      UsersRepository.resetUserIdentityProviderLink(this.userId, this.selectedIdentityProvider, userIdIdpRealm)
-        .then(() => {
-          this.$store.commit("alert/setAlert", {
-            message: "Identity provider link was reset successfully",
-            type: "success",
+    methods: {
+      openResetIdentityProviderLinkDialog: function (provider) {
+        this.dialog = true;
+        if (this.dialog) {
+          this.selectedIdentityProvider = provider;
+        }
+      },
+      closeResetIdentityProviderLinkDialog: function () {
+        this.dialog = false;
+        this.selectedIdentityProvider = "";
+      },
+      updateUserFederatedIdetities: function (deletedIdentityProvider) {
+        console.log(deletedIdentityProvider);
+        console.log(this.user.federatedIdentities);
+        this.user.federatedIdentities = this.user.federatedIdentities.filter(
+          (fi) => fi.identityProvider !== deletedIdentityProvider
+        );
+        console.log(this.user.federatedIdentities);
+      },
+      resetIdentityProviderLink: function () {
+        const userIdIdpRealm = this.user.federatedIdentities.find(
+          (fi) => fi.identityProvider === this.selectedIdentityProvider
+        ).userId;
+        console.log(userIdIdpRealm);
+        UsersRepository.resetUserIdentityProviderLink(
+          this.userId,
+          this.selectedIdentityProvider,
+          userIdIdpRealm
+        )
+          .then(() => {
+            this.$store.commit("alert/setAlert", {
+              message: "Identity provider link was reset successfully",
+              type: "success",
+            });
+            this.updateUserFederatedIdetities(this.selectedIdentityProvider);
+            this.closeResetIdentityProviderLinkDialog();
+          })
+          .catch((error) => {
+            this.$store.commit("alert/setAlert", {
+              message: "Error resetting identity provider link: " + error,
+              type: "error",
+            });
+          })
+          .finally(() => {
+            window.scrollTo(0, 0);
+            this.selectedIdentityProvider = "";
           });
-          this.updateUserFederatedIdetities(this.selectedIdentityProvider);
-          this.closeResetIdentityProviderLinkDialog();
-        })
-        .catch((error) => {
+      },
+      getUser: function () {
+        return UsersRepository.getUser(this.userId)
+          .then((response) => {
+            this.user = response.data;
+
+            if (!this.user.attributes) {
+              this.user.attributes = {};
+            }
+
+            // Keycloak returns attributes as arrays which doesn't work with the autocomplete for org details
+            if (this.user.attributes.org_details) {
+              this.user.attributes.org_details = formatOrganization(
+                this.user.attributes.org_details
+              );
+            }
+            this.$store.commit("user/setUser", this.user);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      },
+      updateUser: function () {
+        // Validate the User Details
+        if (!this.$refs.form.validate()) {
           this.$store.commit("alert/setAlert", {
-            message: "Error resetting identity provider link: " + error,
+            message: "Please correct errors before submitting",
             type: "error",
           });
-        })
-        .finally(() => {
           window.scrollTo(0, 0);
-          this.selectedIdentityProvider = "";
-        });
+          return;
+        }
+        this.$emit("submit-user-updates", this.user);
+      },
     },
-    getUser: function() {
-      return UsersRepository.getUser(this.userId)
-        .then(response => {
-          this.user = response.data;
-
-          if (!this.user.attributes) {
-            this.user.attributes = {}
-          }
-
-          // Keycloak returns attributes as arrays which doesn't work with the autocomplete for org details
-          if (this.user.attributes.org_details) {
-            this.user.attributes.org_details = formatOrganization(this.user.attributes.org_details);
-          }
-          this.$store.commit("user/setUser", this.user);
-        })
-        .catch(e => {
-          console.log(e);
-        });
+    filters: {
+      // The IDP alias in keycloak doesn't always match what's known by users
+      // Formatted to match standard naming conventions
+      formatIdentityProvider: function (idp) {
+        let formattedIdentityProviders = {
+          phsa: "Health Authority",
+          moh_idp: "MoH LDAP",
+          idir: "IDIR",
+          idir_aad: "IDIR AzureAD",
+          bceid: "BCeID",
+          bcsc: "BCSC",
+        };
+        return formattedIdentityProviders[idp] || idp;
+      },
     },
-    updateUser: function() {
-      // Validate the User Details
-      if (!this.$refs.form.validate()) {
-        this.$store.commit("alert/setAlert", {
-          message: "Please correct errors before submitting",
-          type: "error"
-        });
-        window.scrollTo(0, 0);
-        return;
-      }
-      this.$emit('submit-user-updates', this.user)
-    }
-  },
-  filters: {
-    // The IDP alias in keycloak doesn't always match what's known by users
-    // Formatted to match standard naming conventions
-    formatIdentityProvider: function(idp) {
-      let formattedIdentityProviders = {
-        'phsa': 'Health Authority',
-        'moh_idp': 'MoH LDAP',
-        'idir': 'IDIR',
-        'idir_aad': 'IDIR AzureAD',
-        'bceid': 'BCeID',
-        'bcsc': 'BCSC'
-      }
-      return formattedIdentityProviders[idp] || idp;
+  };
+  function formatOrganization(organization) {
+    if (Array.isArray(organization)) {
+      if (organization[0] === null) return "";
+      return `{"id":"${JSON.parse(organization[0]).id}","name":"${
+        JSON.parse(organization[0]).name
+      }"}`;
+    } else {
+      return organization;
     }
   }
-};
-function formatOrganization(organization) {
-  if (Array.isArray(organization)) {
-    if (organization[0] === null) return "";
-    return `{"id":"${JSON.parse(organization[0]).id}","name":"${JSON.parse(organization[0]).name}"}`
-  } else {
-    return organization;
-  }
-}
 </script>
 <style>
-.resetUserIdentityLinksDialog {
+  .resetUserIdentityLinksDialog {
     margin: 24px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -295,10 +434,10 @@ function formatOrganization(organization) {
     min-width: 450px;
     width: 900px;
     z-index: inherit;
-}
+  }
 </style>
 <style scoped>
-#user-name-tooltip-icon {
-  margin-left: 10px;
-}
+  #user-name-tooltip-icon {
+    margin-left: 10px;
+  }
 </style>

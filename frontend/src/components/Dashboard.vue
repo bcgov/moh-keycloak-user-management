@@ -59,8 +59,8 @@
             v-if="totalNumberOfUsersLoadingStatus"
             ref="dashboardSkeleton"
             type="text"
-            max-width="60px">
-          </v-skeleton-loader>
+            max-width="60px"
+          ></v-skeleton-loader>
         </div>
 
         <div class="tile">
@@ -76,8 +76,7 @@
             ref="dashboardSkeleton"
             width=""
             type="image"
-          >
-          </v-skeleton-loader>
+          ></v-skeleton-loader>
         </div>
 
         <div class="tile">
@@ -93,8 +92,7 @@
             ref="dashboardSkeleton"
             width=""
             type="image"
-          >
-          </v-skeleton-loader>
+          ></v-skeleton-loader>
         </div>
       </div>
     </div>
@@ -113,7 +111,9 @@
             @click="loadActiveTotalUser(format)"
             small
             rounded
-            >{{ format }}</v-btn>
+          >
+            {{ format }}
+          </v-btn>
         </div>
         <LineChart
           :lineChartData="totalUserCount"
@@ -124,228 +124,233 @@
           ref="dashboardSkeleton"
           width=""
           type="image"
-        >
-        </v-skeleton-loader>
+        ></v-skeleton-loader>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import MetricsRepository from "@/api/MetricsRepository";
-import RealmsRepository from "@/api/RealmsRepository";
-import PieChart from "@/components/PieChart";
-import LineChart from "@/components/LineChart";
+  import MetricsRepository from "@/api/MetricsRepository";
+  import RealmsRepository from "@/api/RealmsRepository";
+  import LineChart from "@/components/LineChart";
+  import PieChart from "@/components/PieChart";
 
-export default {
-  components: { PieChart, LineChart },
-  data() {
-    return {
-      headerActiveUserCount: [
-        { text: "Realm", value: "REALM" },
-        { text: "Client", value: "CLIENT", groupable: false },
-        {
-          text: "Active User Count",
-          value: "ACTIVE_USER_COUNT",
-          groupable: false,
-        },
-      ],
-      headerUniqueUserCountByIDP: [
-        { text: "IDP", value: "IDP" },
-        { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
-      ],
-      headerUniqueUserCountByRealm: [
-        { text: "Realm", value: "REALM" },
-        { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
-      ],
-      totalNumberOfUsers: "",
-      activeUserCount: [],
-      uniqueUserCountByIDP: {},
-      uniqueUserCountByRealm: {},
-      totalUserCount: {},
-      totalUserCountSelectedFormat: "7D",
-      realmsInfo: [],
-      totalNumberOfUsersLoadingStatus: true,
-      activeUserCountLoadingStatus: true,
-      uniqueUserCountByIDPLoadingStatus: true,
-      uniqueUserCountByRealmLoadingStatus: true,
-      totalUserCountLoadingStatus: true,
-      lineChartFormats: ["7D", "1M", "6M", "1Y"],
-    };
-  },
-  async created() {
-    this.loadActiveTotalUser("7D");
-    await this.loadActiveUserCount();
-    await this.loadRealmsInfo();
-    this.loadTotalNumberOfUsers();
-    this.loadUniqueUserCountByIDP();
-    this.loadUniqueUserCountByRealm();
-    this.mergeActiveUsersCountWithRealmsInfo();
-  },
-  methods: {
-    getLineChartBtnClass(name) {
-      return this.totalUserCountSelectedFormat == name
-        ? "primary"
-        : "secondary";
+  export default {
+    components: { PieChart, LineChart },
+    data() {
+      return {
+        headerActiveUserCount: [
+          { text: "Realm", value: "REALM" },
+          { text: "Client", value: "CLIENT", groupable: false },
+          {
+            text: "Active User Count",
+            value: "ACTIVE_USER_COUNT",
+            groupable: false,
+          },
+        ],
+        headerUniqueUserCountByIDP: [
+          { text: "IDP", value: "IDP" },
+          { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
+        ],
+        headerUniqueUserCountByRealm: [
+          { text: "Realm", value: "REALM" },
+          { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
+        ],
+        totalNumberOfUsers: "",
+        activeUserCount: [],
+        uniqueUserCountByIDP: {},
+        uniqueUserCountByRealm: {},
+        totalUserCount: {},
+        totalUserCountSelectedFormat: "7D",
+        realmsInfo: [],
+        totalNumberOfUsersLoadingStatus: true,
+        activeUserCountLoadingStatus: true,
+        uniqueUserCountByIDPLoadingStatus: true,
+        uniqueUserCountByRealmLoadingStatus: true,
+        totalUserCountLoadingStatus: true,
+        lineChartFormats: ["7D", "1M", "6M", "1Y"],
+      };
     },
-    getLineChartBtnTitle(format) {
-      const prefix = "Login events from past ";
-      switch (format) {
-        case '1M':
-          return prefix + "one month."
-        case '6M':
-          return prefix + "six months."
-        case '1Y':
-          return prefix + "one year."
-        default:
-          return prefix + "seven days."
-      }
+    async created() {
+      this.loadActiveTotalUser("7D");
+      await this.loadActiveUserCount();
+      await this.loadRealmsInfo();
+      this.loadTotalNumberOfUsers();
+      this.loadUniqueUserCountByIDP();
+      this.loadUniqueUserCountByRealm();
+      this.mergeActiveUsersCountWithRealmsInfo();
     },
-    async loadRealmsInfo() {
-      const response = await RealmsRepository.get();
-      this.realmsInfo = response.data;
-      this.activeUserCountLoadingStatus = false;
-    },
-    async loadActiveUserCount() {
-      const response = await MetricsRepository.get("active-user-count");
-      this.activeUserCount = response.data;
-      this.activeUserCountLoadingStatus = false;
-    },
-    async loadTotalNumberOfUsers() {
-      const response = await MetricsRepository.get("total-number-of-users");
-      this.totalNumberOfUsers = response.data;
-      this.totalNumberOfUsersLoadingStatus = false;
-    },
-    async loadUniqueUserCountByIDP() {
-      const response = await MetricsRepository.get("unique-user-count-by-idp");
-      const labels = [];
-      const dataset = [];
-      for (var key of response.data.entries()) {
-        labels.push(key[1]["IDP"].padEnd(20));
-        dataset.push(key[1]["UNIQUE_USER_COUNT"]);
-      }
+    methods: {
+      getLineChartBtnClass(name) {
+        return this.totalUserCountSelectedFormat == name
+          ? "primary"
+          : "secondary";
+      },
+      getLineChartBtnTitle(format) {
+        const prefix = "Login events from past ";
+        switch (format) {
+          case "1M":
+            return prefix + "one month.";
+          case "6M":
+            return prefix + "six months.";
+          case "1Y":
+            return prefix + "one year.";
+          default:
+            return prefix + "seven days.";
+        }
+      },
+      async loadRealmsInfo() {
+        const response = await RealmsRepository.get();
+        this.realmsInfo = response.data;
+        this.activeUserCountLoadingStatus = false;
+      },
+      async loadActiveUserCount() {
+        const response = await MetricsRepository.get("active-user-count");
+        this.activeUserCount = response.data;
+        this.activeUserCountLoadingStatus = false;
+      },
+      async loadTotalNumberOfUsers() {
+        const response = await MetricsRepository.get("total-number-of-users");
+        this.totalNumberOfUsers = response.data;
+        this.totalNumberOfUsersLoadingStatus = false;
+      },
+      async loadUniqueUserCountByIDP() {
+        const response = await MetricsRepository.get(
+          "unique-user-count-by-idp"
+        );
+        const labels = [];
+        const dataset = [];
+        for (var key of response.data.entries()) {
+          labels.push(key[1]["IDP"].padEnd(20));
+          dataset.push(key[1]["UNIQUE_USER_COUNT"]);
+        }
 
-      this.uniqueUserCountByIDP["labels"] = labels;
-      this.uniqueUserCountByIDP["UNIQUE_USER_COUNT"] = dataset;
-      this.uniqueUserCountByIDPLoadingStatus = false;
-    },
-    async loadUniqueUserCountByRealm() {
-      const response = await MetricsRepository.get(
-        "unique-user-count-by-realm"
-      );
-      const labels = [];
-      const dataset = [];
-      for (var key of response.data.entries()) {
-        labels.push(key[1]["REALM"].padEnd(20));
-        dataset.push(key[1]["UNIQUE_USER_COUNT"]);
-      }
+        this.uniqueUserCountByIDP["labels"] = labels;
+        this.uniqueUserCountByIDP["UNIQUE_USER_COUNT"] = dataset;
+        this.uniqueUserCountByIDPLoadingStatus = false;
+      },
+      async loadUniqueUserCountByRealm() {
+        const response = await MetricsRepository.get(
+          "unique-user-count-by-realm"
+        );
+        const labels = [];
+        const dataset = [];
+        for (var key of response.data.entries()) {
+          labels.push(key[1]["REALM"].padEnd(20));
+          dataset.push(key[1]["UNIQUE_USER_COUNT"]);
+        }
 
-      this.uniqueUserCountByRealm["labels"] = labels;
-      this.uniqueUserCountByRealm["UNIQUE_USER_COUNT"] = dataset;
-      this.uniqueUserCountByRealmLoadingStatus = false;
+        this.uniqueUserCountByRealm["labels"] = labels;
+        this.uniqueUserCountByRealm["UNIQUE_USER_COUNT"] = dataset;
+        this.uniqueUserCountByRealmLoadingStatus = false;
+      },
+      async loadActiveTotalUser(format) {
+        this.totalUserCountSelectedFormat = format;
+        this.totalUserCountLoadingStatus = true;
+        const response = await MetricsRepository.getTotalActiveUserCount(
+          format
+        );
+        const labels = [];
+        const dataset = [];
+        for (var key of response.entries()) {
+          labels.push(
+            new Date(key[1]["EVENT_DATE"]).toISOString().split("T")[0]
+          );
+          dataset.push(key[1]["ACTIVE_USER_COUNT"]);
+        }
+        this.totalUserCount["EVENT_DATE"] = labels;
+        this.totalUserCount["ACTIVE_USER_COUNT"] = dataset;
+        this.totalUserCountLoadingStatus = false;
+      },
+      mergeActiveUsersCountWithRealmsInfo() {
+        this.activeUserCount = this.activeUserCount.map((item) => {
+          return {
+            ...item,
+            REALM_DESCRIPTION: this.realmsInfo.find(
+              (realm) => realm.REALM === item.REALM
+            )?.DESCRIPTION,
+          };
+        });
+      },
+      handleError(message, error) {
+        this.$store.commit("alert/setAlert", {
+          message: message + ": " + error,
+          type: "error",
+        });
+        window.scrollTo(0, 0);
+      },
+      checkEmpty() {
+        return true;
+      },
     },
-    async loadActiveTotalUser(format) {
-      this.totalUserCountSelectedFormat = format;
-      this.totalUserCountLoadingStatus = true;
-      const response = await MetricsRepository.getTotalActiveUserCount(format);
-      const labels = [];
-      const dataset = [];
-      for (var key of response.entries()) {
-        labels.push(new Date(key[1]["EVENT_DATE"]).toISOString().split("T")[0]);
-        dataset.push(key[1]["ACTIVE_USER_COUNT"]);
-      }
-      this.totalUserCount["EVENT_DATE"] = labels;
-      this.totalUserCount["ACTIVE_USER_COUNT"] = dataset;
-      this.totalUserCountLoadingStatus = false;
-    },
-    mergeActiveUsersCountWithRealmsInfo() {
-      this.activeUserCount = this.activeUserCount.map((item) => {
-        return {
-          ...item,
-          REALM_DESCRIPTION: this.realmsInfo.find(
-            (realm) => realm.REALM === item.REALM
-          )?.DESCRIPTION,
-        };
-      });
-    },
-    handleError(message, error) {
-      this.$store.commit("alert/setAlert", {
-        message: message + ": " + error,
-        type: "error",
-      });
-      window.scrollTo(0, 0);
-    },
-    checkEmpty() {
-      return true;
-    },
-  },
-};
+  };
 </script>
 
 <style scoped>
-.flex {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
+  .flex {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
 
-.column {
-  display: flex;
-  flex-direction: column;
-}
+  .column {
+    display: flex;
+    flex-direction: column;
+  }
 
-.tile {
-  width: 440px;
-  padding: 16px 20px;
+  .tile {
+    width: 440px;
+    padding: 16px 20px;
 
-  margin: 20px;
-  background: #f7f7f7;
-  box-shadow: 1px 4px 4px rgba(0, 0, 0, 0.25);
-}
+    margin: 20px;
+    background: #f7f7f7;
+    box-shadow: 1px 4px 4px rgba(0, 0, 0, 0.25);
+  }
 
-.tile .heading {
-  display: flex;
-  flex-direction: row;
-  width: fit-content;
-  margin: 0 0 10px 0;
-}
+  .tile .heading {
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    margin: 0 0 10px 0;
+  }
 
-.tile .heading p {
-  margin: 0 5px 0 0;
-  font-family: "BCSans";
-  font-style: normal;
-  font-weight: bold;
-  font-size: 15px;
-  line-height: 20px;
-  color: #003366;
-}
+  .tile .heading p {
+    margin: 0 5px 0 0;
+    font-family: "BCSans";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 20px;
+    color: #003366;
+  }
 
-.tooltip {
-  color: white;
-  margin: 0px;
-}
+  .tooltip {
+    color: white;
+    margin: 0px;
+  }
 
-.tile .tile-table {
-  margin: 10px 0;
-}
+  .tile .tile-table {
+    margin: 10px 0;
+  }
 
-.theme--light.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
-tbody {
-  color: #003366;
-}
+  .theme--light.v-data-table > .v-data-table__wrapper > table > thead > tr > th,
+  tbody {
+    color: #003366;
+  }
 
-.tile .single-stat {
-  margin: 10px 0;
-  font-weight: bold;
-  font-size: 25px;
-  color: #003366;
-}
+  .tile .single-stat {
+    margin: 10px 0;
+    font-weight: bold;
+    font-size: 25px;
+    color: #003366;
+  }
 
-.line-chart-btn-group {
-  margin-bottom: 10px;
-}
+  .line-chart-btn-group {
+    margin-bottom: 10px;
+  }
 
-.line-chart-btn-group > button {
-  margin-right: 12px;
-}
+  .line-chart-btn-group > button {
+    margin-right: 12px;
+  }
 </style>
