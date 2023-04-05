@@ -61,7 +61,9 @@ Note that these instructions only apply to the MoH's Keycloak server which has a
 
 ### Lints and format files
 
-Using VSCode, install the recommended extension (voltar + prettier) to be able to auto-format to the standard.
+Using VSCode, install the recommended extension (prettier) to be able to auto-format to the standard.
+
+Also, be sure to have `node v14.16.1 and npm v6.14.12` else you may get an error with newer version of npm (with package-lock formating).
 
 To check lint on all files :
 `npm run lint`

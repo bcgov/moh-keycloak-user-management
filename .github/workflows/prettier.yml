@@ -1,0 +1,26 @@
+# This workflow check all files formatting for the front end using prettier.
+
+name: Code formating Prettier
+
+defaults:
+  run:
+    working-directory: frontend
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.16.1
+      - name: Setup Prettier
+        run: npm install prettier@2.8.7
+      - name: Check formating
+        run: npm run format:check
