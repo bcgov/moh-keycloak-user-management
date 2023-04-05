@@ -28,11 +28,11 @@
 </template>
 
 <script>
-  import UserDetails from "@/components/UserDetails.vue";
-  import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
-  import UserUpdateGroups from "@/components/UserUpdateGroups";
-  import UserMailboxAuthorizations from "./UserMailboxAuthorizations.vue";
   import UsersRepository from "@/api/UsersRepository";
+  import UserDetails from "@/components/UserDetails.vue";
+  import UserUpdateGroups from "@/components/UserUpdateGroups";
+  import UserUpdateRoles from "@/components/UserUpdateRoles.vue";
+  import UserMailboxAuthorizations from "./UserMailboxAuthorizations.vue";
 
   export default {
     name: "UserInfo",

@@ -23,9 +23,9 @@
 </template>
 
 <script>
+  import ClientsRepository from "@/api/ClientsRepository";
   import UserUpdateSfdsAuth from "@/components/UserUpdateSfdsAuth";
   import UsersRepository from "../api/UsersRepository";
-  import ClientsRepository from "@/api/ClientsRepository";
 
   export default {
     name: "UserMailboxAuthorizations",

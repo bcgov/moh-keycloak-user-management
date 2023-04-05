@@ -346,8 +346,8 @@
 </template>
 
 <script>
-  import UsersRepository from "@/api/UsersRepository";
   import ClientsRepository from "@/api/ClientsRepository";
+  import UsersRepository from "@/api/UsersRepository";
 
   const options = { dateStyle: "short" };
   const formatDate = new Intl.DateTimeFormat("en-CA", options).format;
