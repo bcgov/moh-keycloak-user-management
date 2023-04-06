@@ -6,16 +6,16 @@
 
 <script>
   import {
-CategoryScale,
-Chart as ChartJS,
-Legend,
-LineElement,
-LinearScale,
-PointElement,
-Title,
-Tooltip,
-} from "chart.js";
-import { Line as LineChartGenerator } from "vue-chartjs/legacy";
+    CategoryScale,
+    Chart as ChartJS,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    Title,
+    Tooltip,
+  } from "chart.js";
+  import { Line as LineChartGenerator } from "vue-chartjs/legacy";
 
   ChartJS.register(
     CategoryScale,
