@@ -1,5 +1,4 @@
 # This workflow check all files formatting for the front end using prettier.
-
 name: Code formating Prettier
 
 defaults:
@@ -7,8 +6,6 @@ defaults:
     working-directory: frontend
 
 on:
-  push:
-    branches: [master]
   pull_request:
     branches: [master]
 
