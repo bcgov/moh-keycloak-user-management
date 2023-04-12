@@ -47,6 +47,8 @@ spring:
           keycloak-moh:
             client-id: USER-MANAGEMENT-SERVICE
             client-secret: ${UMS_CLIENT_SECRET}
+            client-test-id: USER-MANAGEMENT-SERVICE-INTEGRATION-TESTS
+            client-test-secret: ${UMS_CLIENT_TEST_SECRET}
             authorization-grant-type: client_credentials
             scope:
               - openid

@@ -43,10 +43,10 @@ public class MoHUmsIntegrationTests {
     @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
     String keycloakTokenUri;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-id}")
+    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-test-id}")
     String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-test-secret}")
     String clientSecret;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
@@ -382,16 +382,16 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .post()
                 // 123-tschiavo user
-                // FMDB client
-                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                // PLR client
+                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/dc7b9502-3ffa-4ff8-be2e-ebfebe650590")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
-                        + "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n"
-                        + "        \"name\": \"PSDADMIN\",\n"
+                        + "        \"id\": \"30f494e9-41c7-40eb-9660-a14bb8248af4\",\n"
+                        + "        \"name\": \"REG_ADMIN\",\n"
                         + "        \"composite\": false,\n"
                         + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n"
+                        + "        \"containerId\": \"dc7b9502-3ffa-4ff8-be2e-ebfebe650590\"\n"
                         + "    }\n"
                         + "]")
                 .header("Authorization", "Bearer " + jwt)
@@ -404,16 +404,16 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .method(HttpMethod.DELETE)
                 // 123-tschiavo user
-                // FMDB client
-                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                // PLR client
+                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/dc7b9502-3ffa-4ff8-be2e-ebfebe650590")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
-                        + "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n"
-                        + "        \"name\": \"PSDADMIN\",\n"
+                        + "        \"id\": \"30f494e9-41c7-40eb-9660-a14bb8248af4\",\n"
+                        + "        \"name\": \"REG_ADMIN\",\n"
                         + "        \"composite\": false,\n"
                         + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n"
+                        + "        \"containerId\": \"dc7b9502-3ffa-4ff8-be2e-ebfebe650590\"\n"
                         + "    }\n"
                         + "]")
                 .header("Authorization", "Bearer " + jwt)
@@ -563,8 +563,8 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 // 123-tschiavo user
-                // a425bf07-a2bd-403f-a605-afc2b4898c3f is GIS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-gis"
-                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/a425bf07-a2bd-403f-a605-afc2b4898c3f")
+                // a425bf07-a2bd-403f-a605-afc2b4898c3f is PLR, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-plr"
+                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/dc7b9502-3ffa-4ff8-be2e-ebfebe650590")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
