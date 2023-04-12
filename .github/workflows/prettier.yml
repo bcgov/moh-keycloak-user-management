@@ -29,4 +29,4 @@ jobs:
       - name: Debug
         run: pwd
       - name: Check formating
-        run: prettier --check .
+        run: npx prettier --check .
