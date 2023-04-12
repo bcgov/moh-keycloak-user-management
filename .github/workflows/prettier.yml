@@ -26,5 +26,7 @@ jobs:
           node-version: 14.16.1
       - name: Setup Package
         run: npm ci
+      - name: Debug
+        run: pwd
       - name: Check formating
         run: npm run format:check
