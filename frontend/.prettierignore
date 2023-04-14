@@ -1,0 +1,5 @@
+# Ignore everything:
+/*
+
+# Except src folder:
+!/src
