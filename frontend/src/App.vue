@@ -4,10 +4,14 @@
     <the-nav-bar></the-nav-bar>
     <main>
       <section class="content">
-        <alert/>
+        <alert />
         <router-view></router-view>
       </section>
-      <v-checkbox v-model="showKeycloakTools" :label="`Keycloak Dev Tools`" v-if="vueCliMode === 'development'"></v-checkbox>
+      <v-checkbox
+        v-model="showKeycloakTools"
+        :label="`Keycloak Dev Tools`"
+        v-if="vueCliMode === 'development'"
+      ></v-checkbox>
       <KeycloakDevTools v-if="showKeycloakTools" />
     </main>
     <the-footer></the-footer>
@@ -29,12 +33,12 @@ export default {
     TheHeader,
     TheNavBar,
     TheFooter,
-    KeycloakDevTools
+    KeycloakDevTools,
   },
   data() {
     return {
       vueCliMode: process.env.NODE_ENV,
-      showKeycloakTools: false
+      showKeycloakTools: false,
     };
   },
   mounted() {
@@ -43,6 +47,6 @@ export default {
 };
 </script>
 
-<style src=./assets/css/main.css></style>
-<style src=./assets/css/reset.css></style>
-<style src=./assets/css/typography.css></style>
+<style src="./assets/css/main.css"></style>
+<style src="./assets/css/reset.css"></style>
+<style src="./assets/css/typography.css"></style>
