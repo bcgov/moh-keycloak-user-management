@@ -7,8 +7,6 @@ defaults:
 
 on:
   pull_request:
-    branches:
-      - master
 
 jobs:
   prettier:
@@ -16,15 +14,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          # Make sure the actual branch is checked out when running on pull requests
-          ref: ${{ github.head_ref }}
-          # This is important to fetch the changes to the previous commit
-          fetch-depth: 0
+
+      - name: Node Setup
       - uses: actions/setup-node@v3
         with:
           node-version: 14.16.1
+
       - name: Setup Package
         run: npm ci
+
       - name: Check formating
         run: npm run format:check
