@@ -4,8 +4,7 @@ import Keycloak from "keycloak-js";
 // https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter
 let keycloak = new Keycloak();
 
-let initOptions = {
-  responseMode: "fragment",
+let initOptions = { responseMode: "fragment",
   flow: "standard",
   onLoad: "login-required",
   pkceMethod: "S256",
