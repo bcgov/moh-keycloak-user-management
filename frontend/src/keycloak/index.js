@@ -5,8 +5,7 @@ import Keycloak from "keycloak-js";
 let keycloak = new Keycloak();
 
 let initOptions = {
-  responseMode: "fragment",
-  flow: "standard",
+  responseMode: "fragment", flow: "standard",
   onLoad: "login-required",
   pkceMethod: "S256",
 };
@@ -16,7 +15,7 @@ let initOptions = {
 let kcLogin = keycloak.login;
 keycloak.login = (options) => {
   if (process.env.NODE_ENV !== "development") {
-       options.idpHint = "idir";
+    options.idpHint = "idir";
   }
   return kcLogin(options);
 };
