@@ -5,7 +5,8 @@ import Keycloak from "keycloak-js";
 let keycloak = new Keycloak();
 
 let initOptions = {
-  responseMode: "fragment", flow: "standard",
+  responseMode: "fragment",
+  flow: "standard",
   onLoad: "login-required",
   pkceMethod: "S256",
 };
