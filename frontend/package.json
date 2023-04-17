@@ -10,7 +10,7 @@
     "lint": "vue-cli-service lint",
     "test": "npm run test:unit",
     "format:check": "prettier -c --loglevel debug --config-precedence prefer-file ./src",
-    "format:fix": "prettier -c -w --config-precedence prefer-file./src"
+    "format:fix": "prettier -c -w --config-precedence prefer-file ./src"
   },
   "dependencies": {
     "@bcgov/bc-sans": "^1.0.1",
