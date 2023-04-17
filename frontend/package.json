@@ -9,7 +9,8 @@
     "test:e2e": "testcafe chrome tests/e2e",
     "lint": "vue-cli-service lint",
     "test": "npm run test:unit",
-    "format:check": "prettier -c --loglevel debug ."
+    "format:check": "prettier -c --loglevel debug ./src",
+    "format:fix": "prettier -c -w ./src"
   },
   "dependencies": {
     "@bcgov/bc-sans": "^1.0.1",
