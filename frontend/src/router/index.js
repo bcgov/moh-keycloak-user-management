@@ -1,111 +1,114 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Users from '../views/Users.vue'
-import UserSearch from '../components/UserSearch.vue'
-import UserUpdate from '../components/UserUpdate.vue'
-import UserCreate from '../components/UserCreate.vue'
-import Dashboard from '../components/Dashboard.vue'
-import Organizations from '../views/Organizations.vue'
-import OrganizationsSearch from '../components/OrganizationsSearch.vue'
-import OrganizationsCreate from '../components/OrganizationsCreate.vue'
-import NotFound from  '../views/NotFound.vue'
-import AccessDenied from  '../views/AccessDenied.vue'
-import keycloak from '../keycloak';
+import Vue from "vue";
+import VueRouter from "vue-router";
+import Users from "../views/Users.vue";
+import UserSearch from "../components/UserSearch.vue";
+import UserUpdate from "../components/UserUpdate.vue";
+import UserCreate from "../components/UserCreate.vue";
+import Dashboard from "../components/Dashboard.vue";
+import Organizations from "../views/Organizations.vue";
+import OrganizationsSearch from "../components/OrganizationsSearch.vue";
+import OrganizationsCreate from "../components/OrganizationsCreate.vue";
+import NotFound from "../views/NotFound.vue";
+import AccessDenied from "../views/AccessDenied.vue";
+import keycloak from "../keycloak";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
-  {path: '/', redirect: '/users'},
+  { path: "/", redirect: "/users" },
   {
-    path: '/users',
+    path: "/users",
     component: Users,
     children: [
       {
-        path: '',
+        path: "",
         component: UserSearch,
-        name: 'UserSearch',
+        name: "UserSearch",
         meta: {
-          requiredRole: ['view-users', 'view-clients', 'view-groups']
-        }
+          requiredRole: ["view-users", "view-clients", "view-groups"],
+        },
       },
       {
-        path: 'create',
+        path: "create",
         component: UserCreate,
-        name: 'UserCreate',
+        name: "UserCreate",
         meta: {
-          requiredRole: ['create-user']
-        }
+          requiredRole: ["create-user"],
+        },
       },
       {
-        path: ':userid',
+        path: ":userid",
         component: UserUpdate,
-        name: 'UserUpdate',
+        name: "UserUpdate",
         meta: {
-          requiredRole: ['view-users', 'view-clients', 'view-groups']
-        }
-      }
-    ]
+          requiredRole: ["view-users", "view-clients", "view-groups"],
+        },
+      },
+    ],
   },
   {
-    path: '/organizations',
+    path: "/organizations",
     component: Organizations,
     children: [
       {
-        path: '',
+        path: "",
         component: OrganizationsSearch,
-        name: 'OrganizationsSearch',
+        name: "OrganizationsSearch",
         meta: {
-          requiredRole: ['manage-org']
-        }
+          requiredRole: ["manage-org"],
+        },
       },
       {
-        path: 'create',
+        path: "create",
         component: OrganizationsCreate,
-        name: 'OrganizationsCreate',
+        name: "OrganizationsCreate",
         meta: {
-          requiredRole: ['manage-org']
-        }
+          requiredRole: ["manage-org"],
+        },
       },
-    ]
+    ],
   },
   {
-    path: '/dashboard',
+    path: "/dashboard",
     component: Dashboard,
-    name: 'Dashboard',
+    name: "Dashboard",
     meta: {
-      requiredRole: ['view-metrics']
-    }
+      requiredRole: ["view-metrics"],
+    },
   },
   {
-    path: '/unauthorized',
+    path: "/unauthorized",
     component: AccessDenied,
-    name: 'AccessDenied'
+    name: "AccessDenied",
   },
   {
-    path: '/:catchAll(.*)',
+    path: "/:catchAll(.*)",
     component: NotFound,
-    name: 'NotFound'
-  }
-]
+    name: "NotFound",
+  },
+];
 
 const router = new VueRouter({
-  routes
+  routes,
 });
 
 const checkAccess = (requiredRoles) => {
-  return !!requiredRoles.every(r => keycloak.tokenParsed.resource_access?.['USER-MANAGEMENT-SERVICE']?.roles.includes(r))
-}
+  return !!requiredRoles.every((r) =>
+    keycloak.tokenParsed.resource_access?.[
+      "USER-MANAGEMENT-SERVICE"
+    ]?.roles.includes(r)
+  );
+};
 
 router.beforeEach((to, from, next) => {
-  if(to.meta?.requiredRole){
-    if(!checkAccess(to.meta?.requiredRole) && to.name !== 'AccessDenied'){
-      next({name: 'AccessDenied'})
-    } 
-    else {
+  if (to.meta?.requiredRole) {
+    if (!checkAccess(to.meta?.requiredRole) && to.name !== "AccessDenied") {
+      next({ name: "AccessDenied" });
+    } else {
       next();
     }
   }
   next();
-})
+});
 
-export default router
+export default router;

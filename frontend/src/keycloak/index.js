@@ -24,4 +24,3 @@ keycloak.login = (options) => {
 keycloak.init(initOptions);
 
 export default keycloak;
-

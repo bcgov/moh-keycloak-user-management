@@ -19,32 +19,32 @@
 </template>
 
 <script>
-import TheHeader from "./components/template/TheHeader.vue";
-import TheNavBar from "./components/template/TheNavBar.vue";
-import TheFooter from "./components/template/TheFooter.vue";
-import Alert from "./components/Alert.vue";
+  import TheHeader from "./components/template/TheHeader.vue";
+  import TheNavBar from "./components/template/TheNavBar.vue";
+  import TheFooter from "./components/template/TheFooter.vue";
+  import Alert from "./components/Alert.vue";
 
-import KeycloakDevTools from "./KeycloakDevTools";
+  import KeycloakDevTools from "./KeycloakDevTools";
 
-export default {
-  name: "App",
-  components: {
-    Alert,
-    TheHeader,
-    TheNavBar,
-    TheFooter,
-    KeycloakDevTools,
-  },
-  data() {
-    return {
-      vueCliMode: process.env.NODE_ENV,
-      showKeycloakTools: false,
-    };
-  },
-  mounted() {
-    document.title = this.$config.app_title;
-  },
-};
+  export default {
+    name: "App",
+    components: {
+      Alert,
+      TheHeader,
+      TheNavBar,
+      TheFooter,
+      KeycloakDevTools,
+    },
+    data() {
+      return {
+        vueCliMode: process.env.NODE_ENV,
+        showKeycloakTools: false,
+      };
+    },
+    mounted() {
+      document.title = this.$config.app_title;
+    },
+  };
 </script>
 
 <style src="./assets/css/main.css"></style>
