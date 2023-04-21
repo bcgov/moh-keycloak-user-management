@@ -20,7 +20,8 @@ jobs:
         with:
           node-version: 14.16.1
 
-      - name: Check code format
-        run: |
-          npm ci
-          npm run format:check
+      - name: Setup Package
+        run: npm ci
+
+      - name: Check formating
+        run: npm run format:check
