@@ -730,7 +730,7 @@ public class MoHUmsIntegrationTests {
                 .baseUrl(baseUrlIdirRealm)
                 .build()
                 .get()
-                .uri("users/0fe98ff5-3a8b-4336-9d77-d8377e11ba3d")//fflorek
+                .uri("users/ee1e2f18-0a1a-4aaa-92c5-6ad645f3c839")//umstest
                 .header("Authorization", "Bearer " + access_token)
                 .exchange()
                 .expectStatus().isOk()
