@@ -22,30 +22,40 @@ export default {
     
         switch (format) {
           case "1M":
-            return this.filterLastMonth(yearOfActiveUserCount);
+            return this.filterLastXDay(30, yearOfActiveUserCount);
           case "6M":
-            return this.filterLastSixMonths(yearOfActiveUserCount);
+            return this.filterLastXDay(182, yearOfActiveUserCount);
           case "1Y":
-            return yearOfActiveUserCount;
+            return this.fillMissingDayWithZero(365, yearOfActiveUserCount);
           default:
-            return this.filterLastSevenDay(yearOfActiveUserCount);
+            return this.filterLastXDay(7, yearOfActiveUserCount);
         }
       },
-      filterLastSevenDay(dates) {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        return dates.filter(({ EVENT_DATE }) => new Date(EVENT_DATE) > oneWeekAgo);
+      filterLastXDay(numberOfDays, dates) {
+        const dayAgo = new Date();
+        dayAgo.setDate(dayAgo.getDate() - numberOfDays);
+        const lastXDays = dates.filter(({ EVENT_DATE }) => new Date(EVENT_DATE) > dayAgo);
+        return this.fillMissingDayWithZero(numberOfDays, lastXDays);
       },
-      filterLastMonth(dates) {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        return dates.filter(({ EVENT_DATE }) => new Date(EVENT_DATE) > oneMonthAgo);
-      },
-      filterLastSixMonths(dates) {
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        return dates.filter(
-          ({ EVENT_DATE }) => new Date(EVENT_DATE) > sixMonthsAgo
-        );
-      },
+      fillMissingDayWithZero(numberOfDay, data) {
+        const lastDates = [];
+        for (let i = 0; i < numberOfDay; i++) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          lastDates.push(d.toISOString())
+        }
+
+        let finalDates = [];
+        lastDates.reverse().forEach((date) => {
+          let c = data.find(d => d.EVENT_DATE.slice(0, 10) == date.slice(0, 10))
+          if (c) {
+            finalDates.push(c);
+          } else {
+            console.log({EVENT_DATE: date, ACTIVE_USER_COUNT: 0})
+            finalDates.push({EVENT_DATE: date, ACTIVE_USER_COUNT: 0});
+          }
+        })
+
+        return finalDates;
+      }
 };
