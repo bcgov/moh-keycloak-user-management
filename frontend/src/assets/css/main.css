@@ -1,86 +1,88 @@
 /* Body */
 body {
-    background-color: #F1F1F1;
-    padding-bottom: 20px;
+  background-color: #f1f1f1;
+  padding-bottom: 20px;
 }
-
 
 /* Main */
 main {
-    max-width: 1320px;
-    min-width: 1100px;
-    width: 100%;
-    min-height: calc(100vh - 280px);
-    margin: 0 auto;
-    padding: 20px 60px 60px 60px;
-    background-color: #FFFFFF;
+  max-width: 1320px;
+  min-width: 1100px;
+  width: 100%;
+  min-height: calc(100vh - 280px);
+  margin: 0 auto;
+  padding: 20px 60px 60px 60px;
+  background-color: #ffffff;
 }
 main .content {
-    padding: 0;
-    font-size: 1rem;
+  padding: 0;
+  font-size: 1rem;
 }
 main .content:after {
-    content: "";
-    display: table;
-    clear: both;
+  content: "";
+  display: table;
+  clear: both;
 }
 
 /* Sub groups */
 .subgroup,
 .v-card.subgroup {
-    padding: 20px; margin:0px -20px 20px -20px; max-width: 110%;
+  padding: 20px;
+  margin: 0px -20px 20px -20px;
+  max-width: 110%;
 }
 .subgroup h2 {
-    font-weight: 100;
-    color: #999;
-    font-size: 24px;
-    line-height: 30px;
-    text-transform: uppercase;
-    margin-top: 0;
-    margin-bottom: 20px;
+  font-weight: 100;
+  color: #999;
+  font-size: 24px;
+  line-height: 30px;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 20px;
 }
 
-/* Input */ 
+/* Input */
 input {
-    display: block;
-    width: 100%;
+  display: block;
+  width: 100%;
 }
 
 .checkbox-group .v-input--selection-controls {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 
 /* Vuetify Components */
 .v-icon.v-icon {
-    vertical-align: baseline;
+  vertical-align: baseline;
 }
 
 /* tables */
 .theme--light.v-data-table.base-table thead tr:last-child th {
-    border-top: 2px solid #003366;
-    border-bottom: 2px solid #003366;
+  border-top: 2px solid #003366;
+  border-bottom: 2px solid #003366;
 }
 
-.v-data-table td, .v-data-table th {
-    padding: 0 16px;
+.v-data-table td,
+.v-data-table th {
+  padding: 0 16px;
 }
 .select-table tr {
-    cursor: pointer;
+  cursor: pointer;
 }
 .select-table tr.v-data-table__empty-wrapper {
-    cursor: default;
+  cursor: default;
 }
 .v-data-footer {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .theme--light.v-btn.BC-Gov-SecondaryButton {
-    background: none;
-    border: 2px solid #003366;
-    color: #003366;
-    }
+  background: none;
+  border: 2px solid #003366;
+  color: #003366;
+}
 .theme--light.v-btn.BC-Gov-SecondaryButton:hover {
-    opacity: 0.80;
-    background-color: #003366;
-    color: #FFFFFF;
+  opacity: 0.8;
+  background-color: #003366;
+  color: #ffffff;
 }
