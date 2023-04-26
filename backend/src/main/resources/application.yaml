@@ -1,10 +1,3 @@
-keycloak_db_password: ${KEYCLOAK_DB_PASSWORD}
-keycloak_db_username: ${KEYCLOAK_DB_USERNAME}
-keycloak_db_url: ${KEYCLOAK_DB_URL}
-UMS_CLIENT_SECRET: ${UMS_SECRET}
-ums_encryptor_password: ${UMS_ENCRYPTOR_PASSWORD}
-MASTER_UMS_CLIENT_SECRET: ${MASTER_UMS_SECRET}
-
 keycloak-moh:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
