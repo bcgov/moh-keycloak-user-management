@@ -1,0 +1,27 @@
+name: Check code format
+
+on:
+  pull_request:
+
+jobs:
+  prettier:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.16.1
+
+      - name: Setup Package
+        run: npm ci
+
+      - name: Check formating
+        run: npm run format:check
