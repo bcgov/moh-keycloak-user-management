@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -36,6 +37,7 @@ import java.util.Map;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestInstance(Lifecycle.PER_CLASS)
+@ActiveProfiles("test")
 public class MoHUmsIntegrationTests {
 
     private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
@@ -43,10 +45,10 @@ public class MoHUmsIntegrationTests {
     @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
     String keycloakTokenUri;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-test-id}")
+    @Value("${client-test-id}")
     String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-test-secret}")
+    @Value("${client-test-secret}")
     String clientSecret;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
