@@ -2,6 +2,8 @@ name: Check code format
 
 on:
   pull_request:
+    paths:
+      - 'frontend/**'
 
 jobs:
   prettier:
