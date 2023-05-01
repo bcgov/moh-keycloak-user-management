@@ -24,29 +24,29 @@ export default {
 
     switch (format) {
       case "1M":
-        return this.filterLastXDay(30, yearOfActiveUserCount);
+        return this.keepNumberOfDays(30, yearOfActiveUserCount);
       case "6M":
-        return this.filterLastXDay(182, yearOfActiveUserCount);
+        return this.keepNumberOfDays(182, yearOfActiveUserCount);
       case "1Y":
-        return this.fillMissingDayWithZero(365, yearOfActiveUserCount);
+        return this.addDateForMissingDays(365, yearOfActiveUserCount);
       default:
-        return this.filterLastXDay(7, yearOfActiveUserCount);
+        return this.keepNumberOfDays(7, yearOfActiveUserCount);
     }
   },
-  filterLastXDay(numberOfDays, dates) {
-    const dayAgo = new Date();
-    dayAgo.setDate(dayAgo.getDate() - numberOfDays);
-    const lastXDays = dates.filter(
-      ({ EVENT_DATE }) => new Date(EVENT_DATE) > dayAgo
+  keepNumberOfDays(numberOfDays, dates) {
+    const date = new Date();
+    date.setDate(date.getDate() - numberOfDays);
+    const filteredDays = dates.filter(
+      ({ EVENT_DATE }) => new Date(EVENT_DATE) > date
     );
-    return this.fillMissingDayWithZero(numberOfDays, lastXDays);
+    return this.addDateForMissingDays(numberOfDays, filteredDays);
   },
-  fillMissingDayWithZero(numberOfDay, data) {
+  addDateForMissingDays(numberOfDay, data) {
     const lastDates = [];
     for (let i = 0; i < numberOfDay; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      lastDates.push(d.toISOString());
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      lastDates.push(date.toISOString());
     }
 
     let finalDates = [];
@@ -55,7 +55,6 @@ export default {
       if (c) {
         finalDates.push(c);
       } else {
-        console.log({ EVENT_DATE: date, ACTIVE_USER_COUNT: 0 });
         finalDates.push({ EVENT_DATE: date, ACTIVE_USER_COUNT: 0 });
       }
     });
