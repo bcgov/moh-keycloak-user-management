@@ -63,7 +63,7 @@ public class MetricsController {
         String sql
                 = "SELECT EVENT_DATE, COUNT(1) AS ACTIVE_USER_COUNT"
                 + "  FROM ("
-                + "    SELECT TRUNC(FROM_TZ(CAST(to_date('19700101', 'YYYYMMDD') + NUMTODSINTERVAL(event_time/1000, 'SECOND') AS timestamp), 'UTC') AT TIME ZONE 'America/Vancouver') AS EVENT_DATE"
+                + "    SELECT TO_CHAR(FROM_TZ(CAST(to_date('19700101', 'YYYYMMDD') + NUMTODSINTERVAL(event_time/1000, 'SECOND') AS timestamp), 'UTC') AT TIME ZONE 'America/Vancouver', 'YYYY-MM-DD') AS EVENT_DATE"
                 + "    FROM keycloak.event_entity"
                 + "    WHERE type = 'LOGIN'"
                 + "  )"
