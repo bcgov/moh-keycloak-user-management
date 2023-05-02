@@ -23,22 +23,34 @@ export default {
     }
 
     switch (format) {
-      case "1M":
-        return this.keepNumberOfDays(30, yearOfActiveUserCount);
-      case "6M":
-        return this.keepNumberOfDays(182, yearOfActiveUserCount);
-      case "1Y":
-        return this.addDateForMissingDays(365, yearOfActiveUserCount);
-      default:
-        return this.keepNumberOfDays(7, yearOfActiveUserCount);
+      case "1M": {
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        return this.keepNumberOfDays(oneMonthAgo, yearOfActiveUserCount);
+      }
+      case "6M": {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        return this.keepNumberOfDays(sixMonthsAgo, yearOfActiveUserCount);
+      }
+      case "1Y": {
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(oneYearAgo.getMonth() - 12);
+        return this.keepNumberOfDays(oneYearAgo, yearOfActiveUserCount);
+      }
+      default: {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        return this.keepNumberOfDays(oneWeekAgo, yearOfActiveUserCount);
+      }
     }
   },
-  keepNumberOfDays(numberOfDays, dates) {
-    const date = new Date();
-    date.setDate(date.getDate() - numberOfDays);
+  keepNumberOfDays(pastDate, dates) {
     const filteredDays = dates.filter(
-      ({ EVENT_DATE }) => new Date(EVENT_DATE) > date
+      ({ EVENT_DATE }) => new Date(EVENT_DATE) > pastDate
     );
+    const numberOfDays = this.datediff(pastDate, new Date());
+    console.log(numberOfDays);
     return this.addDateForMissingDays(numberOfDays, filteredDays);
   },
   addDateForMissingDays(numberOfDay, data) {
@@ -60,5 +72,8 @@ export default {
     });
 
     return finalDates;
+  },
+  datediff(first, second) {
+    return Math.round((second - first) / (1000 * 60 * 60 * 24));
   },
 };
