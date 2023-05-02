@@ -50,22 +50,21 @@ export default {
       ({ EVENT_DATE }) => new Date(EVENT_DATE) > pastDate
     );
     const numberOfDays = this.datediff(pastDate, new Date());
-    console.log(numberOfDays);
-    return this.addDateForMissingDays(numberOfDays, filteredDays);
+    return this.addEventForMissingDays(numberOfDays, filteredDays);
   },
-  addDateForMissingDays(numberOfDay, data) {
-    const lastDates = [];
+  addEventForMissingDays(numberOfDay, data) {
+    const totalDaysDates = [];
     for (let i = 0; i < numberOfDay; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      lastDates.push(date.toISOString());
+      totalDaysDates.push(date.toISOString());
     }
 
     let finalDates = [];
-    lastDates.reverse().forEach((date) => {
-      let c = data.find((d) => d.EVENT_DATE.slice(0, 10) == date.slice(0, 10));
-      if (c) {
-        finalDates.push(c);
+    totalDaysDates.reverse().forEach((date) => {
+      const dateExist = data.find((d) => d.EVENT_DATE == date.slice(0, 10));
+      if (dateExist) {
+        finalDates.push(dateExist);
       } else {
         finalDates.push({ EVENT_DATE: date, ACTIVE_USER_COUNT: 0 });
       }
