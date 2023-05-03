@@ -1,2 +1,2 @@
-client-test-id: USER-MANAGEMENT-SERVICE-INTEGRATION-TESTS
-client-test-secret: ${UMS_CLIENT_TEST_SECRET}
+client-test-id: UMS-INTEGRATION-TESTS
+client-test-secret: ${UMS_INTEGRATION_TESTS_SECRET}

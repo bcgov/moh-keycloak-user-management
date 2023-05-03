@@ -46,7 +46,8 @@ java -jar target/<jar-file-name>.jar
 
 # Integration tests
 
-The tests depend on the MoH Development Keycloak server. You can run the tests with:
+The tests depend on the MoH Development Keycloak server. The test configuration file expects an externally defined property (environment variable or JVM system property) named `UMS_INTEGRATION_TESTS_SECRET`. Its value should match the `Secret` attribute of the Client's (UMS-INTEGRATION-TESTS) Credentials defined in Keycloak.
+You can run the tests with:
 ```
 mvn test
 ```
