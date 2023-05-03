@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -36,6 +37,7 @@ import java.util.Map;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestInstance(Lifecycle.PER_CLASS)
+@ActiveProfiles("test")
 public class MoHUmsIntegrationTests {
 
     private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
@@ -43,10 +45,10 @@ public class MoHUmsIntegrationTests {
     @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
     String keycloakTokenUri;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-id}")
+    @Value("${client-test-id}")
     String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
+    @Value("${client-test-secret}")
     String clientSecret;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
@@ -368,8 +370,8 @@ public class MoHUmsIntegrationTests {
     public void updateUser() throws Exception {
         webTestClient
                 .put()
-                // 123-tschiavo user
-                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4")
+                // umstest user
+                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}}")
                 .header("Authorization", "Bearer " + jwt)
@@ -381,17 +383,17 @@ public class MoHUmsIntegrationTests {
     public void addUserClientRole() {
         webTestClient
                 .post()
-                // 123-tschiavo user
-                // FMDB client
-                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                // umstest user
+                // UMS-INTEGRATION-TESTS client
+                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
-                        + "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n"
-                        + "        \"name\": \"PSDADMIN\",\n"
+                        + "        \"id\": \"e5625153-1cd0-48f7-b305-78339520740a\",\n"
+                        + "        \"name\": \"TEST_ROLE\",\n"
                         + "        \"composite\": false,\n"
                         + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n"
+                        + "        \"containerId\": \"24447cb4-f3b1-455b-89d9-26c081025fb9\"\n"
                         + "    }\n"
                         + "]")
                 .header("Authorization", "Bearer " + jwt)
@@ -403,17 +405,17 @@ public class MoHUmsIntegrationTests {
     public void deleteUserClientRole() {
         webTestClient
                 .method(HttpMethod.DELETE)
-                // 123-tschiavo user
-                // FMDB client
-                .uri("/users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/db9dd8ab-0f38-4471-b396-e2ddac45a001")
+                // umstest user
+                // UMS-INTEGRATION-TESTS client
+                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
-                        + "        \"id\": \"a88f491a-3bd1-46ce-9cf6-c509f9a916f8\",\n"
-                        + "        \"name\": \"PSDADMIN\",\n"
+                        + "        \"id\": \"e5625153-1cd0-48f7-b305-78339520740a\",\n"
+                        + "        \"name\": \"TEST_ROLE\",\n"
                         + "        \"composite\": false,\n"
                         + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"db9dd8ab-0f38-4471-b396-e2ddac45a001\"\n"
+                        + "        \"containerId\": \"24447cb4-f3b1-455b-89d9-26c081025fb9\"\n"
                         + "    }\n"
                         + "]")
                 .header("Authorization", "Bearer " + jwt)
@@ -425,8 +427,8 @@ public class MoHUmsIntegrationTests {
     public void getUserGroups() throws Exception {
         webTestClient
                 .get()
-                // 123-tschiavo user
-                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups")
+                // umstest user
+                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
@@ -436,9 +438,9 @@ public class MoHUmsIntegrationTests {
     public void addUserGroups() throws Exception {
         webTestClient
                 .put()
-                // 123-tschiavo user
+                // umstest user
                 // CGI QA group
-                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -449,9 +451,9 @@ public class MoHUmsIntegrationTests {
     public void removeUserGroups() throws Exception {
         webTestClient
                 .method(HttpMethod.DELETE)
-                // 123-tschiavo user
+                // umstest user
                 // CGI QA group
-                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -550,9 +552,9 @@ public class MoHUmsIntegrationTests {
     public void assignedUserClientRoleMappingUnauthorized() throws Exception {
         webTestClient
                 .get()
-                // 123-tschiavo user
+                // umstest user
                 // 1b2ce61a-1235-4a0e-8334-1ac557151757 is the realm-management client, which is not in the list of USER-MANAGEMENT-SERVICE roles.
-                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
+                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
@@ -562,9 +564,9 @@ public class MoHUmsIntegrationTests {
     public void assignedUserClientRoleMappingAuthorized() throws Exception {
         webTestClient
                 .get()
-                // 123-tschiavo user
-                // a425bf07-a2bd-403f-a605-afc2b4898c3f is GIS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-gis"
-                .uri("users/5faec8ce-f40c-4bf4-9862-9778e1533dd4/role-mappings/clients/a425bf07-a2bd-403f-a605-afc2b4898c3f")
+                // umstest user
+                // 24447cb4-f3b1-455b-89d9-26c081025fb9 is UMS-INTEGRATION-TESTS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-ums-integration-tests"
+                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
@@ -730,7 +732,7 @@ public class MoHUmsIntegrationTests {
                 .baseUrl(baseUrlIdirRealm)
                 .build()
                 .get()
-                .uri("users/0fe98ff5-3a8b-4336-9d77-d8377e11ba3d")//fflorek
+                .uri("users/ee1e2f18-0a1a-4aaa-92c5-6ad645f3c839")//umstest
                 .header("Authorization", "Bearer " + access_token)
                 .exchange()
                 .expectStatus().isOk()
