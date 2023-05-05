@@ -140,7 +140,12 @@ public class KeycloakApiService {
         String path = usersPath + "/" + userId + identityProviderLinksPath + "/" + identityProvider;
         ResponseEntity<Object> deleteIDPLinkResponse = keycloakMohExternalApiCaller.delete(path);
         if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponse)) {
-            return deleteUserFromIdpRealm(userIdIdpRealm, identityProvider);
+            // Some BCSC users can have an IDP alias that does not match the "bcsc" IDP realm (e.g. "bcsc_mspdirect") 
+            if (identityProvider.startsWith("bcsc_")) {
+                return deleteUserFromIdpRealm(userIdIdpRealm, "bcsc");
+            } else {
+                return deleteUserFromIdpRealm(userIdIdpRealm, identityProvider);
+            }
         } else {
             return deleteIDPLinkResponse;
         }
