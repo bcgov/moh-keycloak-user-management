@@ -62,7 +62,9 @@ export default {
 
     let finalDates = [];
     totalDaysDates.reverse().forEach((date) => {
-      const dateExist = data.find((d) => d.EVENT_DATE == date.slice(0, 10));
+      const dateExist = data.find(
+        (d) => d.EVENT_DATE?.slice(0, 10) == date.slice(0, 10)
+      );
       if (dateExist) {
         finalDates.push(dateExist);
       } else {
