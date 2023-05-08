@@ -366,7 +366,6 @@ public class UsersController {
     }
 
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
-
     public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
         return keycloakApiService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
     }
