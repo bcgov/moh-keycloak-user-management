@@ -61,15 +61,15 @@ public class MetricsController {
     @GetMapping("/metrics/total-active-user-count")
     public List<Map<String, Object>> getTotalActiveUserCountYear() throws SQLException {
         String sql
-                = " SELECT EVENT_DATE, COUNT(1) AS ACTIVE_USER_COUNT"
-                + " FROM ("
-                + "    SELECT TRUNC(to_date('19700101', 'YYYYMMDD') + ( 1 / 24 / 60 / 60 / 1000) * event_time) AS EVENT_DATE"
+                = "SELECT EVENT_DATE, COUNT(1) AS ACTIVE_USER_COUNT"
+                + "  FROM ("
+                + "    SELECT TRUNC(FROM_TZ(CAST(to_date('19700101', 'YYYYMMDD') + NUMTODSINTERVAL(event_time/1000, 'SECOND') AS timestamp), 'UTC') AT TIME ZONE 'America/Vancouver') AS EVENT_DATE"
                 + "    FROM keycloak.event_entity"
                 + "    WHERE type = 'LOGIN'"
                 + "  )"
                 + " WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -12)"
                 + " GROUP BY EVENT_DATE"
-                + " ORDER BY EVENT_DATE ASC";
+                + " ORDER BY EVENT_DATE DESC";
 
         return jdbcTemplate.queryForList(sql);
     }

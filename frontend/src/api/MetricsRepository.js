@@ -1,5 +1,5 @@
-import { umsRequest } from "./Repository";
 import Vue from "vue";
+import { umsRequest } from "./Repository";
 
 const resource = "/metrics";
 
@@ -23,31 +23,58 @@ export default {
     }
 
     switch (format) {
-      case "1M":
-        return this.filterLastMonth(yearOfActiveUserCount);
-      case "6M":
-        return this.filterLastSixMonths(yearOfActiveUserCount);
-      case "1Y":
-        return yearOfActiveUserCount;
-      default:
-        return this.filterLastSevenDay(yearOfActiveUserCount);
+      case "1M": {
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        return this.keepNumberOfDays(oneMonthAgo, yearOfActiveUserCount);
+      }
+      case "6M": {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        return this.keepNumberOfDays(sixMonthsAgo, yearOfActiveUserCount);
+      }
+      case "1Y": {
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(oneYearAgo.getMonth() - 12);
+        return this.keepNumberOfDays(oneYearAgo, yearOfActiveUserCount);
+      }
+      default: {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        return this.keepNumberOfDays(oneWeekAgo, yearOfActiveUserCount);
+      }
     }
   },
-  filterLastSevenDay(dates) {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    return dates.filter(({ EVENT_DATE }) => new Date(EVENT_DATE) > oneWeekAgo);
-  },
-  filterLastMonth(dates) {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    return dates.filter(({ EVENT_DATE }) => new Date(EVENT_DATE) > oneMonthAgo);
-  },
-  filterLastSixMonths(dates) {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    return dates.filter(
-      ({ EVENT_DATE }) => new Date(EVENT_DATE) > sixMonthsAgo
+  keepNumberOfDays(pastDate, dates) {
+    const filteredDays = dates.filter(
+      ({ EVENT_DATE }) => new Date(EVENT_DATE) > pastDate
     );
+    const numberOfDays = this.datediff(pastDate, new Date());
+    return this.addEventForMissingDays(numberOfDays, filteredDays);
+  },
+  addEventForMissingDays(numberOfDay, data) {
+    const totalDaysDates = [];
+    for (let i = 0; i < numberOfDay; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      totalDaysDates.push(date.toISOString());
+    }
+
+    let finalDates = [];
+    totalDaysDates.reverse().forEach((date) => {
+      const dateExist = data.find(
+        (d) => d.EVENT_DATE?.slice(0, 10) == date.slice(0, 10)
+      );
+      if (dateExist) {
+        finalDates.push(dateExist);
+      } else {
+        finalDates.push({ EVENT_DATE: date, ACTIVE_USER_COUNT: 0 });
+      }
+    });
+
+    return finalDates;
+  },
+  datediff(first, second) {
+    return Math.round((second - first) / (1000 * 60 * 60 * 24));
   },
 };
