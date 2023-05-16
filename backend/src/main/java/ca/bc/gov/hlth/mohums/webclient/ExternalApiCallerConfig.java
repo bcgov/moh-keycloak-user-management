@@ -22,4 +22,9 @@ public class ExternalApiCallerConfig {
     public ExternalApiCaller keycloakMasterApiCaller(@Qualifier("kcMasterAuthorizedWebClient") WebClient keycloakMasterWebClient){
         return new ExternalApiCaller(keycloakMasterWebClient);
     }
+    
+    @Bean("payeeApiCaller")
+    public ExternalApiCaller payeeApiCaller(@Qualifier("payeeApiAuthorizedWebClient") WebClient payeeApiAuthorizedWebClient){
+        return new ExternalApiCaller(payeeApiAuthorizedWebClient);
+    }
 }

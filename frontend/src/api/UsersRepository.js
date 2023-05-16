@@ -123,4 +123,17 @@ export default {
       )
     );
   },
+  /** User Payee */
+  getUserPayee(userId) {
+    return umsRequest().then((axiosInstance) =>
+      axiosInstance.get(`${resource}/${userId}/payee`)
+    );
+  },
+  updateUserPayee(userId, payee) {
+    return umsRequest().then((axiosInstance) =>
+      axiosInstance.put(`${resource}/${userId}/payee`, payee, {
+        headers: { "Content-Type": "text/plain" },
+      })
+    );
+  },
 };

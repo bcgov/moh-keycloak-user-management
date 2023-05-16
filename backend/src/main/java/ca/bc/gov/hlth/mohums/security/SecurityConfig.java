@@ -87,6 +87,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.PUT,"/users/{userId}/groups/{groupId}").hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
                 .mvcMatchers(HttpMethod.DELETE,"/users/{userId}/groups/{groupId}").hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
                 .mvcMatchers(HttpMethod.DELETE, "/users/{userId}/role-mappings/**").hasRole(manageUserRolesRole)
+                .mvcMatchers(HttpMethod.PUT, "/users/{userId}/payee/**").hasRole(manageUserRolesRole)
                 .mvcMatchers("/*").denyAll()
                 .and()
             .oauth2ResourceServer().jwt()
