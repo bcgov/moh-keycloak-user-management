@@ -7,5 +7,5 @@
   "service_url": "http://localhost:9090",
   "sfds_url": "https://sfdsdev.hlth.gov.bc.ca/sfds-api",
   "app_title": "MoH User Management (Dev)",
-  "mspdirect_clients": ["MSPDIRECT-SERVICE"]
+  "mspdirect_client": "MSPDIRECT-SERVICE"
 }

@@ -187,12 +187,12 @@
                   Cancel
                 </v-btn>
               </v-card-actions>
-              <div v-if="showUserPayee">
+              <div v-if="showUserPayee && !isClientRoleLoading">
                 <v-divider />
                 <user-payee
                   @close="close()"
                   @save="updateUserPayee"
-                  :userId="userId"
+                  :initialPayee="payee"
                 />
               </div>
             </v-card>
@@ -258,6 +258,7 @@
         isEdit: false,
         isClientRoleLoading: false,
         LAST_LOGIN_NOT_RECORDED,
+        payee: "",
       };
     },
     async created() {
@@ -289,9 +290,7 @@
         ].roles.includes(manageUserRolesName);
       },
       showUserPayee() {
-        return this.$config.mspdirect_clients.includes(
-          this.selectedClient?.clientId
-        );
+        return this.selectedClient?.clientId === this.$config.mspdirect_client;
       },
     },
     methods: {
@@ -383,6 +382,11 @@
         this.clientRoles.push(...clientRolesResponses[2].data);
         this.selectedRoles.push(...clientRolesResponses[2].data);
         this.effectiveClientRoles.push(...clientRolesResponses[0].data);
+
+        if (this.showUserPayee) {
+          const response = await UsersRepository.getUserPayee(this.userId);
+          this.payee = response.data.payeeNumber;
+        }
 
         this.isClientRoleLoading = false;
 

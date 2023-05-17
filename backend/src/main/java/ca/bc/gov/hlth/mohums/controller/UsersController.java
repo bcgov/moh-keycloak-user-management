@@ -396,30 +396,47 @@ public class UsersController {
     
     @GetMapping("/users/{userId}/payee")
     public ResponseEntity<Object> getUserPayee(@PathVariable String userId) {
-		return payeeApiService.getPayee(userId);
+		ResponseEntity<Object> response = payeeApiService.getPayee(userId);
+		// A 404 is a legitimate response if the user doesn't have a Payee defined
+		// Convert it and return an empty response instead.
+		if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+			return ResponseEntity.ok(null);
+		}
+		return response;
     }
     
     @SuppressWarnings("unchecked")
 	@PutMapping("/users/{userId}/payee")
-    public ResponseEntity<String> updateUserPayee(@PathVariable String userId, @RequestBody String payee) {
+    public ResponseEntity<Object> updateUserPayee(@PathVariable String userId, @RequestBody(required = false) String payee) {
     	// Check the existing payee
     	String existingPayee = ((LinkedHashMap<String, String>)payeeApiService.getPayee(userId).getBody()).get(KEY_PAYEE_NUMBER);
+
+		// No change - do nothing    	
+    	if (StringUtils.equals(payee, existingPayee)) {
+    		return ResponseEntity.ok(payee);		
+    	}
     	if (StringUtils.isEmpty(existingPayee)) {
     		if (StringUtils.isNotEmpty(payee)) {
     			// Add a new record
+    			UserPayee userPayee = new UserPayee();    			
+    			userPayee.setPayeeNumber(payee);
+    			userPayee.setUserGuid(userId);
+    			return payeeApiService.addPayee(userPayee);
     		} else {
-    			// No change - do nothing
     			return ResponseEntity.ok(payee);
     		}
     	} else {
     		if (StringUtils.isNotEmpty(payee)) {
     			// Update the existing record
+    			UserPayee userPayee = new UserPayee();    			
+    			userPayee.setPayeeNumber(payee);
+    			userPayee.setUserGuid(userId);
+    			return payeeApiService.updatePayee(userId, userPayee);
     		} else {
     			// Delete the existing record
+    			return payeeApiService.deletePayee(userId);
     		}
     	}
-    	
-    	return ResponseEntity.ok(payee);
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");

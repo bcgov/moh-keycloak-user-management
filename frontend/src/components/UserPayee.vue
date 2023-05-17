@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="payee-card">
     <v-card-title>
       <span class="headline">Edit User Payee</span>
     </v-card-title>
@@ -11,7 +11,7 @@
         outlined
         id="payee"
         maxlength="10"
-        v-model="payee"
+        v-model.trim="payee"
       />
     </v-card-text>
 
@@ -23,25 +23,18 @@
 </template>
 
 <script>
-  import UsersRepository from "@/api/UsersRepository";
-
   export default {
     name: "UserPayee",
     components: {},
     props: {
-      userId: {
+      initialPayee: {
         type: String,
         required: false,
       },
     },
-    async created() {
-      console.log("created");
-      let response = await UsersRepository.getUserPayee(this.userId);
-      this.payee = response.data.payeeNumber;
-    },
     data() {
       return {
-        payee: "",
+        payee: this.initialPayee,
       };
     },
     methods: {
@@ -56,6 +49,9 @@
 </script>
 
 <style scoped>
+  .payee-card {
+    padding: 15px;
+  }
   .payee-text-field {
     width: 200px;
   }
