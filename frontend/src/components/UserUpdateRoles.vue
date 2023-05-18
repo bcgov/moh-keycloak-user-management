@@ -190,7 +190,7 @@
               <div v-if="showUserPayee && !isClientRoleLoading">
                 <v-divider />
                 <user-payee
-                  @close="close()"
+                  @close="close"
                   @save="updateUserPayee"
                   :initialPayee="payee"
                 />

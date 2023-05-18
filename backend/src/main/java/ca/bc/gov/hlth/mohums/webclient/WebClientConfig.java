@@ -97,7 +97,6 @@ public class WebClientConfig {
     
     @Bean("payeeApiAuthorizedWebClient")
     public WebClient payeeWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
-
         String registrationId = "keycloak-moh";
         ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
         return createWebClient(oauth, mspDirectApiBaseUrl);
