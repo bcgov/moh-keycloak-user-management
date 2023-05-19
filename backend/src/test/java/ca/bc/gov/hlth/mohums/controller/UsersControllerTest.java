@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UsersControllerTest {
 
-    private final UsersController u = new UsersController(null, vanityHostname);
+    private final UsersController u = new UsersController(null, null, vanityHostname);
 
     private static final String vanityHostname = "http://localhost";
 

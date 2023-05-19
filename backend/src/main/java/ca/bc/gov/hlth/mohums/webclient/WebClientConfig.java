@@ -33,6 +33,9 @@ public class WebClientConfig {
 
     @Value("${keycloak-moh.organizations-api-url}")
     private String organizationsApiBaseUrl;
+    
+    @Value("${keycloak-moh.mspdirect-api-url}")
+    private String mspDirectApiBaseUrl;
 
     @Value("${spring.codec.max-in-memory-size-mb}")
     int maxInMemorySize;
@@ -90,6 +93,13 @@ public class WebClientConfig {
         } else {
             return createWebClientWithProxy(oauth, organizationsApiBaseUrl);
         }
+    }
+    
+    @Bean("payeeApiAuthorizedWebClient")
+    public WebClient payeeWebClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        String registrationId = "keycloak-moh";
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth = createOauthFilterFunction(authorizedClientManager, registrationId);
+        return createWebClient(oauth, mspDirectApiBaseUrl);
     }
 
     private ServletOAuth2AuthorizedClientExchangeFilterFunction createOauthFilterFunction(OAuth2AuthorizedClientManager authorizedClientManager, String registrationId) {

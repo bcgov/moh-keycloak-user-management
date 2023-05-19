@@ -49,3 +49,5 @@ target/
 /frontend/nbproject/private/
 frontend/dist/*
 frontend/nbproject/*
+
+yarn.lock

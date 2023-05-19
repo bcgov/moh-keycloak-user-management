@@ -187,6 +187,14 @@
                   Cancel
                 </v-btn>
               </v-card-actions>
+              <div v-if="showUserPayee && !isClientRoleLoading">
+                <v-divider />
+                <user-payee
+                  @close="close"
+                  @save="updateUserPayee"
+                  :initialPayee="payee"
+                />
+              </div>
             </v-card>
           </v-dialog>
         </v-toolbar>
@@ -224,10 +232,12 @@
 <script>
   import ClientsRepository from "@/api/ClientsRepository";
   import UsersRepository from "@/api/UsersRepository";
+  import UserPayee from "@/components/UserPayee.vue";
 
   const LAST_LOGIN_NOT_RECORDED = -1;
   export default {
     name: "UserUpdateRoles",
+    components: { UserPayee },
     props: ["userId"],
     data() {
       return {
@@ -248,6 +258,7 @@
         isEdit: false,
         isClientRoleLoading: false,
         LAST_LOGIN_NOT_RECORDED,
+        payee: "",
       };
     },
     async created() {
@@ -277,6 +288,9 @@
         return !!this.$keycloak.tokenParsed.resource_access[
           umsClientId
         ].roles.includes(manageUserRolesName);
+      },
+      showUserPayee() {
+        return this.selectedClient?.clientId === this.$config.mspdirect_client;
       },
     },
     methods: {
@@ -369,6 +383,11 @@
         this.selectedRoles.push(...clientRolesResponses[2].data);
         this.effectiveClientRoles.push(...clientRolesResponses[0].data);
 
+        if (this.showUserPayee) {
+          const response = await UsersRepository.getUserPayee(this.userId);
+          this.payee = response.data.payeeNumber;
+        }
+
         this.isClientRoleLoading = false;
 
         this.clientRoles.sort((a, b) => {
@@ -439,6 +458,25 @@
           })
           .finally(() => {
             this.$root.$refs.UserMailboxAuthorizations.getMailboxClients();
+            window.scrollTo(0, 0);
+          });
+      },
+      updateUserPayee: function (payee) {
+        UsersRepository.updateUserPayee(this.userId, payee)
+          .then(() => {
+            this.$store.commit("alert/setAlert", {
+              message: "Payee updated successfully",
+              type: "success",
+            });
+            this.close();
+          })
+          .catch((error) => {
+            this.$store.commit("alert/setAlert", {
+              message: "Error updating payee: " + error,
+              type: "error",
+            });
+          })
+          .finally(() => {
             window.scrollTo(0, 0);
           });
       },

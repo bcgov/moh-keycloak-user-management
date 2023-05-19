@@ -6,5 +6,6 @@
   "redirect_uri": "https://user-management-test.hlth.gov.bc.ca",
   "service_url": "https://user-management-test.api.hlth.gov.bc.ca",
   "sfds_url": "https://sfdstst.hlth.gov.bc.ca/sfds-api",
-  "app_title": "MoH User Management (Test)"
+  "app_title": "MoH User Management (Test)",
+  "mspdirect_client": "MSPDIRECT-SERVICE"
 }

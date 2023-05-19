@@ -1,10 +1,23 @@
 package ca.bc.gov.hlth.mohums.controller;
 
-import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
-import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
-import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
-import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -16,20 +29,28 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
+import ca.bc.gov.hlth.mohums.model.UserPayee;
+import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
+import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
+import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
+import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
+import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
 
 @RestController
 public class UsersController {
+	
+    private static final String KEY_PAYEE_NUMBER = "payeeNumber";
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -38,11 +59,14 @@ public class UsersController {
     private PermissionsValidator permissionsValidator;
 
     private final KeycloakApiService keycloakApiService;
+    
+    private final PayeeApiService payeeApiService;
 
     private final String vanityHostname;
 
-    public UsersController(KeycloakApiService keycloakApiService, @Value("${config.vanity-hostname}") String vanityHostname) {
+    public UsersController(KeycloakApiService keycloakApiService, PayeeApiService payeeApiService, @Value("${config.vanity-hostname}") String vanityHostname) {
         this.keycloakApiService = keycloakApiService;
+        this.payeeApiService = payeeApiService;
         this.vanityHostname = vanityHostname;
     }
 
@@ -368,6 +392,52 @@ public class UsersController {
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
     public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
         return keycloakApiService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
+    }
+    
+    @GetMapping("/users/{userId}/payee")
+    public ResponseEntity<Object> getUserPayee(@PathVariable String userId) {
+        ResponseEntity<Object> response = payeeApiService.getPayee(userId);
+        // A 404 is a legitimate response if the user doesn't have a Payee defined
+        // Convert it and return an empty response instead.
+        if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+            return ResponseEntity.ok(null);
+        }
+        return response;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @PutMapping("/users/{userId}/payee")
+    public ResponseEntity<Object> updateUserPayee(@PathVariable String userId, @RequestBody(required = false) String payee) {
+        // Get the existing payee
+        String existingPayee = ((LinkedHashMap<String, String>) payeeApiService.getPayee(userId).getBody()).get(KEY_PAYEE_NUMBER);
+
+        // No change - do nothing
+        if (StringUtils.equals(payee, existingPayee)) {
+            return ResponseEntity.ok(payee);
+        }
+        if (StringUtils.isEmpty(existingPayee)) {
+            if (StringUtils.isNotEmpty(payee)) {
+                // Add a new record
+                UserPayee userPayee = new UserPayee();
+                userPayee.setPayeeNumber(payee);
+                userPayee.setUserGuid(userId);
+                return payeeApiService.addPayee(userPayee);
+            } else {
+                // Technically this won't happen as this would be "no change"
+                return ResponseEntity.ok(payee);
+            }
+        } else {
+            if (StringUtils.isNotEmpty(payee)) {
+                // Update the existing record
+                UserPayee userPayee = new UserPayee();
+                userPayee.setPayeeNumber(payee);
+                userPayee.setUserGuid(userId);
+                return payeeApiService.updatePayee(userId, userPayee);
+            } else {
+                // Delete the existing record
+                return payeeApiService.deletePayee(userId);
+            }
+        }
     }
 
     private static final Pattern patternGuid = Pattern.compile(".*/users/(.{8}-.{4}-.{4}-.{4}-.{12})");

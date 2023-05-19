@@ -2,6 +2,7 @@ keycloak-moh:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/moh_applications
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications
   organizations-api-url: https://organizations-api.cey5wq-dev.nimbus.cloud.gov.bc.ca
+  mspdirect-api-url: https://mspdirect-dev-api.apps.silver.devops.gov.bc.ca
 keycloak-master:
   admin-api-url: https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms
   base-oauth-url: https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master
