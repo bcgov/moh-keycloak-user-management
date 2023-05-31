@@ -402,7 +402,9 @@ public class UsersController {
         if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
             return ResponseEntity.ok(null);
         }
-        return response;
+        // Create a new Response as returning the original response creates intermittent
+        // network errors for the client 
+        return new ResponseEntity<Object>(response.getBody(), response.getStatusCode());
     }
     
     @SuppressWarnings("unchecked")
