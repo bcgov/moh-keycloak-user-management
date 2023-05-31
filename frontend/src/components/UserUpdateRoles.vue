@@ -193,6 +193,7 @@
                   @close="close"
                   @save="updateUserPayee"
                   :initialPayee="payee"
+                  :payeeLoaded="payeeLoaded"
                 />
               </div>
             </v-card>
@@ -259,6 +260,7 @@
         isClientRoleLoading: false,
         LAST_LOGIN_NOT_RECORDED,
         payee: "",
+        payeeLoaded: false,
       };
     },
     async created() {
@@ -384,8 +386,7 @@
         this.effectiveClientRoles.push(...clientRolesResponses[0].data);
 
         if (this.showUserPayee) {
-          const response = await UsersRepository.getUserPayee(this.userId);
-          this.payee = response.data.payeeNumber;
+          await this.loadUserPayee();
         }
 
         this.isClientRoleLoading = false;
@@ -460,6 +461,16 @@
             this.$root.$refs.UserMailboxAuthorizations.getMailboxClients();
             window.scrollTo(0, 0);
           });
+      },
+      loadUserPayee: async function () {
+        this.payeeLoaded = false;
+        try {
+          const response = await UsersRepository.getUserPayee(this.userId);
+          this.payee = response.data.payeeNumber;
+          this.payeeLoaded = true;
+        } catch (err) {
+          // Swallow the error and display an error in the Payee section
+        }
       },
       updateUserPayee: function (payee) {
         UsersRepository.updateUserPayee(this.userId, payee)

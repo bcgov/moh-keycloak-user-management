@@ -1,5 +1,5 @@
 <template>
-  <v-card class="payee-card">
+  <v-card class="payee-card" v-if="payeeLoaded">
     <v-card-title>
       <span class="headline">Edit User Payee</span>
     </v-card-title>
@@ -20,6 +20,7 @@
       <v-btn outlined class="primary--text" @click="close()">Cancel</v-btn>
     </v-card-actions>
   </v-card>
+  <v-card class="payee-card payee-error" v-else>Error loading Payee</v-card>
 </template>
 
 <script>
@@ -30,6 +31,10 @@
       initialPayee: {
         type: String,
         required: false,
+      },
+      payeeLoaded: {
+        type: Boolean,
+        required: true,
       },
     },
     data() {
@@ -51,6 +56,11 @@
 <style scoped>
   .payee-card {
     padding: 15px;
+  }
+  .payee-error {
+    color: #ff5252;
+    font-weight: bold;
+    padding: 16px 24px 16px 24px;
   }
   .payee-text-field {
     width: 200px;
