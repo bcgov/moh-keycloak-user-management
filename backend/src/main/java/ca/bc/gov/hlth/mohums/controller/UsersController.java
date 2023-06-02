@@ -396,13 +396,22 @@ public class UsersController {
     
     @GetMapping("/users/{userId}/payee")
     public ResponseEntity<Object> getUserPayee(@PathVariable String userId) {
-        ResponseEntity<Object> response = payeeApiService.getPayee(userId);
-        // A 404 is a legitimate response if the user doesn't have a Payee defined
-        // Convert it and return an empty response instead.
-        if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-            return ResponseEntity.ok(null);
+        try {
+            ResponseEntity<Object> response = payeeApiService.getPayee(userId);
+            // A 404 is a legitimate response if the user doesn't have a Payee defined
+            // Convert it and return an empty response instead.
+            if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return ResponseEntity.ok(null);
+            }
+            // Create a new Response as returning the original response creates intermittent
+            // network errors for the client 
+            return new ResponseEntity<Object>(response.getBody(), response.getStatusCode());            
+        } catch (Exception e) {
+            // WebFlux will thrown an exception if the Body isn't as expected (which can happen with a Payee API exception)
+            // so catch and return a 500
+            return new ResponseEntity<Object>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return response;
+
     }
     
     @SuppressWarnings("unchecked")
