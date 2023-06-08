@@ -27,7 +27,6 @@ export default {
             router.replace({
               path: "/unauthorized",
             });
-
             break;
           case 404:
             router.replace({

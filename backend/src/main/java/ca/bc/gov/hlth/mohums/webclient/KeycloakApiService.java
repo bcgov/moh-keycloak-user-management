@@ -82,14 +82,13 @@ public class KeycloakApiService {
         } else {
             response = searchResults;
         }
-
         return response;
     }
 
     private List<Object> filterOutServiceAccounts(List<Object> searchResults) {
         return searchResults.stream()
                 .map(user -> (LinkedHashMap) user)
-                .filter(user -> !user.get("username").toString().contains("service-account-"))
+                .filter(user -> !isServiceAccount(user))
                 .collect(Collectors.toList());
     }
 
@@ -99,12 +98,16 @@ public class KeycloakApiService {
 
         if (userResponse.getStatusCode().is2xxSuccessful()) {
             LinkedHashMap user = (LinkedHashMap) userResponse.getBody();
-            if (user.get("username").toString().contains("service-account-")) {
+            if (isServiceAccount(user)) {
                 userResponse = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service account cannot be accessed through UMC");
             }
         }
 
         return userResponse;
+    }
+
+    private boolean isServiceAccount(LinkedHashMap userAttributes){
+        return userAttributes.get("username").toString().contains("service-account-");
     }
 
     public ResponseEntity<Object> createUser(Object data) {
