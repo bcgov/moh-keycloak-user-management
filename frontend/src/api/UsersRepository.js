@@ -1,3 +1,4 @@
+import router from "../router";
 import { umsRequest } from "./Repository";
 
 const resource = "/users";
@@ -19,9 +20,26 @@ export default {
   },
 
   getUser(userId) {
-    return umsRequest().then((axiosInstance) =>
-      axiosInstance.get(`${resource}/${userId}`)
-    );
+    return umsRequest().then((axiosInstance) => {
+      axiosInstance.interceptors.response.use(null, (error) => {
+        switch (error.response.status) {
+          case 403:
+            router.replace({
+              path: "/unauthorized",
+            });
+
+            break;
+          case 404:
+            router.replace({
+              path: "/notFound",
+            });
+            break;
+        }
+        return Promise.reject(error);
+      });
+
+      return axiosInstance.get(`${resource}/${userId}`);
+    });
   },
 
   createUser(content) {

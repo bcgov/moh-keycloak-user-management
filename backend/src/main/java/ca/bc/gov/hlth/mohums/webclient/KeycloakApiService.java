@@ -70,12 +70,41 @@ public class KeycloakApiService {
 
     // Users
     public ResponseEntity<List<Object>> getUsers(MultiValueMap<String, String> queryParams) {
-        return keycloakMohExternalApiCaller.getList(usersPath, queryParams);
+        ResponseEntity<List<Object>> searchResults = keycloakMohExternalApiCaller.getList(usersPath, queryParams);
+        ResponseEntity<List<Object>> response;
+
+        if (searchResults.getStatusCode().is2xxSuccessful()) {
+            List<Object> users = filterOutServiceAccounts(searchResults.getBody());
+
+            response = ResponseEntity
+                    .status(searchResults.getStatusCode())
+                    .body(users);
+        } else {
+            response = searchResults;
+        }
+
+        return response;
+    }
+
+    private List<Object> filterOutServiceAccounts(List<Object> searchResults) {
+        return searchResults.stream()
+                .map(user -> (LinkedHashMap) user)
+                .filter(user -> !user.get("username").toString().contains("service-account-"))
+                .collect(Collectors.toList());
     }
 
     public ResponseEntity<Object> getUser(String userId) {
         String path = usersPath + "/" + userId;
-        return keycloakMohExternalApiCaller.get(path, null);
+        ResponseEntity<Object> userResponse = keycloakMohExternalApiCaller.get(path, null);
+
+        if (userResponse.getStatusCode().is2xxSuccessful()) {
+            LinkedHashMap user = (LinkedHashMap) userResponse.getBody();
+            if (user.get("username").toString().contains("service-account-")) {
+                userResponse = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service account cannot be accessed through UMC");
+            }
+        }
+
+        return userResponse;
     }
 
     public ResponseEntity<Object> createUser(Object data) {
