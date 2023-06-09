@@ -22,7 +22,9 @@ public class KeycloakApiService {
     private final String groupsPath = "/groups";
     private final String identityProviderLinksPath = "/federated-identity";
     private final String userClientRoleMappingPath = "/role-mappings/clients/";
-
+    private final String serviceAccountPrefix = "service-account-";
+    private final String usernameAttribute = "username";
+    private final String serviceAccountForbiddenMessage = "Service account cannot be accessed through UMC";
     private final ExternalApiCaller keycloakMohExternalApiCaller;
     private final ExternalApiCaller keycloakMasterExternalApiCaller;
 
@@ -54,18 +56,20 @@ public class KeycloakApiService {
     }
 
     // Groups
+    @SuppressWarnings("unchecked")
     public ResponseEntity<Object> getGroups() {
         ResponseEntity<Object> response = keycloakMohExternalApiCaller.get(groupsPath, null);
-        ArrayList<LinkedHashMap> groups = (ArrayList<LinkedHashMap>) response.getBody();
+        ArrayList<LinkedHashMap<String, Object>> groups = (ArrayList<LinkedHashMap<String, Object>>) response.getBody();
         List<Group> groupList = groups.stream().map(g -> getGroupById(g.get("id").toString())).collect(Collectors.toList());
         return ResponseEntity.of(Optional.of(groupList));
     }
 
     // Group details
+    @SuppressWarnings("unchecked")
     private Group getGroupById(String groupId) {
         String path = String.format("%s/%s", groupsPath, groupId);
         ResponseEntity<Object> response = keycloakMohExternalApiCaller.get(path, null);
-        return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap) response.getBody());
+        return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap<String, Object>) response.getBody());
     }
 
     // Users
@@ -85,29 +89,30 @@ public class KeycloakApiService {
         return response;
     }
 
+    @SuppressWarnings("unchecked")
     private List<Object> filterOutServiceAccounts(List<Object> searchResults) {
         return searchResults.stream()
-                .map(user -> (LinkedHashMap) user)
+                .map(user -> (LinkedHashMap<String, Object>) user)
                 .filter(user -> !isServiceAccount(user))
                 .collect(Collectors.toList());
     }
-
+    @SuppressWarnings("unchecked")
     public ResponseEntity<Object> getUser(String userId) {
         String path = usersPath + "/" + userId;
         ResponseEntity<Object> userResponse = keycloakMohExternalApiCaller.get(path, null);
 
         if (userResponse.getStatusCode().is2xxSuccessful()) {
-            LinkedHashMap user = (LinkedHashMap) userResponse.getBody();
+            LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) userResponse.getBody();
             if (isServiceAccount(user)) {
-                userResponse = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Service account cannot be accessed through UMC");
+                userResponse = ResponseEntity.status(HttpStatus.FORBIDDEN).body(serviceAccountForbiddenMessage);
             }
         }
 
         return userResponse;
     }
 
-    private boolean isServiceAccount(LinkedHashMap userAttributes){
-        return userAttributes.get("username").toString().contains("service-account-");
+    private boolean isServiceAccount(LinkedHashMap<String, Object> userAttributes){
+        return userAttributes.get(usernameAttribute).toString().startsWith(serviceAccountPrefix);
     }
 
     public ResponseEntity<Object> createUser(Object data) {
