@@ -345,6 +345,38 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    public void searchByUserNameForServiceAccountUsers() {
+
+        final List<Object> usersResponse = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("username", "service-account-")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        Assertions.assertThat(usersResponse).isEmpty();
+    }
+
+    @Test
+    public void lookupServiceAccountUser() {
+        String UMS_SERVICE_ACCOUNT_ID = "7c5ddf30-1754-490b-ae43-ba71cd544e6b";
+        webTestClient
+                .get()
+                .uri(String.format("/users/%s", UMS_SERVICE_ACCOUNT_ID))
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
     public void lookupUserAuthorized() throws Exception {
         webTestClient
                 .get()
