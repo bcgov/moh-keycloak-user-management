@@ -50,8 +50,8 @@ public class MetricsController {
                 + "       AND ue.enabled = 1"
                 + "       AND kcr.id IS NULL"
                 + " )"
-                + " WHERE NOT (client_id IN ('USER-MANAGEMENT-SERVICE', 'PRIME-WEBAPP-ENROLLMENT')"
-                + "          OR LOWER(client_id) LIKE '%account%' OR LOWER(client_id) LIKE '%console%' OR LOWER(client_id) LIKE '%realm%')"
+                + " WHERE NOT (client_id IN ('account', 'account-console', 'security-admin-console', 'JAVASCRIPT_CONSOLE', 'USER-MANAGEMENT-SERVICE', 'PRIME-WEBAPP-ENROLLMENT')"
+                + "          OR LOWER(client_id) LIKE '%realm%')"
                 + " GROUP BY realm_id, client_id, description"
                 + " ORDER BY realm_id ASC, client_id ASC";
 
