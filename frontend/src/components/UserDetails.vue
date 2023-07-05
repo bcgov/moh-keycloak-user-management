@@ -40,7 +40,7 @@
                     <br />
                     <span class="tooltip-note">
                       Note: The username will already contain an '@domain' that
-                      the '@bcp' will be appended to
+                      the '@bcp' will be appended to.
                     </span>
                   </li>
                   <li>
