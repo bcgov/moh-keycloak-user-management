@@ -24,44 +24,62 @@
                 alignment with the id type.
                 <ul>
                   <li>
-                    IDIR: username
+                    IDIR:
+                    <span>username</span>
                     <strong>@idir</strong>
                   </li>
                   <li>
-                    Business BCeID: username
+                    Business BCeID:
+                    <span>username</span>
                     <strong>@bceid_business</strong>
+                  </li>
+                  <li>
+                    BC Provider:
+                    <span>username</span>
+                    <strong>@bcp</strong>
+                    <br />
+                    <span class="tooltip-note">
+                      Note: The username will already contain an '@domain' that
+                      the '@bcp' will be appended to.
+                    </span>
+                  </li>
+                  <li>
+                    BC Services Card:
+                    <span>username</span>
+                    <strong>@bcsc</strong>
                   </li>
                   <li>
                     Fraser Health:
                     <strong>sfhr\</strong>
-                    username
+                    <span>username</span>
                   </li>
-                  <li>
+                  <li style="display: inline-block">
                     Interior Health:
                     <strong>iha\</strong>
-                    username
+                    <span>username</span>
                   </li>
                   <li>
                     Northern Health:
                     <strong>nirhb\</strong>
-                    username
+                    <span>username</span>
                   </li>
                   <li>
                     Provincial Health:
                     <strong>phsabc\</strong>
-                    username
+                    <span>username</span>
                   </li>
                   <li>
                     Vancouver Coastal Health:
                     <strong>vch\</strong>
-                    username or
+                    <span>username</span>
+                    or
                     <strong>vrhb\</strong>
-                    username
+                    <span>username</span>
                   </li>
                   <li>
                     Vancouver Island Health:
                     <strong>viha\</strong>
-                    username
+                    <span>username</span>
                   </li>
                 </ul>
               </span>
@@ -439,5 +457,8 @@
 <style scoped>
   #user-name-tooltip-icon {
     margin-left: 10px;
+  }
+  .tooltip-note {
+    padding-left: 20px;
   }
 </style>
