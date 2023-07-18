@@ -26,7 +26,7 @@
           id="user-search"
           outlined
           dense
-          v-model="userSearchInput"
+          v-model.trim="userSearchInput"
           placeholder="Username, email, name, or ID"
           @keyup.enter="
             searchUser('&search=' + userSearchInput.replaceAll('\\', '%5C'))
@@ -97,7 +97,7 @@
           id="adv-search-last-name"
           outlined
           dense
-          v-model="lastNameInput"
+          v-model.trim="lastNameInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
@@ -107,7 +107,7 @@
           id="adv-search-first-name"
           outlined
           dense
-          v-model="firstNameInput"
+          v-model.trim="firstNameInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
@@ -117,7 +117,7 @@
           id="adv-search-username"
           outlined
           dense
-          v-model="usernameInput"
+          v-model.trim="usernameInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
@@ -127,7 +127,7 @@
           id="adv-search-email"
           outlined
           dense
-          v-model="emailInput"
+          v-model.trim="emailInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
@@ -167,7 +167,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
-              v-model="lastLogDate"
+              v-model.trim="lastLogDate"
               id="last-log-date"
               v-bind="attrs"
               v-on="on"
@@ -346,8 +346,8 @@
 </template>
 
 <script>
-  import UsersRepository from "@/api/UsersRepository";
   import ClientsRepository from "@/api/ClientsRepository";
+  import UsersRepository from "@/api/UsersRepository";
 
   const options = { dateStyle: "short" };
   const formatDate = new Intl.DateTimeFormat("en-CA", options).format;
