@@ -106,7 +106,7 @@
               outlined
               :disabled="!editUserDetailsPermission"
               id="first-name"
-              v-model="user.firstName"
+              v-model.trim="user.firstName"
               required
               :rules="[(v) => !!v || 'First Name is required']"
             />
@@ -123,7 +123,7 @@
               outlined
               :disabled="!editUserDetailsPermission"
               id="last-name"
-              v-model="user.lastName"
+              v-model.trim="user.lastName"
               required
               :rules="[(v) => !!v || 'Last Name is required']"
             />
@@ -140,7 +140,7 @@
               outlined
               :disabled="!editUserDetailsPermission"
               id="email"
-              v-model="user.email"
+              v-model.trim="user.email"
               required
               :rules="emailRules"
               type="email"
@@ -154,7 +154,7 @@
               outlined
               :disabled="!editUserDetailsPermission"
               id="phone"
-              v-model="user.attributes.phone"
+              v-model.trim="user.attributes.phone"
             />
 
             <label :disabled="!editUserDetailsPermission" for="org-details">
