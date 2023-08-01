@@ -423,16 +423,17 @@
         let formattedIdentityProviders = {
           bceid_business: "BCeID Business",
           bcprovider_aad: "BC Provider",
-          bcsc: "BC Services Card for PIdP",
-          bcsc_mspdirect: "BC Services Card for MSPDirect",
-          bcsc_prime: "BC Services Card for PRIME",
-          bcsc_hcap: "BC Services Card for HCAP",
           idir: "IDIR",
           idir_aad: "IDIR AzureAD",
           moh_idp: "Keycloak",
           phsa: "Health Authority",
           phsa_aad: "Health Authority AzureAD",
         };
+
+        if (idp.startsWith("bcsc")) {
+          return "BC Services Card";
+        }
+
         return formattedIdentityProviders[idp] || idp;
       },
     },
