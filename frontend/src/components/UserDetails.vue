@@ -421,12 +421,17 @@
       // Formatted to match standard naming conventions
       formatIdentityProvider: function (idp) {
         let formattedIdentityProviders = {
-          phsa: "Health Authority",
-          moh_idp: "MoH LDAP",
+          bceid_business: "BCeID Business",
+          bcprovider_aad: "BC Provider",
+          bcsc: "BC Services Card for PIdP",
+          bcsc_mspdirect: "BC Services Card for MSPDirect",
+          bcsc_prime: "BC Services Card for PRIME",
+          bcsc_hcap: "BC Services Card for HCAP",
           idir: "IDIR",
           idir_aad: "IDIR AzureAD",
-          bceid: "BCeID",
-          bcsc: "BCSC",
+          moh_idp: "Keycloak",
+          phsa: "Health Authority",
+          phsa_aad: "Health Authority AzureAD",
         };
         return formattedIdentityProviders[idp] || idp;
       },
