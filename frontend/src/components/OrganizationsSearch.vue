@@ -17,7 +17,7 @@
           id="organization-search"
           outlined
           dense
-          v-model="organizationSearchInput"
+          v-model.trim="organizationSearchInput"
           placeholder="Organization ID"
         />
       </v-col>
@@ -63,7 +63,7 @@
               dense
               outlined
               id="ID"
-              v-model="organizationToEdit.organizationId"
+              v-model.trim="organizationToEdit.organizationId"
             ></v-text-field>
 
             <label for="name" class="required">Organization Name</label>
@@ -71,7 +71,7 @@
               dense
               outlined
               id="name"
-              v-model="organizationToEdit.name"
+              v-model.trim="organizationToEdit.name"
               required
               :rules="[
                 (v) => !!v || 'Organization Name is required',

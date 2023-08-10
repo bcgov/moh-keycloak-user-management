@@ -50,8 +50,8 @@ public class MetricsController {
                 + "       AND ue.enabled = 1"
                 + "       AND kcr.id IS NULL"
                 + " )"
-                + " WHERE NOT (client_id = 'account' AND (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'idir', 'idir_aad', 'master', 'moh_applications', 'moh_citizen', 'moh_idp', 'phsa', 'phsa_aad'))"
-                + "          OR (client_id IN ('realm-management', 'USER-MANAGEMENT-SERVICE', 'PRIME-WEBAPP-ENROLLMENT')))"
+                + " WHERE NOT (client_id IN ('account', 'account-console', 'security-admin-console', 'JAVASCRIPT_CONSOLE', 'USER-MANAGEMENT-SERVICE', 'PRIME-WEBAPP-ENROLLMENT')"
+                + "          OR LOWER(client_id) LIKE '%realm%')"
                 + " GROUP BY realm_id, client_id, description"
                 + " ORDER BY realm_id ASC, client_id ASC";
 

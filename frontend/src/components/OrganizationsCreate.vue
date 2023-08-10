@@ -11,7 +11,7 @@
               dense
               outlined
               id="id"
-              v-model="organization.organizationId"
+              v-model.trim="organization.organizationId"
               required
               :rules="[
                 (v) => !!v || 'ID is required',
@@ -26,7 +26,7 @@
               dense
               outlined
               id="name"
-              v-model="organization.name"
+              v-model.trim="organization.name"
               required
               :rules="[
                 (v) => !!v || 'Organization Name is required',
