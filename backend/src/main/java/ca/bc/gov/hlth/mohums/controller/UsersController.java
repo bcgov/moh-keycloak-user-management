@@ -70,6 +70,24 @@ public class UsersController {
         this.vanityHostname = vanityHostname;
     }
 
+    /**
+     * 
+     * @param briefRepresentation indicates if a brief representation of the client should be returned by the Keycloak API get Users 
+     * @param email the email of the user
+     * @param first the pagination offset for the Keycloak api get Users
+     * @param firstName the first name of the user
+     * @param lastName the last name of the user
+     * @param max the maximum results size to be returned by the Keycloak API get Users
+     * @param search a String contained in username, first or last name, or email of the user
+     * @param username the username of the user
+     * @param org the ID of an Organization the user is associated to
+     * @param lastLogAfter the date after which the user logged in 
+     * @param lastLogBefore the date before which the user logged in
+     * @param clientId	the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model
+     * @param clientClientId the Client Id of the Client entity, maps to keycloak.client.clientId in the keycloak database model
+     * @param selectedRoles the roles the user must have, an empty list means all role for that client will be used
+     * @return a list of Users that match the specified criteria
+     */
     @GetMapping("/users")
     public ResponseEntity<List<Object>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
@@ -83,8 +101,8 @@ public class UsersController {
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
             @RequestParam Optional<String> lastLogBefore,
-            @RequestParam Optional<String> clientName,
             @RequestParam Optional<String> clientId,
+            @RequestParam Optional<String> clientClientId,
             @RequestParam Optional<String[]> selectedRoles) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -130,17 +148,17 @@ public class UsersController {
             }
             Optional<String> clientAndRolesJoins = Optional.empty();
             Optional<String> clientAndRolesCriteria = Optional.empty();
-            if (clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())) {
+            if (clientClientId.isPresent() && clientId.isPresent() && clientIdAndIdAreValid(clientClientId.get(), clientId.get())) {
                 clientAndRolesJoins = Optional.of(
                         " JOIN keycloak.user_role_mapping urm ON urm.user_id = ue.id"
                                 + " JOIN keycloak.keycloak_role kr ON kr.id = urm.role_id"
                                 + " JOIN keycloak.client c ON c.id = kr.client"
                 );
                 clientAndRolesCriteria = Optional.of(
-                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientName) OR (ee.client_id IS NULL AND c.client_id = :clientName))"
+                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientId) OR (ee.client_id IS NULL AND c.client_id = :clientId))"
                                 + " AND kr.name IN (:selectedRoles)"
                 );
-                namedParameters.put("clientName", clientName.get());
+                namedParameters.put("clientId", clientClientId.get());
                 namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
             }
             final String DO_NOT_INCLUDE = "";
@@ -205,9 +223,9 @@ public class UsersController {
         return searchResults;
     }
 
-    private boolean clientNameAndIdAreValid(String clientName, String clientId) {
-        LinkedHashMap client = (LinkedHashMap) keycloakApiService.getClient(clientId).getBody();
-        return client.get("name").equals(clientName);
+    private boolean clientIdAndIdAreValid(String clientId, String id) {
+        LinkedHashMap client = (LinkedHashMap) keycloakApiService.getClient(id).getBody();
+        return client.get("clientId").equals(clientId);
     }
 
     private String[] getSelectedRolesForChosenClient(Optional<String[]> selectedRoles, String clientId) {
