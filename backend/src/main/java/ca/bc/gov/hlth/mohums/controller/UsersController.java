@@ -79,12 +79,12 @@ public class UsersController {
      * @param lastName the last name of the user
      * @param max the maximum results size to be returned by the Keycloak API get Users
      * @param search a String contained in username, first or last name, or email of the user
-     * @param username  the username of the user
+     * @param username the username of the user
      * @param org the ID of an Organization the user is associated to
      * @param lastLogAfter the date after which the user logged in 
      * @param lastLogBefore the date before which the user logged in
-     * @param clientId	the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model e.g. b3cfa2d4-42e7-46d1-b67f-b52e9389185b
-     * @param clientClientId the Client Id of the Client entity, maps to keycloak.client.clienId in the keycloak database model e.g. SA-HIBC-SERVICE-BC-PORTAL
+     * @param clientId	the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model
+     * @param clientClientId the Client Id of the Client entity, maps to keycloak.client.clientId in the keycloak database model
      * @param selectedRoles the roles the user must have, an empty list means all role for that client will be used
      * @return a list of Users that match the specified criteria
      */
