@@ -423,8 +423,8 @@
             if (client.id == this.selectedClientId) {
               params = this.addQueryParameter(
                 params,
-                "clientName",
-                client.name
+                "clientClientId",
+                client.clientId
               );
             }
           });

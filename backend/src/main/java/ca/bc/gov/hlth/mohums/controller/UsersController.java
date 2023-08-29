@@ -70,6 +70,24 @@ public class UsersController {
         this.vanityHostname = vanityHostname;
     }
 
+    /**
+     * 
+     * @param briefRepresentation
+     * @param email
+     * @param first
+     * @param firstName
+     * @param lastName
+     * @param max
+     * @param search
+     * @param username
+     * @param org
+     * @param lastLogAfter
+     * @param lastLogBefore
+     * @param clientId	the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model e.g. b3cfa2d4-42e7-46d1-b67f-b52e9389185b
+     * @param clientClientId the Client Id of the Client entity, maps to keycloak.client.clienId in the keycloak database model e.g. SA-HIBC-SERVICE-BC-PORTAL
+     * @param selectedRoles
+     * @return
+     */
     @GetMapping("/users")
     public ResponseEntity<List<Object>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
@@ -83,8 +101,8 @@ public class UsersController {
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
             @RequestParam Optional<String> lastLogBefore,
-            @RequestParam Optional<String> clientName,
             @RequestParam Optional<String> clientId,
+            @RequestParam Optional<String> clientClientId,
             @RequestParam Optional<String[]> selectedRoles) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
@@ -130,17 +148,17 @@ public class UsersController {
             }
             Optional<String> clientAndRolesJoins = Optional.empty();
             Optional<String> clientAndRolesCriteria = Optional.empty();
-            if (clientName.isPresent() && clientId.isPresent() && clientNameAndIdAreValid(clientName.get(), clientId.get())) {
+            if (clientClientId.isPresent() && clientId.isPresent() && clientIdAndIdAreValid(clientClientId.get(), clientId.get())) {
                 clientAndRolesJoins = Optional.of(
                         " JOIN keycloak.user_role_mapping urm ON urm.user_id = ue.id"
                                 + " JOIN keycloak.keycloak_role kr ON kr.id = urm.role_id"
                                 + " JOIN keycloak.client c ON c.id = kr.client"
                 );
                 clientAndRolesCriteria = Optional.of(
-                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientName) OR (ee.client_id IS NULL AND c.client_id = :clientName))"
+                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientId) OR (ee.client_id IS NULL AND c.client_id = :clientId))"
                                 + " AND kr.name IN (:selectedRoles)"
                 );
-                namedParameters.put("clientName", clientName.get());
+                namedParameters.put("clientId", clientClientId.get());
                 namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
             }
             final String DO_NOT_INCLUDE = "";
@@ -205,9 +223,9 @@ public class UsersController {
         return searchResults;
     }
 
-    private boolean clientNameAndIdAreValid(String clientName, String clientId) {
-        LinkedHashMap client = (LinkedHashMap) keycloakApiService.getClient(clientId).getBody();
-        return client.get("name").equals(clientName);
+    private boolean clientIdAndIdAreValid(String clientId, String id) {
+        LinkedHashMap client = (LinkedHashMap) keycloakApiService.getClient(id).getBody();
+        return client.get("clientId").equals(clientId);
     }
 
     private String[] getSelectedRolesForChosenClient(Optional<String[]> selectedRoles, String clientId) {
