@@ -55,7 +55,9 @@ testcafe chrome tests/e2e/alltests.js -t "Test update user"
 # alltests.js contains a test named "Test update user"
 ```
 
-The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. You might also need to add another environment variable named `NODE_ENV` with the value `Development` in case some of the tests fail.
+The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Additional users used in E2E tests are called `testcafe-dashboard` and `testcafe-organizations`. All three users share the password. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. You might also need to add another environment variable named `NODE_ENV` with the value `Development` in case some of the tests fail.
+
+The client used for E2E tests is called `UMC-E2E-TESTS`.
 
 Note that these instructions only apply to the MoH's Keycloak server which has an LDAP identify provider configured. To use a different Keycloak server you would need to update the "login" portion of the tests to use your identity provider.
 

@@ -1,6 +1,5 @@
-import { itsbAccessTeamUser } from "../roles/roles";
-import AlertPage from "../pages/AlertPage";
 import AdvancedSearchForm from "../pages/AdvancedSearchForm";
+import { itsbAccessTeamUser } from "../roles/roles";
 
 const SITE_UNDER_TEST = "http://localhost:8080/#/users/";
 
@@ -11,7 +10,7 @@ fixture.disablePageCaching`Advanced Search`.beforeEach(async (t) => {
 test("Test adv search by Username", async (t) => {
   await t
     .click(AdvancedSearchForm.advSearchLink)
-    .typeText(AdvancedSearchForm.usernameInput, "testcafe")
+    .typeText(AdvancedSearchForm.usernameInput, "testcafe-dashboard")
     .click(AdvancedSearchForm.advSearchButton)
     .expect(AdvancedSearchForm.getNoResultsCount())
     .eql(0)
@@ -55,9 +54,9 @@ test("Test adv search no results", async (t) => {
 test("Test adv search by Role", async (t) => {
   await t
     .click(AdvancedSearchForm.advSearchLink)
-    .typeText(AdvancedSearchForm.selectClient, "FMDB")
+    .typeText(AdvancedSearchForm.selectClient, "UMC-E2E-TESTS")
     .pressKey("enter")
-    .click(AdvancedSearchForm.getRoleCheckbox("MOHUSER"))
+    .click(AdvancedSearchForm.getRoleCheckbox("E2E-ROLE-2"))
     .click(AdvancedSearchForm.advSearchButton)
     .expect(AdvancedSearchForm.getResultsCount())
     .gt(0);
@@ -66,10 +65,10 @@ test("Test adv search by Role", async (t) => {
 test("Test adv search by Email and Role", async (t) => {
   await t
     .click(AdvancedSearchForm.advSearchLink)
-    .typeText(AdvancedSearchForm.emailInput, "gmail")
-    .typeText(AdvancedSearchForm.selectClient, "FMDB")
+    .typeText(AdvancedSearchForm.emailInput, "david.a.sharpe@gmail.com")
+    .typeText(AdvancedSearchForm.selectClient, "UMC-E2E-TESTS")
     .pressKey("enter")
-    .click(AdvancedSearchForm.getRoleCheckbox("MOHUSER"))
+    .click(AdvancedSearchForm.getRoleCheckbox("E2E-ROLE-2"))
     .click(AdvancedSearchForm.advSearchButton)
     .expect(AdvancedSearchForm.getResultsCount())
     .eql(1);
@@ -78,15 +77,15 @@ test("Test adv search by Email and Role", async (t) => {
 test("Test adv search by Email and Role, then Basic Search", async (t) => {
   await t
     .click(AdvancedSearchForm.advSearchLink)
-    .typeText(AdvancedSearchForm.emailInput, "gmail")
-    .typeText(AdvancedSearchForm.selectClient, "FMDB")
+    .typeText(AdvancedSearchForm.emailInput, "david.a.sharpe@gmail.com")
+    .typeText(AdvancedSearchForm.selectClient, "UMC-E2E-TESTS")
     .pressKey("enter")
-    .click(AdvancedSearchForm.getRoleCheckbox("MOHUSER"))
+    .click(AdvancedSearchForm.getRoleCheckbox("E2E-ROLE-2"))
     .click(AdvancedSearchForm.advSearchButton)
     .expect(AdvancedSearchForm.getResultsCount())
     .eql(1)
     .click("#basic-search-link")
-    .typeText("#user-search", "gmail")
+    .typeText("#user-search", "david.a.sharpe@gmail.com")
     .click("#search-button")
     .expect(AdvancedSearchForm.getResultsCount())
     .gt(1);

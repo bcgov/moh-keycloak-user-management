@@ -68,6 +68,7 @@
             <p>Unique User Count (By IDP)</p>
           </div>
           <PieChart
+            id="unique-user-count-by-idp"
             :pieChartData="uniqueUserCountByIDP"
             v-if="!uniqueUserCountByIDPLoadingStatus"
           />
@@ -84,6 +85,7 @@
             <p>Unique User Count (By Realm)</p>
           </div>
           <PieChart
+            id="unique-user-count-by-realm"
             :pieChartData="uniqueUserCountByRealm"
             v-if="!uniqueUserCountByRealmLoadingStatus"
           />
@@ -133,8 +135,8 @@
 <script>
   import MetricsRepository from "@/api/MetricsRepository";
   import RealmsRepository from "@/api/RealmsRepository";
-  import PieChart from "@/components/PieChart";
   import LineChart from "@/components/LineChart";
+  import PieChart from "@/components/PieChart";
 
   export default {
     components: { PieChart, LineChart },
