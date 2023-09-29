@@ -9,8 +9,8 @@
     "test:e2e": "testcafe chrome tests/e2e",
     "lint": "vue-cli-service lint",
     "test": "npm run test:unit",
-    "format:check": "prettier -c --config-precedence prefer-file ./src",
-    "format:fix": "prettier -c -w --config-precedence prefer-file ./src"
+    "format:check": "prettier -c .",
+    "format:fix": "prettier -c -w ."
   },
   "dependencies": {
     "@bcgov/bc-sans": "^1.0.1",
