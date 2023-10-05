@@ -1,11 +1,9 @@
-import { Selector } from "testcafe";
-import { Role } from "testcafe";
+import { Role, Selector } from "testcafe";
 
 const SITE_UNDER_TEST = "http://localhost:8080";
 
-const TEST_CAFE_USER_ID = "3195a1bf-4bea-47c4-955d-cf52d4e2fc15";
 const TEST_CAFE_USERNAME = "testcafe";
-const CLIENT_TO_TEST = "FMDB";
+const CLIENT_TO_TEST = "UMC-E2E-TESTS";
 
 const regularAccUser = Role(SITE_UNDER_TEST, async (t) => {
   await t
@@ -20,7 +18,7 @@ fixture.disablePageCaching`All tests`.beforeEach(async (t) => {
 }).page`${SITE_UNDER_TEST}`;
 
 test("Smoke test", async (t) => {
-  await t.expect(Selector("#search-button").exists).ok();
+  await t.expect(Selector("#search-button").visible).ok();
 });
 
 test("Test search", async (t) => {
@@ -49,8 +47,13 @@ test("Test update user role", async (t) => {
     .typeText("#user-search", "testcafe")
     .click("#search-button")
     .click(Selector("td").withText(TEST_CAFE_USERNAME))
-    .typeText("#select-client", CLIENT_TO_TEST, { replace: true })
-    .click(Selector(".v-list-item").withText(CLIENT_TO_TEST))
+    .click(
+      Selector("tbody")
+        .find("td")
+        .withText(CLIENT_TO_TEST)
+        .sibling("td")
+        .find("button")
+    )
     .click("#role-0")
     .click("#save-user-roles")
     .expect(Selector("#primary-alert").textContent)
