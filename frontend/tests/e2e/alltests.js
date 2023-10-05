@@ -2,7 +2,6 @@ import { Role, Selector } from "testcafe";
 
 const SITE_UNDER_TEST = "http://localhost:8080";
 
-const TEST_CAFE_USER_ID = "3195a1bf-4bea-47c4-955d-cf52d4e2fc15";
 const TEST_CAFE_USERNAME = "testcafe";
 const CLIENT_TO_TEST = "UMC-E2E-TESTS";
 
