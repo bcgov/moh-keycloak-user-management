@@ -60,9 +60,12 @@
       "parser": "babel-eslint"
     },
     "rules": {
-      "vue/valid-v-slot": ["error", {
-        "allowModifiers": true
-      }]
+      "vue/valid-v-slot": [
+        "error",
+        {
+          "allowModifiers": true
+        }
+      ]
     },
     "overrides": [
       {
