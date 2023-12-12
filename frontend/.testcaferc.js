@@ -1,0 +1,1 @@
+require("dns").setDefaultResultOrder("ipv4first");

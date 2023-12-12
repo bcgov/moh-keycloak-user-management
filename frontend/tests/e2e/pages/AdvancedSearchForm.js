@@ -28,6 +28,10 @@ class AdvancedSearchForm {
   getResultsCount() {
     return Selector("#users-table").find("tbody > tr").count;
   }
+
+  getDropdownResult(name) {
+    return Selector("div.v-list-item__title").withText(name);
+  }
 }
 
 export default new AdvancedSearchForm();
