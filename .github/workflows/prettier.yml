@@ -3,7 +3,7 @@ name: Check code format
 on:
   pull_request:
     paths:
-      - 'frontend/**'
+      - "frontend/**"
 
 jobs:
   prettier:
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 14.16.1
+          node-version: 18.19.0
 
       - name: Setup Package
         run: npm ci
