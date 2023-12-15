@@ -253,7 +253,6 @@
         this.totalUserCountLoadingStatus = true;
 
         const lineChartData = await LineChartService.getLineChartData();
-        console.log(lineChartData);
 
         if (lineChartData) {
           const formattedLineChartData = LineChartService.formatLineChartData(
@@ -264,10 +263,9 @@
           const lineChart = LineChartService.createLineChartLabelsAndDataset(
             formattedLineChartData
           );
+
           this.totalUserCount["EVENT_DATE"] = lineChart.labels;
           this.totalUserCount["ACTIVE_USER_COUNT"] = lineChart.dataset;
-
-          console.log(this.totalUserCount);
           this.totalUserCountLoadingStatus = false;
         }
       },

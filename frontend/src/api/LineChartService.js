@@ -6,7 +6,7 @@ export default {
   async getLineChartData() {
     let lineChartData = Vue.prototype.$UserCountCache;
     if (Object.keys(lineChartData).length === 0) {
-      lineChartData = await MetricsRepository.getTotalActiveUserCount()
+      lineChartData = await MetricsRepository.get("total-active-user-count")
         .then((response) => {
           Vue.prototype.$UserCountCache = response.data;
           return response.data;
