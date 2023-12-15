@@ -137,6 +137,7 @@
   import RealmsRepository from "@/api/RealmsRepository";
   import LineChart from "@/components/LineChart";
   import PieChart from "@/components/PieChart";
+  import LineChartService from "../api/LineChartService";
 
   export default {
     components: { PieChart, LineChart },
@@ -250,20 +251,25 @@
       async loadActiveTotalUser(format) {
         this.totalUserCountSelectedFormat = format;
         this.totalUserCountLoadingStatus = true;
-        const response = await MetricsRepository.getTotalActiveUserCount(
-          format
-        );
-        const labels = [];
-        const dataset = [];
-        for (var key of response.entries()) {
-          labels.push(
-            new Date(key[1]["EVENT_DATE"]).toISOString().split("T")[0]
+
+        const lineChartData = await LineChartService.getLineChartData();
+        console.log(lineChartData);
+
+        if (lineChartData) {
+          const formattedLineChartData = LineChartService.formatLineChartData(
+            format,
+            lineChartData
           );
-          dataset.push(key[1]["ACTIVE_USER_COUNT"]);
+
+          const lineChart = LineChartService.createLineChartLabelsAndDataset(
+            formattedLineChartData
+          );
+          this.totalUserCount["EVENT_DATE"] = lineChart.labels;
+          this.totalUserCount["ACTIVE_USER_COUNT"] = lineChart.dataset;
+
+          console.log(this.totalUserCount);
+          this.totalUserCountLoadingStatus = false;
         }
-        this.totalUserCount["EVENT_DATE"] = labels;
-        this.totalUserCount["ACTIVE_USER_COUNT"] = dataset;
-        this.totalUserCountLoadingStatus = false;
       },
       mergeActiveUsersCountWithRealmsInfo() {
         this.activeUserCount = this.activeUserCount.map((item) => {
