@@ -387,6 +387,27 @@
           .then((response) => {
             this.user = response.data;
 
+            if (this.user.federatedIdentities) {
+              const predicate = (fi) => fi.identityProvider?.includes("bcsc");
+
+              let bcscLike = this.user.federatedIdentities
+                .filter((fi) => predicate(fi))
+                .map((fi) => fi.identityProvider);
+              console.log(bcscLike);
+
+              let bcscLikeIdentities = 0;
+
+              this.user.federatedIdentities =
+                this.user.federatedIdentities.filter((fi) => {
+                  if (predicate(fi)) {
+                    bcscLikeIdentities++;
+                    fi.identityProvider = bcscLike.join();
+                    return bcscLikeIdentities <= 1;
+                  }
+                  return true;
+                });
+            }
+
             if (!this.user.attributes) {
               this.user.attributes = {};
             }
