@@ -49,6 +49,16 @@
                     <strong>@bcsc</strong>
                   </li>
                   <li>
+                    FNHA:
+                    <span>username</span>
+                    <strong>@fnha</strong>
+                    <br />
+                    <span class="tooltip-note">
+                      Note: The username will already contain an '@domain' that
+                      the '@fnha' will be appended to.
+                    </span>
+                  </li>
+                  <li>
                     Fraser Health:
                     <strong>sfhr\</strong>
                     <span>username</span>
