@@ -186,13 +186,13 @@ public class KeycloakApiService {
             federatedIdentities.forEach(fi -> {
                 String idpAlias = fi.get("identityProvider");
                 if(idpAlias.startsWith("bcsc")){
-                    String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + idpAlias;
-                    deleteIDPLinkResponses.add(keycloakMohExternalApiCaller.delete(path));
+                    ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, idpAlias);
+                    deleteIDPLinkResponses.add(response);
                 }
             });
         }else{
-            String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProvider;
-            deleteIDPLinkResponses.add(keycloakMohExternalApiCaller.delete(path));
+            ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, identityProvider);
+            deleteIDPLinkResponses.add(response);
         }
 
         if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponses)) {
@@ -203,12 +203,19 @@ public class KeycloakApiService {
                 return deleteUserFromIdpRealm(userIdIdpRealm, identityProvider);
             }
         } else {
-            return deleteIDPLinkResponses.get(0);
+            return deleteIDPLinkResponses.stream()
+                    .filter(response -> response.getStatusCode().is4xxClientError() || response.getStatusCode().is5xxServerError())
+                    .findFirst().orElse(ResponseEntity.of(Optional.of(HttpStatus.INTERNAL_SERVER_ERROR)));
         }
     }
 
     private ResponseEntity<Object> deleteUserFromIdpRealm(String userIdIdpRealm, String identityProvider) {
         String path = "/" + identityProvider + USERS_PATH + "/" + userIdIdpRealm;
+        return keycloakMasterExternalApiCaller.delete(path);
+    }
+
+    private ResponseEntity<Object> deleteUserIdentityProviderLink(String userId, String identityProviderAlias) {
+        String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProviderAlias;
         return keycloakMasterExternalApiCaller.delete(path);
     }
 

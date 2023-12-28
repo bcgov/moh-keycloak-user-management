@@ -392,6 +392,7 @@
             this.selectedIdentityProvider = "";
           });
       },
+      //prime, mspdirect, pidp, hcap
       getUser: function () {
         return UsersRepository.getUser(this.userId)
           .then((response) => {
@@ -400,19 +401,19 @@
             if (this.user.federatedIdentities) {
               const predicate = (fi) => fi.identityProvider?.includes("bcsc");
 
-              let bcscLike = this.user.federatedIdentities
+              let bcscLikeIdentities = this.user.federatedIdentities
                 .filter((fi) => predicate(fi))
                 .map((fi) => fi.identityProvider);
-              console.log(bcscLike);
+              console.log(bcscLikeIdentities);
 
-              let bcscLikeIdentities = 0;
+              let bcscLikeCounter = 0;
 
               this.user.federatedIdentities =
                 this.user.federatedIdentities.filter((fi) => {
                   if (predicate(fi)) {
                     bcscLikeIdentities++;
-                    fi.identityProvider = bcscLike.join();
-                    return bcscLikeIdentities <= 1;
+                    fi.identityProvider = bcscLikeIdentities.join();
+                    return bcscLikeCounter <= 1;
                   }
                   return true;
                 });
