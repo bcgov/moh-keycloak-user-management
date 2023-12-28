@@ -392,7 +392,7 @@
             this.selectedIdentityProvider = "";
           });
       },
-      //prime, mspdirect, pidp, hcap
+
       getUser: function () {
         return UsersRepository.getUser(this.userId)
           .then((response) => {
@@ -411,8 +411,9 @@
               this.user.federatedIdentities =
                 this.user.federatedIdentities.filter((fi) => {
                   if (predicate(fi)) {
-                    bcscLikeIdentities++;
+                    bcscLikeCounter++;
                     fi.identityProvider = bcscLikeIdentities.join();
+                    console.log(fi.identityProvider);
                     return bcscLikeCounter <= 1;
                   }
                   return true;
@@ -463,13 +464,30 @@
         };
 
         if (idp.startsWith("bcsc")) {
-          return "BC Services Card";
+          return "BC Services Card for " + mapBcscToClientName(idp);
         }
 
         return formattedIdentityProviders[idp] || idp;
       },
     },
   };
+  function mapBcscToClientName(federatedIdentityString) {
+    const bcscMapping = {
+      bcsc: "PIDP",
+      bcsc_prime: "PRIME",
+      bcsc_mspdirect: "MSPDIRECT",
+      bcsc_hcap: "HCAP",
+    };
+
+    const federatedIdentityArray = federatedIdentityString.split(",");
+
+    const clientNames = federatedIdentityArray.map((bcscAlias) => {
+      return bcscMapping[bcscAlias] || bcscAlias;
+    });
+
+    return clientNames.join(", ");
+  }
+
   function formatOrganization(organization) {
     if (Array.isArray(organization)) {
       if (organization[0] === null) return "";

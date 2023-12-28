@@ -177,8 +177,6 @@ public class KeycloakApiService {
     @SuppressWarnings("unchecked")
     public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
 
-
-        //TODO: test cases and error response
         ArrayList<ResponseEntity<Object>> deleteIDPLinkResponses = new ArrayList<>();
         if(identityProvider.startsWith("bcsc")){
             LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
@@ -216,7 +214,7 @@ public class KeycloakApiService {
 
     private ResponseEntity<Object> deleteUserIdentityProviderLink(String userId, String identityProviderAlias) {
         String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProviderAlias;
-        return keycloakMasterExternalApiCaller.delete(path);
+        return keycloakMohExternalApiCaller.delete(path);
     }
 
     private boolean identityProviderLinkDeletedSuccessfully(List<ResponseEntity<Object>> deleteIdentityProviderLinkResponses) {
