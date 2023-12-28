@@ -108,7 +108,6 @@ public class KeycloakApiService {
             }
         }
 
-
         return userResponse;
     }
 

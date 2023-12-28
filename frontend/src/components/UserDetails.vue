@@ -370,7 +370,7 @@
         console.log(userIdIdpRealm);
         UsersRepository.resetUserIdentityProviderLink(
           this.userId,
-          this.selectedIdentityProvider,
+          this.selectedIdentityProvider.split(",")[0],
           userIdIdpRealm
         )
           .then(() => {
@@ -392,33 +392,11 @@
             this.selectedIdentityProvider = "";
           });
       },
-
       getUser: function () {
         return UsersRepository.getUser(this.userId)
           .then((response) => {
             this.user = response.data;
-
-            if (this.user.federatedIdentities) {
-              const predicate = (fi) => fi.identityProvider?.includes("bcsc");
-
-              let bcscLikeIdentities = this.user.federatedIdentities
-                .filter((fi) => predicate(fi))
-                .map((fi) => fi.identityProvider);
-              console.log(bcscLikeIdentities);
-
-              let bcscLikeCounter = 0;
-
-              this.user.federatedIdentities =
-                this.user.federatedIdentities.filter((fi) => {
-                  if (predicate(fi)) {
-                    bcscLikeCounter++;
-                    fi.identityProvider = bcscLikeIdentities.join();
-                    console.log(fi.identityProvider);
-                    return bcscLikeCounter <= 1;
-                  }
-                  return true;
-                });
-            }
+            this.filterFederatedIdentities();
 
             if (!this.user.attributes) {
               this.user.attributes = {};
@@ -447,6 +425,28 @@
           return;
         }
         this.$emit("submit-user-updates", this.user);
+      },
+      filterFederatedIdentities: function () {
+        if (this.user.federatedIdentities) {
+          const isBcscLike = (fi) => fi.identityProvider?.includes("bcsc");
+
+          let bcscLikeIdentities = this.user.federatedIdentities
+            .filter(isBcscLike)
+            .map((fi) => fi.identityProvider);
+
+          let bcscLikeCounter = 0;
+
+          this.user.federatedIdentities = this.user.federatedIdentities.filter(
+            (fi) => {
+              if (isBcscLike(fi)) {
+                bcscLikeCounter++;
+                fi.identityProvider = bcscLikeIdentities.join();
+                return bcscLikeCounter <= 1;
+              }
+              return true;
+            }
+          );
+        }
       },
     },
     filters: {
@@ -480,14 +480,12 @@
     };
 
     const federatedIdentityArray = federatedIdentityString.split(",");
-
     const clientNames = federatedIdentityArray.map((bcscAlias) => {
       return bcscMapping[bcscAlias] || bcscAlias;
     });
 
     return clientNames.join(", ");
   }
-
   function formatOrganization(organization) {
     if (Array.isArray(organization)) {
       if (organization[0] === null) return "";

@@ -6,6 +6,7 @@ import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -763,6 +764,7 @@ public class MoHUmsIntegrationTests {
     This test is ignored by default, since adding linked identities is not automated.
     In order to run the test, add two bcsc_* links (bcsc, bcsc_mspdirect ie.) to umstest user.
      */
+    @Disabled("Test disabled until re-adding linked identities is automated")
     @Test
     @SuppressWarnings("unchecked")
     public void removeBothBcscLinkedIdentityTypes() throws IOException, ParseException, InterruptedException {
@@ -783,7 +785,7 @@ public class MoHUmsIntegrationTests {
         //in this test user needs to be associated with two bcsc idps
         Assertions.assertThat(bcscLikeFederatedIdentities.size()).isEqualTo(2);
 
-        //user id is the same for both entries
+        //both links point to the same user, so id is the same
         String bcscRealmUserId = bcscLikeFederatedIdentities.get(0).get("userId");
 
         //check delete response status
