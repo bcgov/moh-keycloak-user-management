@@ -49,6 +49,16 @@
                     <strong>@bcsc</strong>
                   </li>
                   <li>
+                    FNHA:
+                    <span>username</span>
+                    <strong>@fnha</strong>
+                    <br />
+                    <span class="tooltip-note">
+                      Note: The username will already contain an '@domain' that
+                      the '@fnha' will be appended to.
+                    </span>
+                  </li>
+                  <li>
                     Fraser Health:
                     <strong>sfhr\</strong>
                     <span>username</span>
@@ -360,7 +370,7 @@
         console.log(userIdIdpRealm);
         UsersRepository.resetUserIdentityProviderLink(
           this.userId,
-          this.selectedIdentityProvider,
+          this.selectedIdentityProvider.split(",")[0],
           userIdIdpRealm
         )
           .then(() => {
@@ -386,6 +396,7 @@
         return UsersRepository.getUser(this.userId)
           .then((response) => {
             this.user = response.data;
+            this.filterFederatedIdentities();
 
             if (!this.user.attributes) {
               this.user.attributes = {};
@@ -415,6 +426,28 @@
         }
         this.$emit("submit-user-updates", this.user);
       },
+      filterFederatedIdentities: function () {
+        if (this.user.federatedIdentities) {
+          const isBcscLike = (fi) => fi.identityProvider?.includes("bcsc");
+
+          let bcscLikeIdentities = this.user.federatedIdentities
+            .filter(isBcscLike)
+            .map((fi) => fi.identityProvider);
+
+          let bcscLikeCounter = 0;
+
+          this.user.federatedIdentities = this.user.federatedIdentities.filter(
+            (fi) => {
+              if (isBcscLike(fi)) {
+                bcscLikeCounter++;
+                fi.identityProvider = bcscLikeIdentities.join();
+                return bcscLikeCounter <= 1;
+              }
+              return true;
+            }
+          );
+        }
+      },
     },
     filters: {
       // The IDP alias in keycloak doesn't always match what's known by users
@@ -431,13 +464,28 @@
         };
 
         if (idp.startsWith("bcsc")) {
-          return "BC Services Card";
+          return "BC Services Card for " + mapBcscToClientName(idp);
         }
 
         return formattedIdentityProviders[idp] || idp;
       },
     },
   };
+  function mapBcscToClientName(federatedIdentityString) {
+    const bcscMapping = {
+      bcsc: "PIDP",
+      bcsc_prime: "PRIME",
+      bcsc_mspdirect: "MSPDIRECT",
+      bcsc_hcap: "HCAP",
+    };
+
+    const federatedIdentityArray = federatedIdentityString.split(",");
+    const clientNames = federatedIdentityArray.map((bcscAlias) => {
+      return bcscMapping[bcscAlias] || bcscAlias;
+    });
+
+    return clientNames.join(", ");
+  }
   function formatOrganization(organization) {
     if (Array.isArray(organization)) {
       if (organization[0] === null) return "";

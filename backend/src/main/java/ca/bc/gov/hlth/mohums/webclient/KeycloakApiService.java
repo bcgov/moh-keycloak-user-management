@@ -173,10 +173,26 @@ public class KeycloakApiService {
         return keycloakMohExternalApiCaller.get("/admin-events", allParams);
     }
 
+    @SuppressWarnings("unchecked")
     public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
-        String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProvider;
-        ResponseEntity<Object> deleteIDPLinkResponse = keycloakMohExternalApiCaller.delete(path);
-        if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponse)) {
+
+        ArrayList<ResponseEntity<Object>> deleteIDPLinkResponses = new ArrayList<>();
+        if(identityProvider.startsWith("bcsc")){
+            LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
+            ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
+            federatedIdentities.forEach(fi -> {
+                String idpAlias = fi.get("identityProvider");
+                if(idpAlias.startsWith("bcsc")){
+                    ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, idpAlias);
+                    deleteIDPLinkResponses.add(response);
+                }
+            });
+        }else{
+            ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, identityProvider);
+            deleteIDPLinkResponses.add(response);
+        }
+
+        if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponses)) {
             // Some BCSC users can have an IDP alias that does not match the "bcsc" IDP realm (e.g. "bcsc_mspdirect") 
             if (identityProvider.startsWith("bcsc_")) {
                 return deleteUserFromIdpRealm(userIdIdpRealm, "bcsc");
@@ -184,7 +200,9 @@ public class KeycloakApiService {
                 return deleteUserFromIdpRealm(userIdIdpRealm, identityProvider);
             }
         } else {
-            return deleteIDPLinkResponse;
+            return deleteIDPLinkResponses.stream()
+                    .filter(response -> response.getStatusCode().is4xxClientError() || response.getStatusCode().is5xxServerError())
+                    .findFirst().orElse(ResponseEntity.of(Optional.of(HttpStatus.INTERNAL_SERVER_ERROR)));
         }
     }
 
@@ -193,7 +211,12 @@ public class KeycloakApiService {
         return keycloakMasterExternalApiCaller.delete(path);
     }
 
-    private boolean identityProviderLinkDeletedSuccessfully(ResponseEntity<Object> deleteIdentityProviderLinkResponse) {
-        return deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT);
+    private ResponseEntity<Object> deleteUserIdentityProviderLink(String userId, String identityProviderAlias) {
+        String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProviderAlias;
+        return keycloakMohExternalApiCaller.delete(path);
+    }
+
+    private boolean identityProviderLinkDeletedSuccessfully(List<ResponseEntity<Object>> deleteIdentityProviderLinkResponses) {
+        return deleteIdentityProviderLinkResponses.stream().allMatch(deleteIdentityProviderLinkResponse -> deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT));
     }
 }
