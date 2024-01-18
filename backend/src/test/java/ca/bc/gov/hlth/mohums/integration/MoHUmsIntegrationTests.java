@@ -4,7 +4,9 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -29,9 +31,11 @@ import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -102,7 +106,6 @@ public class MoHUmsIntegrationTests {
 
         return access_token;
     }
-
 
 
     @Test
@@ -741,21 +744,7 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void getUserFromIdirRealm() throws IOException, InterruptedException, ParseException {
-
-        String keycloakTokenUri = "https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master/protocol/openid-connect/token";
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(keycloakTokenUri))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + masterRealmClientId + "&client_secret=" + masterRealmClientSecret))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
-        String access_token = responseBodyAsJson.get("access_token").toString();
-
+        String access_token = getMasterRealmKcToken();
 
         String baseUrlIdirRealm = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/idir/";
 
@@ -769,6 +758,91 @@ public class MoHUmsIntegrationTests {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Object.class);
-
     }
+
+    /*
+    This test is ignored by default, since adding linked identities is not automated.
+    In order to run the test, add two bcsc_* links (bcsc, bcsc_mspdirect ie.) to umstest user.
+     */
+    @Disabled("Test disabled until re-adding linked identities is automated")
+    @Test
+    @SuppressWarnings("unchecked")
+    public void removeBothBcscLinkedIdentityTypes() throws IOException, ParseException, InterruptedException {
+        //umstest user
+        LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) webTestClient
+                .get()
+                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
+        List<LinkedHashMap<String, String>> bcscLikeFederatedIdentities = getBcscIdentities(federatedIdentities);
+
+        //in this test user needs to be associated with two bcsc idps
+        Assertions.assertThat(bcscLikeFederatedIdentities.size()).isEqualTo(2);
+
+        //both links point to the same user, so id is the same
+        String bcscRealmUserId = bcscLikeFederatedIdentities.get(0).get("userId");
+
+        //check delete response status
+        webTestClient
+                .method(HttpMethod.DELETE)
+                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/federated-identity/bcsc")
+                .header("Authorization", "Bearer " + jwt)
+                .bodyValue(bcscRealmUserId)
+                .exchange()
+                .expectStatus().isNoContent();
+
+        //check that no bcsc links exist
+        LinkedHashMap<String, Object> userWithoutBcscLinks = (LinkedHashMap<String, Object>) webTestClient
+                .get()
+                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Object.class)
+                .returnResult()
+                .getResponseBody();
+        federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) userWithoutBcscLinks.get("federatedIdentities");
+        Assertions.assertThat(getBcscIdentities(federatedIdentities)).isEmpty();
+
+        //check that user does not exist in bcsc realm
+        String access_token = getMasterRealmKcToken();
+        String baseUrlIdirRealm = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/bcsc/";
+        webTestClient
+                .mutate()
+                .baseUrl(baseUrlIdirRealm)
+                .build()
+                .get()
+                .uri(String.format("users/%s",bcscRealmUserId))
+                .header("Authorization", "Bearer " + access_token)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    private List<LinkedHashMap<String, String>> getBcscIdentities(ArrayList<LinkedHashMap<String, String>> federatedIdentities) {
+        return federatedIdentities.stream().filter(fi -> fi.get("identityProvider").contains("bcsc")).collect(Collectors.toList());
+    }
+
+    private String getMasterRealmKcToken() throws IOException, InterruptedException, ParseException {
+        String keycloakTokenUri = "https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master/protocol/openid-connect/token";
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(keycloakTokenUri))
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("cache-control", "no-cache")
+                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + masterRealmClientId + "&client_secret=" + masterRealmClientSecret))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
+        String access_token = responseBodyAsJson.get("access_token").toString();
+        return access_token;
+    }
+
 }
