@@ -3,8 +3,7 @@ package ca.bc.gov.hlth.mohums.user;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
@@ -14,25 +13,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings({"OptionalGetWithoutIsPresent"})
 @RunWith(SpringRunner.class)
-@DataJpaTest
+@SpringBootTest
 public class UserRepositoryTest {
 
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Autowired
     private UserRepository userRepository;
 
     @Test
     public void testFindByIdSuccessful() {
-        UserEntity found = userRepository.findById("b728171c-7ca4-4c75-8df1-543faa5f66cc").get();
+        String testCafeUserID = "3195a1bf-4bea-47c4-955d-cf52d4e2fc15";
+        UserEntity found = userRepository.findMohApplicationsUserById(testCafeUserID).get();
 
-        assertEquals(found.getId(), "b728171c-7ca4-4c75-8df1-543faa5f66cc");
+        assertEquals(found.getId(), testCafeUserID);
     }
 
     @Test
     public void testFindByIdNotFound() {
-        Optional<UserEntity> notFound = userRepository.findById("b728171c-7ca4-4c75-8df1-543faa5f66cc");
+        Optional<UserEntity> notFound = userRepository.findMohApplicationsUserById("non-existing-id");
+        assertThat(notFound.isEmpty()).isTrue();
+    }
+
+    @Test
+    public void testFindByIdFromDifferentRealmNotFound() {
+        String midtierAdminIdFromMasterRealm = "0474569b-74b6-4ad4-b43c-2673dd11bdfa";
+        Optional<UserEntity> notFound = userRepository.findMohApplicationsUserById(midtierAdminIdFromMasterRealm);
         assertThat(notFound.isEmpty()).isTrue();
     }
 }
