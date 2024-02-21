@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,8 +41,6 @@ public class UserControllerTest {
     @MockBean
     private PermissionsValidator permissionsValidator;
 
-
-
     // This object will be initialized thanks to @AutoConfigureJsonTesters
     @Autowired
     private JacksonTester<UserDTO> jsonTester;
@@ -56,8 +53,7 @@ public class UserControllerTest {
                 .andReturn().getResponse();
 
         assertEquals((HttpStatus.OK.value()), response.getStatus());
-        assertEquals(jsonTester.write(new UserDTO()).getJson(),response.getContentAsString());
-
+        assertEquals(jsonTester.write(new UserDTO()).getJson(), response.getContentAsString());
     }
 
     @Test
@@ -68,6 +64,6 @@ public class UserControllerTest {
                 .andReturn().getResponse();
 
         assertEquals((HttpStatus.NOT_FOUND.value()), response.getStatus());
-        assertEquals("{\"httpStatus\":\"NOT_FOUND\",\"error\":\"User not found\"}",response.getContentAsString());
+        assertEquals("{\"httpStatus\":\"NOT_FOUND\",\"error\":\"User not found\"}", response.getContentAsString());
     }
 }

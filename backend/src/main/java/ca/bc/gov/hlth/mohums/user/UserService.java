@@ -1,29 +1,64 @@
 package ca.bc.gov.hlth.mohums.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserSpecifications userSpecifications;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
+        this.userSpecifications = userSpecifications;
     }
 
-    public Optional<UserDTO> getUserByID(String id){
+    public Optional<UserDTO> getUserByID(String id) {
         return userRepository.findById(id).map(this::convertToDTO);
+    }
+
+    public List<UserDTO> getUsers(Optional<String> email,
+                                  Optional<String> firstName,
+                                  Optional<String> lastName,
+                                  Optional<String> search,
+                                  Optional<String> username) {
+
+        Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm());
+        if (search.isPresent()) {
+            String searchValue = search.get();
+            userSpec = userSpec.and(userSpecifications.firstNameLike(searchValue))
+                    .or(userSpecifications.lastNameLike(searchValue))
+                    .or(userSpecifications.usernameLike(searchValue))
+                    .or(userSpecifications.emailLike(searchValue));
+        } else {
+            if (firstName.isPresent()) {
+                userSpec.and(userSpecifications.firstNameLike(firstName.get()));
+            }
+            if (lastName.isPresent()) {
+                userSpec.and(userSpecifications.lastNameLike(lastName.get()));
+            }
+            if (username.isPresent()) {
+                userSpec.and(userSpecifications.usernameLike(username.get()));
+            }
+            if (email.isPresent()) {
+                userSpec.and(userSpecifications.emailLike(email.get()));
+            }
+        }
+        return userRepository.findAll(userSpec).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     /*
     Convert UserEntity to match response structure returned by Keycloak API
     Although Attribute Value is represented as a String in the database, Keycloak API returns it as a List
+    TODO: lastLogDate should be optional param included in some responses
      */
-    private UserDTO convertToDTO(UserEntity user){
+    private UserDTO convertToDTO(UserEntity user) {
 
         Map<String, List<String>> attributeMap = new HashMap<>();
         for (UserAttributeEntity attribute : user.getAttributes()) {
