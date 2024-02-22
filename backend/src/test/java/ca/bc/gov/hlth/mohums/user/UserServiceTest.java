@@ -82,8 +82,9 @@ class UserServiceTest {
                              Optional<String> firstName,
                              Optional<String> lastName,
                              Optional<String> search,
-                             Optional<String> username) {
-        userService.getUsers(email, firstName, lastName, search, username);
+                             Optional<String> username,
+                             Optional<String> organizationId) {
+        userService.getUsers(email, firstName, lastName, search, username, organizationId);
         int emailInvocations = email.isPresent() || search.isPresent() ? 1 : 0;
         int firstNameInvocations = firstName.isPresent() || search.isPresent() ? 1 : 0;
         int lastNameInvocations = lastName.isPresent() || search.isPresent() ? 1 : 0;
@@ -99,12 +100,13 @@ class UserServiceTest {
 
     private static Stream<Arguments> provideParamsForGetUsers() {
         return Stream.of(
-                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
-                Arguments.of(Optional.of("email"), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
-                Arguments.of(Optional.empty(), Optional.of("firstName"), Optional.empty(), Optional.empty(), Optional.empty()),
-                Arguments.of(Optional.empty(), Optional.empty(), Optional.of("lastNameName"), Optional.empty(), Optional.empty()),
-                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("search"), Optional.empty()),
-                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("email"))
+                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
+                Arguments.of(Optional.of("email"), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
+                Arguments.of(Optional.empty(), Optional.of("firstName"), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
+                Arguments.of(Optional.empty(), Optional.empty(), Optional.of("lastNameName"), Optional.empty(), Optional.empty(), Optional.empty()),
+                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("search"), Optional.empty(), Optional.empty()),
+                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("email"), Optional.empty()),
+                Arguments.of(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("organization"))
         );
     }
 

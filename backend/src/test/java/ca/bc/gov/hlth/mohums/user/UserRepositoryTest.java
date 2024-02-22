@@ -39,7 +39,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindByIdNotFound() {
-        Optional<UserEntity> notFound = userRepository.findMohApplicationsUserById("non-existing-id");
+        Optional<UserEntity> notFound = userRepository.findMohApplicationsUserById("non-existing-user-id");
         assertThat(notFound.isEmpty()).isTrue();
     }
 
@@ -53,8 +53,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindAllByEmail() {
-        Specification<UserEntity> userSpec = Specification
-                .where(userSpecifications.fromMohApplicationsRealm())
+        Specification<UserEntity> userSpec = baseUserSpecification()
                 .and(userSpecifications.emailLike("test@ums.com"));
         List<UserEntity> result = userRepository.findAll(userSpec);
 
@@ -64,8 +63,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindAllByFirstName() {
-        Specification<UserEntity> userSpec = Specification
-                .where(userSpecifications.fromMohApplicationsRealm())
+        Specification<UserEntity> userSpec = baseUserSpecification()
                 .and(userSpecifications.firstNameLike("ums"));
         List<UserEntity> result = userRepository.findAll(userSpec);
 
@@ -75,8 +73,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindAllByLastName() {
-        Specification<UserEntity> userSpec = Specification
-                .where(userSpecifications.fromMohApplicationsRealm())
+        Specification<UserEntity> userSpec = baseUserSpecification()
                 .and(userSpecifications.lastNameLike("test"));
         List<UserEntity> result = userRepository.findAll(userSpec);
 
@@ -84,11 +81,50 @@ public class UserRepositoryTest {
         assertThat(result.stream().anyMatch(user -> user.getUsername().equals("umstest"))).isTrue();
     }
 
+    @Test
+    public void testFindAllByOrganization() {
+        Specification<UserEntity> userSpec = baseUserSpecification()
+                .and(userSpecifications.hasOrganizationWithGivenId("00000010"));
+        List<UserEntity> result = userRepository.findAll(userSpec);
+
+        assertThat(result.isEmpty()).isFalse();
+    }
+
+    @Test
+    public void testFindAllByOrganizationAndUsername() {
+        Specification<UserEntity> userSpec = baseUserSpecification()
+                .and(userSpecifications.usernameLike("umstest"))
+                .and(userSpecifications.hasOrganizationWithGivenId("00000010"));
+        List<UserEntity> result = userRepository.findAll(userSpec);
+
+        assertEquals(1, result.size());
+        assertEquals("umstest", result.get(0).getUsername());
+    }
+
+    @Test
+    public void testFindAllByOrganizationAndEmail() {
+        Specification<UserEntity> userSpec = baseUserSpecification()
+                .and(userSpecifications.usernameLike("test@ums.com"))
+                .and(userSpecifications.hasOrganizationWithGivenId("00000010"));
+        List<UserEntity> result = userRepository.findAll(userSpec);
+
+        assertEquals(1, result.size());
+        assertEquals("test@ums.com", result.get(0).getEmail());
+    }
+
+    @Test
+    public void testFindAllByOrganizationNoResults() {
+        Specification<UserEntity> userSpec = baseUserSpecification()
+                .and(userSpecifications.hasOrganizationWithGivenId("non-existing-org-id"));
+        List<UserEntity> result = userRepository.findAll(userSpec);
+
+        assertThat(result.isEmpty()).isTrue();
+    }
+
     @ParameterizedTest
     @MethodSource("provideUsernameForFindAllByUsername")
     public void testFindAllByUsername(String username) {
-        Specification<UserEntity> userSpec = Specification
-                .where(userSpecifications.fromMohApplicationsRealm())
+        Specification<UserEntity> userSpec = baseUserSpecification()
                 .and(userSpecifications.usernameLike(username));
 
         List<UserEntity> result = userRepository.findAll(userSpec);
@@ -103,8 +139,7 @@ public class UserRepositoryTest {
     @Test
     public void testFindAllBySearchParam() {
         String searchValue = "test";
-        Specification<UserEntity> userSpec = Specification
-                .where(userSpecifications.fromMohApplicationsRealm())
+        Specification<UserEntity> userSpec = baseUserSpecification()
                 .and(userSpecifications.firstNameLike(searchValue))
                 .or(userSpecifications.lastNameLike(searchValue))
                 .or(userSpecifications.usernameLike(searchValue))
@@ -121,12 +156,16 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindAllNotServiceAccountsFromMohApplicationsRealm() {
-        Specification<UserEntity> userSpec = Specification
-                .where(userSpecifications.fromMohApplicationsRealm())
-                .and(userSpecifications.notServiceAccount());
+        Specification<UserEntity> userSpec = baseUserSpecification();
         List<UserEntity> result = userRepository.findAll(userSpec);
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.stream().noneMatch(user -> user.getUsername().contains("service-account"))).isTrue();
+    }
+
+    private Specification<UserEntity> baseUserSpecification(){
+        return Specification
+                .where(userSpecifications.fromMohApplicationsRealm())
+                .and(userSpecifications.notServiceAccount());
     }
 }

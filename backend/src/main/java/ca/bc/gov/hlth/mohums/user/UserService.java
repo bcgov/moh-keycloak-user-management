@@ -27,7 +27,8 @@ public class UserService {
                                   Optional<String> firstName,
                                   Optional<String> lastName,
                                   Optional<String> search,
-                                  Optional<String> username) {
+                                  Optional<String> username,
+                                  Optional<String> organizationId) {
 
         Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())
                 .and(userSpecifications.notServiceAccount());
@@ -51,6 +52,11 @@ public class UserService {
             if (email.isPresent()) {
                 userSpec.and(userSpecifications.emailLike(email.get()));
             }
+        }
+
+        //TODO: should the block below be nested - there's possibility of manually calling API with search + organization, but not through UMC - does anyone else uses it?
+        if(organizationId.isPresent()) {
+            userSpec.and(userSpecifications.hasOrganizationWithGivenId(organizationId.get()));
         }
         return userRepository.findAll(userSpec).stream().map(this::convertToDTO).collect(Collectors.toList());
     }

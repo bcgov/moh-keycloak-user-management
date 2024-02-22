@@ -3,6 +3,10 @@ package ca.bc.gov.hlth.mohums.user;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+
 @Component
 public class UserSpecifications {
 
@@ -39,6 +43,16 @@ public class UserSpecifications {
     public Specification<UserEntity> emailLike(String email) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), formatQueryParam(email));
+    }
+
+    public Specification<UserEntity> hasOrganizationWithGivenId(String organizationId) {
+        return (root, query, criteriaBuilder) -> {
+            Join<UserEntity, UserAttributeEntity> userAttributeJoin = root.join("attributes", JoinType.INNER);
+            Predicate attributeNameIsOrgDetails = criteriaBuilder.equal(userAttributeJoin.get("name"), "org_details");
+            //TODO: Consul if like is enough - there's a whole JSON object underneath, maybe {"Id":"00000010",% as regex?
+            Predicate attributeHasGivenValue = criteriaBuilder.like(userAttributeJoin.get("value"), formatQueryParam(organizationId));
+            return criteriaBuilder.and(attributeNameIsOrgDetails, attributeHasGivenValue);
+        };
     }
 
     //TODO: Is this the right place for this transformation? Maybe service class
