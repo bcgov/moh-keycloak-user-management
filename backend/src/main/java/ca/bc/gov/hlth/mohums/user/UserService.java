@@ -29,7 +29,9 @@ public class UserService {
                                   Optional<String> search,
                                   Optional<String> username) {
 
-        Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm());
+        Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())
+                .and(userSpecifications.notServiceAccount());
+
         if (search.isPresent()) {
             String searchValue = search.get();
             userSpec = userSpec.and(userSpecifications.firstNameLike(searchValue))

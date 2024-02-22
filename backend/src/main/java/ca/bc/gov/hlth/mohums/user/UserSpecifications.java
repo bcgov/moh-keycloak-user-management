@@ -9,6 +9,12 @@ public class UserSpecifications {
     //escape lowercase
     //search by field on its own
     //search -> username, last name, first name, email (OR)
+    //filter out service accounts
+
+    public Specification<UserEntity> notServiceAccount() {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.notLike(root.get("username"), "service-account-%");
+    }
 
     public Specification<UserEntity> fromMohApplicationsRealm() {
         return (root, query, criteriaBuilder) ->

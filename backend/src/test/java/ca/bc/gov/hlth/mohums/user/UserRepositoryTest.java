@@ -120,11 +120,13 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testFindAllFromMohApplicationsRealm() {
-        Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm());
+    public void testFindAllNotServiceAccountsFromMohApplicationsRealm() {
+        Specification<UserEntity> userSpec = Specification
+                .where(userSpecifications.fromMohApplicationsRealm())
+                .and(userSpecifications.notServiceAccount());
         List<UserEntity> result = userRepository.findAll(userSpec);
 
         assertThat(result.isEmpty()).isFalse();
-        assertThat(result.stream().anyMatch(user -> user.getUsername().equals("umstest"))).isTrue();
+        assertThat(result.stream().noneMatch(user -> user.getUsername().contains("service-account"))).isTrue();
     }
 }
