@@ -163,6 +163,10 @@ public class UserRepositoryTest {
         assertThat(result.stream().noneMatch(user -> user.getUsername().contains("service-account"))).isTrue();
     }
 
+    //test roles not found
+    //test roles found
+    //test roles empty
+
     private Specification<UserEntity> baseUserSpecification(){
         return Specification
                 .where(userSpecifications.fromMohApplicationsRealm())

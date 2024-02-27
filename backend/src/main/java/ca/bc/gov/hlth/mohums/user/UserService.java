@@ -11,11 +11,13 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final UserSpecifications userSpecifications;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserSpecifications userSpecifications) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.userSpecifications = userSpecifications;
     }
 
@@ -23,12 +25,15 @@ public class UserService {
         return userRepository.findById(id).map(this::convertToDTO);
     }
 
+    //TODO: Swap long list of params to a Search Object, break down into smaller functions
     public List<UserDTO> getUsers(Optional<String> email,
                                   Optional<String> firstName,
                                   Optional<String> lastName,
                                   Optional<String> search,
                                   Optional<String> username,
-                                  Optional<String> organizationId) {
+                                  Optional<String> organizationId,
+                                  Optional<String> clientId,
+                                  Optional<String[]> selectedRoles) {
 
         Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())
                 .and(userSpecifications.notServiceAccount());
@@ -65,13 +70,33 @@ public class UserService {
         //fetch users based on list of role ids
         //attach role names to the response object
 
+        if(clientId.isPresent()) {
+            List<RoleEntity> clientRoles;
+
+            if(selectedRoles.isPresent()){
+                clientRoles = roleRepository.findMohApplicationsRolesByClientAndNames(clientId.get(), List.of(selectedRoles.get()));
+            } else {
+                clientRoles = roleRepository.findMohApplicationsRolesByClient(clientId.get());
+            }
+
+            if(!clientRoles.isEmpty()){
+                Map<String, String> roleIdNameMap = new HashMap<>();
+                clientRoles.forEach(r -> roleIdNameMap.put(r.getId(), r.getName()));
+                userSpec.and(userSpecifications.rolesLike(new ArrayList<>(roleIdNameMap.keySet())));
+                //map and fetch
+            } else {
+                //return that client has no roles?
+            }
+
+        }
+
         return userRepository.findAll(userSpec).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     /*
     Convert UserEntity to match response structure returned by Keycloak API
     Although Attribute Value is represented as a String in the database, Keycloak API returns it as a List
-    TODO: lastLogDate should be optional param included in some responses
+    TODO: lastLogDate should be optional param included in some responses + roles (String)
      */
     private UserDTO convertToDTO(UserEntity user) {
 
