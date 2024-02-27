@@ -38,6 +38,11 @@ public class UserEntity {
     @BatchSize(size = 20)
     protected Collection<UserAttributeEntity> attributes = new LinkedList<>();
 
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
+    @Fetch(FetchMode.SELECT)
+    @BatchSize(size = 20)
+    protected Collection<UserRoleMappingEntity> roles = new LinkedList<>();
+
     public String getId() {
         return id;
     }

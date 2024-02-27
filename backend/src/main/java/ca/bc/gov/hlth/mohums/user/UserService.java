@@ -58,6 +58,13 @@ public class UserService {
         if(organizationId.isPresent()) {
             userSpec.and(userSpecifications.hasOrganizationWithGivenId(organizationId.get()));
         }
+
+        //if client id + selected roles present
+        //fetch roles from RoleEntity based on client id, names, moh_applications realm
+        //map of role id -> role name (role name will always be unique because it returns from one client only)
+        //fetch users based on list of role ids
+        //attach role names to the response object
+
         return userRepository.findAll(userSpec).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 

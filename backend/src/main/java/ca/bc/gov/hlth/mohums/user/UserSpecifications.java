@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
+import java.util.List;
 
 @Component
 public class UserSpecifications {
@@ -45,11 +46,19 @@ public class UserSpecifications {
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), formatQueryParam(email));
     }
 
+    public Specification<UserEntity> rolesLike(List<String> roles) {
+        return (root, query, criteriaBuilder) -> {
+            Join<UserEntity, UserRoleMappingEntity> userRoleJoin = root.join("roles", JoinType.INNER);
+            Predicate userHasSomeOfTheGivenRoles = userRoleJoin.get("roleId").in(roles);
+            return criteriaBuilder.and(userHasSomeOfTheGivenRoles);
+        };
+    }
+
     public Specification<UserEntity> hasOrganizationWithGivenId(String organizationId) {
         return (root, query, criteriaBuilder) -> {
             Join<UserEntity, UserAttributeEntity> userAttributeJoin = root.join("attributes", JoinType.INNER);
             Predicate attributeNameIsOrgDetails = criteriaBuilder.equal(userAttributeJoin.get("name"), "org_details");
-            //TODO: Consul if like is enough - there's a whole JSON object underneath, maybe {"Id":"00000010",% as regex?
+            //TODO: Consult if like is enough - there's a whole JSON object underneath, maybe {"Id":"00000010",% as regex?
             Predicate attributeHasGivenValue = criteriaBuilder.like(userAttributeJoin.get("value"), formatQueryParam(organizationId));
             return criteriaBuilder.and(attributeNameIsOrgDetails, attributeHasGivenValue);
         };
