@@ -17,6 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import ca.bc.gov.hlth.mohums.exceptions.UserNotFoundException;
+import ca.bc.gov.hlth.mohums.user.UserDTO;
+import ca.bc.gov.hlth.mohums.user.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,10 +67,14 @@ public class UsersController {
 
     private final String vanityHostname;
 
-    public UsersController(KeycloakApiService keycloakApiService, PayeeApiService payeeApiService, @Value("${config.vanity-hostname}") String vanityHostname) {
+    @Autowired
+    private final UserService userService;
+
+    public UsersController(KeycloakApiService keycloakApiService, PayeeApiService payeeApiService, @Value("${config.vanity-hostname}") String vanityHostname, UserService userService) {
         this.keycloakApiService = keycloakApiService;
         this.payeeApiService = payeeApiService;
         this.vanityHostname = vanityHostname;
+        this.userService = userService;
     }
 
     /**
@@ -110,6 +117,7 @@ public class UsersController {
                 briefRepresentationValue.toString()));
         email.ifPresent(emailValue -> queryParams.add("email", emailValue));
         first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
+        //queryParams.add("first", String.valueOf(1));
         firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
         lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
         max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
@@ -280,6 +288,12 @@ public class UsersController {
     @GetMapping("/users/{userId}")
     public ResponseEntity<Object> getUser(@PathVariable String userId) {
         return keycloakApiService.getUser(userId);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String userId) {
+        Optional<UserDTO> user = userService.getUserByID(userId);
+        return ResponseEntity.ok(user.orElseThrow(() -> new UserNotFoundException("User not found")));
     }
 
     @PostMapping("/users")

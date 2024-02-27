@@ -1,2 +1,25 @@
 client-test-id: UMS-INTEGRATION-TESTS
 client-test-secret: ${UMS_INTEGRATION_TESTS_SECRET}
+keycloak_db_password: ${KEYCLOAK_DB_PASSWORD}
+keycloak_db_username: ${KEYCLOAK_DB_USERNAME}
+keycloak_db_url: ${KEYCLOAK_DB_URL}
+spring:
+  datasource:
+    url: ${keycloak_db_url}
+    username: ${keycloak_db_username}
+    password: ${keycloak_db_password}
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
