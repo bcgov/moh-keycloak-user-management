@@ -22,10 +22,9 @@ public class UserService {
     }
 
     public Optional<UserDTO> getUserByID(String id) {
-        return userRepository.findById(id).map(this::convertToDTO);
+        return userRepository.findById(id).map(user -> UserDTOMapper.convertToDTO(user, Map.of(), false));
     }
 
-    //TODO: Swap long list of params to a Search Object, break down into smaller functions
     public List<UserDTO> getUsers(Optional<String> email,
                                   Optional<String> firstName,
                                   Optional<String> lastName,
@@ -40,28 +39,24 @@ public class UserService {
 
         if (search.isPresent()) {
             String searchValue = search.get();
-            userSpec = userSpec.and(userSpecifications.firstNameLike(searchValue))
-                    .or(userSpecifications.lastNameLike(searchValue))
-                    .or(userSpecifications.usernameLike(searchValue))
-                    .or(userSpecifications.emailLike(searchValue));
+            userSpec = userSpec.and((userSpecifications.userParamsLike(searchValue)));
         } else {
             if (firstName.isPresent()) {
-                userSpec.and(userSpecifications.firstNameLike(firstName.get()));
+                userSpec = userSpec.and(userSpecifications.firstNameLike(firstName.get()));
             }
             if (lastName.isPresent()) {
-                userSpec.and(userSpecifications.lastNameLike(lastName.get()));
+                userSpec = userSpec.and(userSpecifications.lastNameLike(lastName.get()));
             }
             if (username.isPresent()) {
-                userSpec.and(userSpecifications.usernameLike(username.get()));
+                userSpec = userSpec.and(userSpecifications.usernameLike(username.get()));
             }
             if (email.isPresent()) {
-                userSpec.and(userSpecifications.emailLike(email.get()));
+                userSpec = userSpec.and(userSpecifications.emailLike(email.get()));
             }
         }
 
-        //TODO: should the block below be nested - there's possibility of manually calling API with search + organization, but not through UMC - does anyone else uses it?
         if(organizationId.isPresent()) {
-            userSpec.and(userSpecifications.hasOrganizationWithGivenId(organizationId.get()));
+            userSpec = userSpec.and(userSpecifications.hasOrganizationWithGivenId(organizationId.get()));
         }
 
         //if client id + selected roles present
@@ -69,6 +64,7 @@ public class UserService {
         //map of role id -> role name (role name will always be unique because it returns from one client only)
         //fetch users based on list of role ids
         //attach role names to the response object
+        Map<String, String> roleIdNameMap = new HashMap<>();
 
         if(clientId.isPresent()) {
             List<RoleEntity> clientRoles;
@@ -80,43 +76,16 @@ public class UserService {
             }
 
             if(!clientRoles.isEmpty()){
-                Map<String, String> roleIdNameMap = new HashMap<>();
                 clientRoles.forEach(r -> roleIdNameMap.put(r.getId(), r.getName()));
-                userSpec.and(userSpecifications.rolesLike(new ArrayList<>(roleIdNameMap.keySet())));
+                userSpec = userSpec.and(userSpecifications.rolesLike(new ArrayList<>(roleIdNameMap.keySet())));
                 //map and fetch
             } else {
-                //return that client has no roles?
+                //return that client has no roles? -> throw an exception?
             }
 
         }
 
-        return userRepository.findAll(userSpec).stream().map(this::convertToDTO).collect(Collectors.toList());
+        return userRepository.findAll(userSpec).stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, organizationId.isPresent())).collect(Collectors.toList());
     }
 
-    /*
-    Convert UserEntity to match response structure returned by Keycloak API
-    Although Attribute Value is represented as a String in the database, Keycloak API returns it as a List
-    TODO: lastLogDate should be optional param included in some responses + roles (String)
-     */
-    private UserDTO convertToDTO(UserEntity user) {
-
-        Map<String, List<String>> attributeMap = new HashMap<>();
-        for (UserAttributeEntity attribute : user.getAttributes()) {
-            String attributeName = attribute.getName();
-            String attributeValue = attribute.getValue();
-            List<String> values = attributeMap.computeIfAbsent(attributeName, k -> new ArrayList<>());
-            values.add(attributeValue);
-        }
-        return new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getFirstName(),
-                user.getCreatedTimestamp(),
-                user.getLastName(),
-                user.getEmail(),
-                user.isEnabled(),
-                user.isEmailVerified(),
-                attributeMap
-        );
-    }
 }

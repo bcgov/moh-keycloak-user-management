@@ -46,8 +46,24 @@ public class UserSpecifications {
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), formatQueryParam(email));
     }
 
+    /*
+    This method doesn't use formatQueryParam method because according to Keycloak API specification,
+     the default search behaviour (when using search query param) is prefix-based
+     */
+    public Specification<UserEntity> userParamsLike(String searchValue) {
+        String searchParam = searchValue.toLowerCase() + "%";
+        return (root, query, criteriaBuilder) -> {
+            Predicate usernamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), searchParam);
+            Predicate firstNamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), searchParam);
+            Predicate lastNamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), searchParam);
+            Predicate emailPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), searchParam);
+            return criteriaBuilder.or(usernamePredicate, firstNamePredicate, lastNamePredicate, emailPredicate);
+        };
+    }
+
     public Specification<UserEntity> rolesLike(List<String> roles) {
         return (root, query, criteriaBuilder) -> {
+            query.distinct(true);
             Join<UserEntity, UserRoleMappingEntity> userRoleJoin = root.join("roles", JoinType.INNER);
             Predicate userHasSomeOfTheGivenRoles = userRoleJoin.get("roleId").in(roles);
             return criteriaBuilder.and(userHasSomeOfTheGivenRoles);
@@ -58,13 +74,12 @@ public class UserSpecifications {
         return (root, query, criteriaBuilder) -> {
             Join<UserEntity, UserAttributeEntity> userAttributeJoin = root.join("attributes", JoinType.INNER);
             Predicate attributeNameIsOrgDetails = criteriaBuilder.equal(userAttributeJoin.get("name"), "org_details");
-            //TODO: Consult if like is enough - there's a whole JSON object underneath, maybe {"Id":"00000010",% as regex?
-            Predicate attributeHasGivenValue = criteriaBuilder.like(userAttributeJoin.get("value"), formatQueryParam(organizationId));
-            return criteriaBuilder.and(attributeNameIsOrgDetails, attributeHasGivenValue);
+            Predicate attributeValueHasIdField = criteriaBuilder.like(userAttributeJoin.get("value"), formatQueryParam("\"id\":"));
+            Predicate attributeValueHasGivenOrgId = criteriaBuilder.like(userAttributeJoin.get("value"), formatQueryParam(organizationId));
+            return criteriaBuilder.and(attributeNameIsOrgDetails, attributeValueHasIdField, attributeValueHasGivenOrgId);
         };
     }
 
-    //TODO: Is this the right place for this transformation? Maybe service class
     private String formatQueryParam(String queryParam) {
         return "%" + queryParam.toLowerCase() + "%";
     }

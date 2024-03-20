@@ -33,12 +33,12 @@ public class UserEntity {
     @Column(name = "REALM_ID")
     protected String realmId;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
+    @OneToMany(mappedBy = "user")
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 20)
     protected Collection<UserAttributeEntity> attributes = new LinkedList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
+    @OneToMany(mappedBy = "user")
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 20)
     protected Collection<UserRoleMappingEntity> roles = new LinkedList<>();
@@ -49,6 +49,14 @@ public class UserEntity {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Collection<UserRoleMappingEntity> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<UserRoleMappingEntity> roles) {
+        this.roles = roles;
     }
 
     public String getUsername() {

@@ -2,6 +2,7 @@ package ca.bc.gov.hlth.mohums.user;
 
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +105,7 @@ public class UserRepositoryTest {
     @Test
     public void testFindAllByOrganizationAndEmail() {
         Specification<UserEntity> userSpec = baseUserSpecification()
-                .and(userSpecifications.usernameLike("test@ums.com"))
+                .and(userSpecifications.emailLike("test@ums.com"))
                 .and(userSpecifications.hasOrganizationWithGivenId("00000010"));
         List<UserEntity> result = userRepository.findAll(userSpec);
 
@@ -163,11 +164,31 @@ public class UserRepositoryTest {
         assertThat(result.stream().noneMatch(user -> user.getUsername().contains("service-account"))).isTrue();
     }
 
-    //test roles not found
-    //test roles found
-    //test roles empty
+    @ParameterizedTest
+    @MethodSource("provideRoleForFindAllByRole")
+    public void testFindAllByRole(List<String> roles, boolean isResultEmpty) {
+        Specification<UserEntity> userSpec = baseUserSpecification()
+                .and(userSpecifications.rolesLike(roles));
+        List<UserEntity> result = userRepository.findAll(userSpec);
 
-    private Specification<UserEntity> baseUserSpecification(){
+        assertEquals(isResultEmpty, result.isEmpty());
+    }
+
+    private static Stream<Arguments> provideRoleForFindAllByRole() {
+        String roleIdAssignedToUmsUser = "f9d917e2-7544-4f3d-b866-ad22a16ae5aa";
+        String anotherRoleIdAssignedToUmsUser = "61d15faa-7a70-4a1e-be5e-2037d7e27e86";
+        String roleIdNotAssignedToAnyone = "e5625153-1cd0-48f7-b305-78339520740a";
+
+        return Stream.of(
+                Arguments.of(List.of(roleIdAssignedToUmsUser, roleIdNotAssignedToAnyone), false),
+                Arguments.of(List.of(roleIdAssignedToUmsUser, anotherRoleIdAssignedToUmsUser), false),
+                Arguments.of(List.of(roleIdAssignedToUmsUser), false),
+                Arguments.of(List.of(roleIdNotAssignedToAnyone), true),
+                Arguments.of(List.of(), true)
+        );
+    }
+
+    private Specification<UserEntity> baseUserSpecification() {
         return Specification
                 .where(userSpecifications.fromMohApplicationsRealm())
                 .and(userSpecifications.notServiceAccount());

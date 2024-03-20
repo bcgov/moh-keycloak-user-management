@@ -1,23 +1,17 @@
 package ca.bc.gov.hlth.mohums.user;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,6 +49,7 @@ class UserServiceTest {
                 () -> assertEquals(mockUser.isEnabled(), response.get().isEnabled()),
                 () -> assertEquals(mockUser.isEmailVerified(), response.get().isEmailVerified()),
                 () -> assertEquals(mockUser.getAttributes().size(), response.get().getAttributes().size()),
+                () -> assertEquals("role1, role2", response.get().getRole()),
                 () -> assertThat(attributesMappedCorrectly(mockUser.getAttributes(), response.get().getAttributes())).isTrue()
         );
     }
@@ -77,14 +72,23 @@ class UserServiceTest {
     }
 
     //TODO: change details to UMSTEST user
-    private UserEntity getMockUser(){
+    private UserEntity getMockUser() {
         UserEntity mockUser = new UserEntity();
         UserAttributeEntity mockUserAttribute = new UserAttributeEntity();
+        UserRoleMappingEntity userRoleMappingEntityOne = new UserRoleMappingEntity();
+        UserRoleMappingEntity userRoleMappingEntityTwo = new UserRoleMappingEntity();
+
 
         mockUserAttribute.setUser(mockUser);
         mockUserAttribute.setId("mockAttributeId");
         mockUserAttribute.setName("mockAttributeName");
         mockUserAttribute.setValue("mockAttributeValue");
+
+        userRoleMappingEntityOne.setUser(mockUser);
+        userRoleMappingEntityOne.setRoleId("role1");
+
+        userRoleMappingEntityTwo.setUser(mockUser);
+        userRoleMappingEntityTwo.setRoleId("role2");
 
         mockUser.setId("b728171c-7ca4-4c75-8df1-543faa5f66cc");
         mockUser.setCreatedTimestamp(1692742378655L);
@@ -96,6 +100,7 @@ class UserServiceTest {
         mockUser.setLastName("Florek");
         mockUser.setRealmId("moh_applications");
         mockUser.setAttributes(List.of(mockUserAttribute));
+        mockUser.setRoles(List.of(userRoleMappingEntityOne, userRoleMappingEntityTwo));
 
         return mockUser;
     }

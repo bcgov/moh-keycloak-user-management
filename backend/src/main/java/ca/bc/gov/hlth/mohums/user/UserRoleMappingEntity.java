@@ -10,11 +10,11 @@ public class UserRoleMappingEntity {
     @Id
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="USER_ID")
-    protected UserEntity user;
+    private UserEntity user;
 
     @Id
     @Column(name = "ROLE_ID")
-    protected String roleId;
+    private String roleId;
 
     public UserEntity getUser() {
         return user;
