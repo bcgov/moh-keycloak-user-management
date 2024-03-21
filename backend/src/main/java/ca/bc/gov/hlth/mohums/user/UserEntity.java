@@ -43,6 +43,17 @@ public class UserEntity {
     @BatchSize(size = 20)
     protected Collection<UserRoleMappingEntity> roles = new LinkedList<>();
 
+    @Transient
+    protected Long lastLogDate;
+
+    public Long getLastLogDate() {
+        return lastLogDate;
+    }
+
+    public void setLastLogDate(Long lastLogDate) {
+        this.lastLogDate = lastLogDate;
+    }
+
     public String getId() {
         return id;
     }
