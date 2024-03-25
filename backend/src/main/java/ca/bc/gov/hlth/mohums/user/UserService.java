@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,19 +14,19 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final EventRepository eventRepository;
+    private final EventService eventService;
     private final UserSpecifications userSpecifications;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, EventRepository eventRepository, UserSpecifications userSpecifications) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, EventService eventService, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.eventRepository = eventRepository;
+        this.eventService = eventService;
         this.userSpecifications = userSpecifications;
     }
 
     public Optional<UserDTO> getUserByID(String id) {
-        return userRepository.findById(id).map(user -> UserDTOMapper.convertToDTO(user, Map.of(), false));
+        return userRepository.findById(id).map(user -> UserDTOMapper.convertToDTO(user, Map.of(), false, ""));
     }
 
     public List<UserDTO> getUsers(Optional<String> email,
@@ -87,17 +85,18 @@ public class UserService {
             }
         }
 
-        //maybe convert to map? quicker lookup -> service class where list is converted to hash map
-        List<LastLogDate> loginEvents;
+
+        //if that's the only search param then do just this and fetch additional user info from result set - no need to fetch all the users and filter out
+        Map<String, String> loginEvents;
         if(lastLogAfter.isPresent()) {
             long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             if(clientId.isPresent()){
-                loginEvents = eventRepository.findMohApplicationsLastLoginEventsWithGivenRoleAfterGivenDate(lastLogAfterEpoch, clientId.get());
+                loginEvents = eventService.getLastLoginEventsWithGivenClientAfterGivenDate(lastLogAfterEpoch, clientId.get());
             } else {
-                loginEvents = eventRepository.findMohApplicationsLastLoginEventsAfterGivenDate(lastLogAfterEpoch);
+                loginEvents = eventService.getLastLoginEventsAfterGivenDate(lastLogAfterEpoch);
             }
         } else {
-            loginEvents = List.of();
+            loginEvents = Map.of();
         }
 //for last log before
 //        ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("America/Los_Angeles")).minusYears(1);
@@ -110,13 +109,12 @@ public class UserService {
 
         List<UserEntity> searchResults = userRepository.findAll(userSpec);
         if(!loginEvents.isEmpty()){
-            Map<String, Long> a = loginEvents.stream().collect(Collectors.toMap(LastLogDate::getUserId, LastLogDate::getLastLogin));
-            searchResults = searchResults.stream().filter(user -> a.containsKey(user.getId())).collect(Collectors.toList());
+            searchResults = searchResults.stream().filter(user -> loginEvents.containsKey(user.getId())).collect(Collectors.toList());
             //add to DTO
         }
 
 
-        return searchResults.stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, organizationId.isPresent())).collect(Collectors.toList());
+        return searchResults.stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, organizationId.isPresent(), loginEvents.get(user.getId()))).collect(Collectors.toList());
     }
 
 }

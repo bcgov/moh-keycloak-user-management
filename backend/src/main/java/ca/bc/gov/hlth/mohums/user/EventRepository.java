@@ -17,7 +17,7 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
     @Query("SELECT ee.userId AS userId, MAX(ee.time) AS lastLogin FROM EventEntity ee" +
             " WHERE ee.realmId = 'moh_applications' AND ee.type = 'LOGIN' AND ee.time > ?1 AND ee.clientId = ?2" +
             " GROUP BY ee.userId")
-    List<LastLogDate> findMohApplicationsLastLoginEventsWithGivenRoleAfterGivenDate(long milliseconds, String clientId);
+    List<LastLogDate> findMohApplicationsLastLoginEventsWithGivenClientAfterGivenDate(long milliseconds, String clientId);
 
 //    List<LastLogDate> findMohApplicationsLastLoginEventsBeforeGivenDate(long milliseconds);
 //

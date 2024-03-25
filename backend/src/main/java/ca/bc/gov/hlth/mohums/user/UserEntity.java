@@ -44,13 +44,13 @@ public class UserEntity {
     protected Collection<UserRoleMappingEntity> roles = new LinkedList<>();
 
     @Transient
-    protected Long lastLogDate;
+    protected String lastLogDate;
 
-    public Long getLastLogDate() {
+    public String getLastLogDate() {
         return lastLogDate;
     }
 
-    public void setLastLogDate(Long lastLogDate) {
+    public void setLastLogDate(String lastLogDate) {
         this.lastLogDate = lastLogDate;
     }
 
