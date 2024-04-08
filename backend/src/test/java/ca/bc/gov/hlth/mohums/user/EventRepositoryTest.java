@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.user;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -8,14 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -24,7 +25,6 @@ public class EventRepositoryTest {
 
     @Autowired
     private EventRepository eventRepository;
-
 
 
     @ParameterizedTest
@@ -59,8 +59,35 @@ public class EventRepositoryTest {
         );
     }
 
-    //what client should it be based on? UMC?
-    //test lastlogin after date with client id + no results -> disabled since login is not automatic
-    //test lastlogin after date with client id and roles + no results -> disabled since login is not automatic
+
+    @ParameterizedTest
+    @MethodSource("provideLastLoginBeforeDates")
+    public void testLastLoginBeforeGivenDate(Long dateInMillis, boolean isResultEmpty){
+        List<LastLogDate> results = eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(dateInMillis);
+
+        assertEquals(isResultEmpty, results.isEmpty());
+        assertTrue(results.stream().allMatch(lastLogDate -> lastLogDate.getLastLogin() < dateInMillis));
+    }
+
+    private static Stream<Arguments> provideLastLoginBeforeDates(){
+        long tomorrow = LocalDate.now().plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long lastWeek = LocalDate.now().minusWeeks(1L).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long lastMonth = LocalDate.now().minusMonths(1L).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long lastYear = LocalDate.now().minusYears(1L).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        return Stream.of(
+                Arguments.of(tomorrow, false),
+                Arguments.of(lastWeek, false),
+                Arguments.of(lastMonth, false),
+                Arguments.of(lastYear, true) //login events are stored for a year so result set should be empty
+        );
+    }
+
+    @Test
+    public void testGetUsersThatExistForOverAYearWithoutLoginEvents(){
+        List<String> results = eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
+
+        assertFalse(results.isEmpty());
+    }
 
 }

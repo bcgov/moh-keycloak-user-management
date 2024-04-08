@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,7 +35,10 @@ public class UserService {
                                   Optional<String> organizationId,
                                   Optional<String> clientId,
                                   Optional<String[]> selectedRoles,
-                                  Optional<String> lastLogAfter) {
+                                  Optional<String> lastLogAfter,
+                                  Optional<String> lastLogBefore) {
+
+        //TODO: make a check to see if lastLogBefore/After is the only attribute
 
         Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())
                 .and(userSpecifications.notServiceAccount());
@@ -89,23 +90,20 @@ public class UserService {
         //if that's the only search param then do just this and fetch additional user info from result set - no need to fetch all the users and filter out
         Map<String, String> loginEvents;
         if(lastLogAfter.isPresent()) {
-            long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             if(clientId.isPresent()){
-                loginEvents = eventService.getLastLoginEventsWithGivenClientAfterGivenDate(lastLogAfterEpoch, clientId.get());
+                loginEvents = eventService.getLastLoginEventsWithGivenClientAfterGivenDate(lastLogAfter.get(), clientId.get());
             } else {
-                loginEvents = eventService.getLastLoginEventsAfterGivenDate(lastLogAfterEpoch);
+                loginEvents = eventService.getLastLoginEventsAfterGivenDate(lastLogAfter.get());
+            }
+        } else if (lastLogBefore.isPresent()){
+            if(clientId.isPresent()){
+                loginEvents = eventService.getLastLoginEventsWithGivenClientBeforeGivenDate(lastLogBefore.get(), clientId.get());
+            } else {
+                loginEvents = eventService.getLastLoginEventsBeforeGivenDate(lastLogBefore.get());
             }
         } else {
             loginEvents = Map.of();
         }
-//for last log before
-//        ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("America/Los_Angeles")).minusYears(1);
-//
-//        // Convert the ZonedDateTime to Instant
-//        Instant instant = currentTime.toInstant();
-//
-//        // Get the milliseconds from the Instant
-//        long currentTimeMillis = instant.toEpochMilli();
 
         List<UserEntity> searchResults = userRepository.findAll(userSpec);
         if(!loginEvents.isEmpty()){
