@@ -36,9 +36,9 @@ public class EventService {
 
     public Map<String, String> getLastLoginEventsWithGivenClientBeforeGivenDate(String lastLogBefore, String id) {
         List<String> usersWithoutLoginEvents = eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
-        String clientId = getClientIdById(id);
-        long lastLogBeforeEpoch = parseToEpochMilliseconds(lastLogBefore);
         Map<String, String> usersWithoutLoginEventsMap = new HashMap<>();
+        long lastLogBeforeEpoch = parseToEpochMilliseconds(lastLogBefore);
+        String clientId = getClientIdById(id);
         for (String userId : usersWithoutLoginEvents) {
             usersWithoutLoginEventsMap.put(userId, "Over a year ago");
         }

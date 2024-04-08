@@ -27,42 +27,28 @@ public class UserService {
         return userRepository.findById(id).map(user -> UserDTOMapper.convertToDTO(user, Map.of(), false, ""));
     }
 
-    public List<UserDTO> getUsers(Optional<String> email,
-                                  Optional<String> firstName,
-                                  Optional<String> lastName,
-                                  Optional<String> search,
-                                  Optional<String> username,
-                                  Optional<String> organizationId,
-                                  Optional<String> clientId,
-                                  Optional<String[]> selectedRoles,
-                                  Optional<String> lastLogAfter,
-                                  Optional<String> lastLogBefore) {
-
-        //TODO: make a check to see if lastLogBefore/After is the only attribute
+    public List<UserDTO> getUsers(UserSearchParameters userSearchParams) {
 
         Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())
                 .and(userSpecifications.notServiceAccount());
 
-        if (search.isPresent()) {
-            String searchValue = search.get();
-            userSpec = userSpec.and((userSpecifications.userParamsLike(searchValue)));
-        } else {
-            if (firstName.isPresent()) {
-                userSpec = userSpec.and(userSpecifications.firstNameLike(firstName.get()));
-            }
-            if (lastName.isPresent()) {
-                userSpec = userSpec.and(userSpecifications.lastNameLike(lastName.get()));
-            }
-            if (username.isPresent()) {
-                userSpec = userSpec.and(userSpecifications.usernameLike(username.get()));
-            }
-            if (email.isPresent()) {
-                userSpec = userSpec.and(userSpecifications.emailLike(email.get()));
-            }
-        }
+        Map<String, String> loginEventsMap = new HashMap<>();
+        Map<String, String> roleIdNameMap = new HashMap<>();
+        List<UserEntity> searchResults;
 
-        if(organizationId.isPresent()) {
-            userSpec = userSpec.and(userSpecifications.hasOrganizationWithGivenId(organizationId.get()));
+
+        if (userSearchParams.isSearchByLastLogOnly()) {
+            loginEventsMap = getUsersLoginEvents(userSearchParams);
+            searchResults = findAllUsersThatSatisfyLoginEventConstraint(loginEventsMap);
+        } else {
+            if (userSearchParams.isBasicSearch()) {
+                userSpec = buildBasicSearchSpecification(userSpec, userSearchParams);
+            } else {
+                loginEventsMap = getUsersLoginEvents(userSearchParams);
+                roleIdNameMap = getClientRoles(userSearchParams);
+                userSpec = buildAdvancedSearchSpecification(userSpec, userSearchParams, roleIdNameMap);
+            }
+            searchResults = findAllUsersThatSatisfySpecification(userSpec, loginEventsMap);
         }
 
         //if client id + selected roles present
@@ -70,33 +56,80 @@ public class UserService {
         //map of role id -> role name (role name will always be unique because it returns from one client only)
         //fetch users based on list of role ids
         //attach role names to the response object
-        Map<String, String> roleIdNameMap = new HashMap<>();
+        //brief representation - should be returned at all times, but what about external API callers - do they need it?
+        boolean briefRepresentation = userSearchParams.getOrganizationId().isEmpty();
 
-        if(clientId.isPresent()) {
-            List<RoleEntity> clientRoles;
+        return mapResultsToDTO(searchResults, roleIdNameMap, loginEventsMap, briefRepresentation);
+    }
 
-            if(selectedRoles.isPresent()){
-                clientRoles = roleRepository.findMohApplicationsRolesByClientAndNames(clientId.get(), List.of(selectedRoles.get()));
-            } else {
-                clientRoles = roleRepository.findMohApplicationsRolesByClient(clientId.get());
-            }
-            if(!clientRoles.isEmpty()){
-                clientRoles.forEach(r -> roleIdNameMap.put(r.getId(), r.getName()));
-                userSpec = userSpec.and(userSpecifications.rolesLike(new ArrayList<>(roleIdNameMap.keySet())));
-            }
+    private List<UserDTO> mapResultsToDTO(List<UserEntity> searchResults, Map<String, String> roleIdNameMap, Map<String, String> loginEventsMap, boolean briefRepresentation) {
+        return searchResults.stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, briefRepresentation, loginEventsMap.get(user.getId()))).collect(Collectors.toList());
+    }
+
+    private List<UserEntity> findAllUsersThatSatisfyLoginEventConstraint(Map<String, String> loginEventsMap) {
+        List<String> userIds = new ArrayList<>(loginEventsMap.keySet());
+        return userRepository.findMohApplicationsUsersByIdList(userIds);
+    }
+
+    private List<UserEntity> findAllUsersThatSatisfySpecification(Specification<UserEntity> userSpec, Map<String, String> loginEventsMap) {
+        List<UserEntity> searchResults = userRepository.findAll(userSpec);
+        if (!loginEventsMap.isEmpty()) {
+            searchResults = searchResults.stream().filter(user -> loginEventsMap.containsKey(user.getId())).collect(Collectors.toList());
         }
+        return searchResults;
+
+    }
+
+    @SuppressWarnings({"OptionalGetWithoutIsPresent"})
+    private Specification<UserEntity> buildBasicSearchSpecification(Specification<UserEntity> userSpec, UserSearchParameters userSearchParams) {
+        String searchValue = userSearchParams.getSearch().get();
+        userSpec = userSpec.and((userSpecifications.userParamsLike(searchValue)));
+        return userSpec;
+    }
 
 
-        //if that's the only search param then do just this and fetch additional user info from result set - no need to fetch all the users and filter out
+    private Specification<UserEntity> buildAdvancedSearchSpecification(Specification<UserEntity> userSpec, UserSearchParameters userSearchParams, Map<String, String> roleIdNameMap) {
+        Optional<String> firstName = userSearchParams.getFirstName();
+        Optional<String> lastName = userSearchParams.getLastName();
+        Optional<String> username = userSearchParams.getUsername();
+        Optional<String> email = userSearchParams.getEmail();
+        Optional<String> organizationId = userSearchParams.getOrganizationId();
+
+        if (firstName.isPresent()) {
+            userSpec = userSpec.and(userSpecifications.firstNameLike(firstName.get()));
+        }
+        if (lastName.isPresent()) {
+            userSpec = userSpec.and(userSpecifications.lastNameLike(lastName.get()));
+        }
+        if (username.isPresent()) {
+            userSpec = userSpec.and(userSpecifications.usernameLike(username.get()));
+        }
+        if (email.isPresent()) {
+            userSpec = userSpec.and(userSpecifications.emailLike(email.get()));
+        }
+        if (organizationId.isPresent()) {
+            userSpec = userSpec.and(userSpecifications.hasOrganizationWithGivenId(organizationId.get()));
+        }
+        if (!roleIdNameMap.isEmpty()) {
+            userSpec = userSpec.and(userSpecifications.rolesLike(new ArrayList<>(roleIdNameMap.keySet())));
+        }
+        return userSpec;
+    }
+
+    private Map<String, String> getUsersLoginEvents(UserSearchParameters userSearchParams) {
         Map<String, String> loginEvents;
-        if(lastLogAfter.isPresent()) {
-            if(clientId.isPresent()){
+        Optional<String> lastLogAfter = userSearchParams.getLastLogAfter();
+        Optional<String> lastLogBefore = userSearchParams.getLastLogBefore();
+        Optional<String> clientId = userSearchParams.getClientId();
+
+        if (lastLogAfter.isPresent()) {
+            if (clientId.isPresent()) {
                 loginEvents = eventService.getLastLoginEventsWithGivenClientAfterGivenDate(lastLogAfter.get(), clientId.get());
             } else {
                 loginEvents = eventService.getLastLoginEventsAfterGivenDate(lastLogAfter.get());
             }
-        } else if (lastLogBefore.isPresent()){
-            if(clientId.isPresent()){
+        } else if (lastLogBefore.isPresent()) {
+            if (clientId.isPresent()) {
                 loginEvents = eventService.getLastLoginEventsWithGivenClientBeforeGivenDate(lastLogBefore.get(), clientId.get());
             } else {
                 loginEvents = eventService.getLastLoginEventsBeforeGivenDate(lastLogBefore.get());
@@ -104,15 +137,24 @@ public class UserService {
         } else {
             loginEvents = Map.of();
         }
-
-        List<UserEntity> searchResults = userRepository.findAll(userSpec);
-        if(!loginEvents.isEmpty()){
-            searchResults = searchResults.stream().filter(user -> loginEvents.containsKey(user.getId())).collect(Collectors.toList());
-            //add to DTO
-        }
-
-
-        return searchResults.stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, organizationId.isPresent(), loginEvents.get(user.getId()))).collect(Collectors.toList());
+        return loginEvents;
     }
 
+    private Map<String, String> getClientRoles(UserSearchParameters userSearchParams) {
+        Optional<String> clientId = userSearchParams.getClientId();
+        Optional<String[]> selectedRoles = userSearchParams.getSelectedRoles();
+        Map<String, String> roleIdNameMap = new HashMap<>();
+
+        if (clientId.isPresent()) {
+            List<RoleEntity> clientRoles;
+
+            if (selectedRoles.isPresent()) {
+                clientRoles = roleRepository.findMohApplicationsRolesByClientAndNames(clientId.get(), List.of(selectedRoles.get()));
+            } else {
+                clientRoles = roleRepository.findMohApplicationsRolesByClient(clientId.get());
+            }
+            clientRoles.forEach(r -> roleIdNameMap.put(r.getId(), r.getName()));
+        }
+        return roleIdNameMap;
+    }
 }

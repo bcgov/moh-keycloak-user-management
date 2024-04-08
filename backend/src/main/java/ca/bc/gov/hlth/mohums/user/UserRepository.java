@@ -15,5 +15,5 @@ public interface UserRepository extends JpaRepository<UserEntity, String>, JpaSp
     Optional<UserEntity> findMohApplicationsUserById(@Param("userId") String userId);
 
     @Query("SELECT u FROM UserEntity u WHERE u.realmId = 'moh_applications' AND u.id IN :userIdList")
-    List<UserEntity> findMohApplicationsUsersByIdList(@Param("userIdList") String userIdList);
+    List<UserEntity> findMohApplicationsUsersByIdList(@Param("userIdList") List<String> userIdList);
 }
