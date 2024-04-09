@@ -7,16 +7,16 @@ import java.util.Optional;
 @Component
 public class UserSearchParameters {
 
-    private Optional<String> email;
-    private Optional<String> firstName;
-    private Optional<String> lastName;
-    private Optional<String> search;
-    private Optional<String> username;
-    private Optional<String> organizationId;
-    private Optional<String> clientId;
-    private Optional<String[]> selectedRoles;
-    private Optional<String> lastLogAfter;
-    private Optional<String> lastLogBefore;
+    private final Optional<String> email;
+    private final Optional<String> firstName;
+    private final Optional<String> lastName;
+    private final Optional<String> search;
+    private final Optional<String> username;
+    private final Optional<String> organizationId;
+    private final Optional<String> clientId;
+    private final Optional<String[]> selectedRoles;
+    private final Optional<String> lastLogAfter;
+    private final Optional<String> lastLogBefore;
 
     public UserSearchParameters(Optional<String> email, Optional<String> firstName,
                                 Optional<String> lastName, Optional<String> search,
