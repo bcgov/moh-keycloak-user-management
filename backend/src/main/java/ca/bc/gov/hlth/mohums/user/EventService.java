@@ -23,18 +23,18 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
-    public Map<String, String> getLastLoginEventsWithGivenClientAfterGivenDate(String lastLogAfter, String id) {
+    public Map<String, Object> getLastLoginEventsWithGivenClientAfterGivenDate(String lastLogAfter, String id) {
         String clientId = getClientIdById(id);
         long lastLogAfterEpoch = parseToEpochMilliseconds(lastLogAfter);
         return mapOf(eventRepository.findMohApplicationsLastLoginEventsWithGivenClientAfterGivenDate(lastLogAfterEpoch, clientId));
     }
 
-    public Map<String, String> getLastLoginEventsAfterGivenDate(String lastLogAfter) {
+    public Map<String, Object> getLastLoginEventsAfterGivenDate(String lastLogAfter) {
         long lastLogAfterEpoch = parseToEpochMilliseconds(lastLogAfter);
         return mapOf(eventRepository.findMohApplicationsLastLoginEventsAfterGivenDate(lastLogAfterEpoch));
     }
 
-    public Map<String, String> getLastLoginEventsWithGivenClientBeforeGivenDate(String lastLogBefore, String id) {
+    public Map<String, Object> getLastLoginEventsWithGivenClientBeforeGivenDate(String lastLogBefore, String id) {
         List<String> usersWithoutLoginEvents = eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
         Map<String, String> usersWithoutLoginEventsMap = new HashMap<>();
         long lastLogBeforeEpoch = parseToEpochMilliseconds(lastLogBefore);
@@ -42,20 +42,20 @@ public class EventService {
         for (String userId : usersWithoutLoginEvents) {
             usersWithoutLoginEventsMap.put(userId, "Over a year ago");
         }
-        Map<String, String> usersWithLastLoginBefore = mapOf(eventRepository.findMohApplicationsLastLoginEventsWithGivenClientBeforeGivenDate(lastLogBeforeEpoch, clientId));
+        Map<String, Object> usersWithLastLoginBefore = mapOf(eventRepository.findMohApplicationsLastLoginEventsWithGivenClientBeforeGivenDate(lastLogBeforeEpoch, clientId));
         usersWithLastLoginBefore.putAll(usersWithoutLoginEventsMap);
 
         return usersWithLastLoginBefore;
     }
 
-    public Map<String, String> getLastLoginEventsBeforeGivenDate(String lastLogBefore) {
+    public Map<String, Object> getLastLoginEventsBeforeGivenDate(String lastLogBefore) {
         List<String> usersWithoutLoginEvents = eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
         Map<String, String> usersWithoutLoginEventsMap = new HashMap<>();
         long lastLogBeforeEpoch = parseToEpochMilliseconds(lastLogBefore);
         for (String userId : usersWithoutLoginEvents) {
             usersWithoutLoginEventsMap.put(userId, "Over a year ago");
         }
-        Map<String, String> usersWithLastLoginBefore = mapOf(eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(lastLogBeforeEpoch));
+        Map<String, Object> usersWithLastLoginBefore = mapOf(eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(lastLogBeforeEpoch));
 
         usersWithLastLoginBefore.putAll(usersWithoutLoginEventsMap);
         return usersWithLastLoginBefore;
@@ -67,8 +67,8 @@ public class EventService {
         return namedParameterJdbcTemplate.queryForObject(sql, namedParameters, String.class);
     }
 
-    private Map<String, String> mapOf(List<LastLogDate> lastLogDates) {
-        return lastLogDates.stream().collect(Collectors.toMap(LastLogDate::getUserId, lastLogDate -> lastLogDate.getLastLogin().toString()));
+    private Map<String, Object> mapOf(List<LastLogDate> lastLogDates) {
+        return lastLogDates.stream().collect(Collectors.toMap(LastLogDate::getUserId, lastLogDate -> lastLogDate.getLastLogin()));
     }
 
     private long parseToEpochMilliseconds(String date){

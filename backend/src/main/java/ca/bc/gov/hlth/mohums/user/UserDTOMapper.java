@@ -14,12 +14,11 @@ public class UserDTOMapper {
         Although Attribute Value is represented as a String in the database, Keycloak API returns it as a List
         TODO: lastLogDate should be optional param included in some responses + roles (String with "," as delimiter)
     */
-    public static UserDTO convertToDTO(UserEntity user, Map<String, String> roleIdNameMap, boolean attributesShouldBeMapped, String lastLog) {
+    public static UserDTO convertToDTO(UserEntity user, Map<String, String> roleIdNameMap, boolean briefRepresentation, Object lastLog) {
         Map<String, List<String>> attributeMap = new HashMap<>();
         String roleString = null;
-        String lastLogDate = null;
 
-        if (attributesShouldBeMapped) {
+        if (!briefRepresentation) {
             for (UserAttributeEntity attribute : user.getAttributes()) {
                 String attributeName = attribute.getName();
                 String attributeValue = attribute.getValue();

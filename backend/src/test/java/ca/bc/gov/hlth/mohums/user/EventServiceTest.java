@@ -34,7 +34,7 @@ public class EventServiceTest {
                 lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin().toString());
 
         Mockito.when(eventRepository.findMohApplicationsLastLoginEventsAfterGivenDate(dateInMilliseconds)).thenReturn(getMockLastLogDateList());
-        Map<String, String> results = eventService.getLastLoginEventsAfterGivenDate(date);
+        Map<String, Object> results = eventService.getLastLoginEventsAfterGivenDate(date);
 
         assertEquals(expected, results);
     }
@@ -50,7 +50,7 @@ public class EventServiceTest {
 
         Mockito.when(eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(dateInMilliseconds)).thenReturn(getMockLastLogDateList());
         Mockito.when(eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents()).thenReturn(usersWithoutLogins);
-        Map<String, String> results = eventService.getLastLoginEventsBeforeGivenDate(date);
+        Map<String, Object> results = eventService.getLastLoginEventsBeforeGivenDate(date);
 
         assertEquals(expected, results);
     }

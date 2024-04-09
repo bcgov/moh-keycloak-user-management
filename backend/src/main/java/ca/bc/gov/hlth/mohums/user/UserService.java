@@ -32,7 +32,7 @@ public class UserService {
         Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())
                 .and(userSpecifications.notServiceAccount());
 
-        Map<String, String> loginEventsMap = new HashMap<>();
+        Map<String, Object> loginEventsMap = new HashMap<>();
         Map<String, String> roleIdNameMap = new HashMap<>();
         List<UserEntity> searchResults;
 
@@ -62,16 +62,16 @@ public class UserService {
         return mapResultsToDTO(searchResults, roleIdNameMap, loginEventsMap, briefRepresentation);
     }
 
-    private List<UserDTO> mapResultsToDTO(List<UserEntity> searchResults, Map<String, String> roleIdNameMap, Map<String, String> loginEventsMap, boolean briefRepresentation) {
+    private List<UserDTO> mapResultsToDTO(List<UserEntity> searchResults, Map<String, String> roleIdNameMap, Map<String, Object> loginEventsMap, boolean briefRepresentation) {
         return searchResults.stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, briefRepresentation, loginEventsMap.get(user.getId()))).collect(Collectors.toList());
     }
 
-    private List<UserEntity> findAllUsersThatSatisfyLoginEventConstraint(Map<String, String> loginEventsMap) {
+    private List<UserEntity> findAllUsersThatSatisfyLoginEventConstraint(Map<String, Object> loginEventsMap) {
         List<String> userIds = new ArrayList<>(loginEventsMap.keySet());
         return userRepository.findMohApplicationsUsersByIdList(userIds);
     }
 
-    private List<UserEntity> findAllUsersThatSatisfySpecification(Specification<UserEntity> userSpec, Map<String, String> loginEventsMap) {
+    private List<UserEntity> findAllUsersThatSatisfySpecification(Specification<UserEntity> userSpec, Map<String, Object> loginEventsMap) {
         List<UserEntity> searchResults = userRepository.findAll(userSpec);
         if (!loginEventsMap.isEmpty()) {
             searchResults = searchResults.stream().filter(user -> loginEventsMap.containsKey(user.getId())).collect(Collectors.toList());
@@ -116,8 +116,8 @@ public class UserService {
         return userSpec;
     }
 
-    private Map<String, String> getUsersLoginEvents(UserSearchParameters userSearchParams) {
-        Map<String, String> loginEvents;
+    private Map<String, Object> getUsersLoginEvents(UserSearchParameters userSearchParams) {
+        Map<String, Object> loginEvents;
         Optional<String> lastLogAfter = userSearchParams.getLastLogAfter();
         Optional<String> lastLogBefore = userSearchParams.getLastLogBefore();
         Optional<String> clientId = userSearchParams.getClientId();

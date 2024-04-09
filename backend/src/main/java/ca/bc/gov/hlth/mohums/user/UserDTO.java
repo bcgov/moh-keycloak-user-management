@@ -20,9 +20,9 @@ public class UserDTO {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String role;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private String lastLogDate;
+    private Object lastLogDate;
 
-    public UserDTO(String id, String username, String firstName, Long createdTimestamp, String lastName, String email, boolean enabled, boolean emailVerified, Map<String, List<String>> attributes, String role, String lastLogDate) {
+    public UserDTO(String id, String username, String firstName, Long createdTimestamp, String lastName, String email, boolean enabled, boolean emailVerified, Map<String, List<String>> attributes, String role, Object lastLogDate) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
@@ -78,7 +78,7 @@ public class UserDTO {
         return role;
     }
 
-    public String getLastLogDate() {
+    public Object getLastLogDate() {
         return lastLogDate;
     }
 

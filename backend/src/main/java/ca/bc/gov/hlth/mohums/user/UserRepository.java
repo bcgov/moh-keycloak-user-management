@@ -14,6 +14,6 @@ public interface UserRepository extends JpaRepository<UserEntity, String>, JpaSp
     @Query("SELECT u FROM UserEntity u WHERE u.id = :userId AND u.realmId = 'moh_applications'")
     Optional<UserEntity> findMohApplicationsUserById(@Param("userId") String userId);
 
-    @Query("SELECT u FROM UserEntity u WHERE u.realmId = 'moh_applications' AND u.id IN :userIdList")
+    @Query("SELECT u FROM UserEntity u WHERE u.realmId = 'moh_applications' AND u.username NOT LIKE 'service-account-%' AND u.id IN :userIdList")
     List<UserEntity> findMohApplicationsUsersByIdList(@Param("userIdList") List<String> userIdList);
 }
