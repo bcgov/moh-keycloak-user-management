@@ -2,11 +2,9 @@ package ca.bc.gov.hlth.mohums.controller;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,11 +13,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import ca.bc.gov.hlth.mohums.exceptions.UserNotFoundException;
-import ca.bc.gov.hlth.mohums.user.UserDTO;
-import ca.bc.gov.hlth.mohums.user.UserService;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,7 +42,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.UserPayee;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
 import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
 import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
@@ -96,7 +92,7 @@ public class UsersController {
      * @return a list of Users that match the specified criteria
      */
     @GetMapping("/users")
-    public ResponseEntity<List<Object>> getUsers(
+    public ResponseEntity<List<UserDTO>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<Integer> first,
@@ -111,124 +107,128 @@ public class UsersController {
             @RequestParam Optional<String> clientId,
             @RequestParam Optional<String> clientClientId,
             @RequestParam Optional<String[]> selectedRoles) {
-        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
-        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
-                briefRepresentationValue.toString()));
-        email.ifPresent(emailValue -> queryParams.add("email", emailValue));
-        first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
-        //queryParams.add("first", String.valueOf(1));
-        firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
-        lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
-        max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
-        search.ifPresent(searchValue -> queryParams.add("search", searchValue));
-        username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
-
-        ResponseEntity<List<Object>> searchResults = keycloakApiService.getUsers(queryParams);
-
-        List<Object> users = searchResults.getBody();
-
-        if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
-            List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
-            users = filteredUsers;
-
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
-        }
-
-        //Filter based on selected client & roles
-        if (clientId.isPresent()) {
-            users = filterUsersByRole(selectedRoles, clientId.get(), users);
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
-        }
-
-        if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
-            Map<String, Object> namedParameters = new HashMap<>();
-            String customDateCriteria = " AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
-            Optional<String> lastLogBeforeCriteria = Optional.empty();
-            if (lastLogAfter.isPresent()) {
-                Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                customDateCriteria = " AND ee.event_time > :lastLogAfterEpoch";
-                namedParameters.put("lastLogAfterEpoch", lastLogAfterEpoch);
-            } else {
-                Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                lastLogBeforeCriteria = Optional.of(" HAVING MAX(ee.event_time) < :lastLogBeforeEpoch");
-                namedParameters.put("lastLogBeforeEpoch", lastLogBeforeEpoch);
-            }
-            Optional<String> clientAndRolesJoins = Optional.empty();
-            Optional<String> clientAndRolesCriteria = Optional.empty();
-            if (clientClientId.isPresent() && clientId.isPresent() && clientIdAndIdAreValid(clientClientId.get(), clientId.get())) {
-                clientAndRolesJoins = Optional.of(
-                        " JOIN keycloak.user_role_mapping urm ON urm.user_id = ue.id"
-                                + " JOIN keycloak.keycloak_role kr ON kr.id = urm.role_id"
-                                + " JOIN keycloak.client c ON c.id = kr.client"
-                );
-                clientAndRolesCriteria = Optional.of(
-                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientId) OR (ee.client_id IS NULL AND c.client_id = :clientId))"
-                                + " AND kr.name IN (:selectedRoles)"
-                );
-                namedParameters.put("clientId", clientClientId.get());
-                namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
-            }
-            final String DO_NOT_INCLUDE = "";
-
-            String sql
-                    = "SELECT ue.id, MAX(ee.event_time) AS LAST_LOGIN"
-                    + "  FROM keycloak.user_entity ue"
-                    + "  JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
-                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
-                    + " WHERE ee.type='LOGIN'" + customDateCriteria
-                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
-                    + " GROUP BY ue.id"
-                    + lastLogBeforeCriteria.orElse(DO_NOT_INCLUDE);
-
-            List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
-
-            Map<String, Object> usersLastLogin = new HashMap<>();
-            for (Map<String, Object> o : queryResult) {
-                usersLastLogin.put(o.get("id").toString(), o.get("LAST_LOGIN"));
-            }
-
-            List<Object> filteredUsersByLastLog = new ArrayList<>();
-            for (Object user : users) {
-                String userId = ((LinkedHashMap) user).get("id").toString();
-                if (!userId.isEmpty() && usersLastLogin.containsKey(userId)) {
-                    ((LinkedHashMap) user).put("lastLogDate", usersLastLogin.get(userId));
-                    filteredUsersByLastLog.add(user);
-                }
-            }
-
-            //Users who haven't logged in for over a year
-            if (lastLogBefore.isPresent()) {
-                //Users who have those roles but no events connected to them
-                sql
-                    = "SELECT ue.id"
-                    + "  FROM keycloak.user_entity ue"
-                    + "  LEFT JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
-                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
-                    + " WHERE ee.user_id IS NULL"
-                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
-                    + "   AND ue.created_timestamp < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
-
-                queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
-
-                Map<String, Object> inactiveForOverYearIds = new HashMap<>();
-                for (Map<String, Object> o : queryResult) {
-                    inactiveForOverYearIds.put(o.get("id").toString(), "Over a year ago");
-                }
-
-                List<Object> usersInactiveForOverYear = new ArrayList<>();
-                for (Object user : users) {
-                    String userId = ((LinkedHashMap) user).get("id").toString();
-                    if (!userId.isEmpty() && inactiveForOverYearIds.containsKey(userId)) {
-                        ((LinkedHashMap) user).put("lastLogDate", inactiveForOverYearIds.get(userId));
-                        usersInactiveForOverYear.add(user);
-                    }
-                }
-                filteredUsersByLastLog.addAll(usersInactiveForOverYear);
-            }
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
-        }
-        return searchResults;
+        UserSearchParameters params = new UserSearchParameters(email, firstName, lastName, search, username, org, clientId, selectedRoles, lastLogAfter, lastLogBefore);
+        List<UserDTO> a = userService.getUsers(params);
+        return ResponseEntity.ok(a);
+//        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+//
+//        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
+//                briefRepresentationValue.toString()));
+//        email.ifPresent(emailValue -> queryParams.add("email", emailValue));
+//        first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
+//        //queryParams.add("first", String.valueOf(1));
+//        firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
+//        lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
+//        max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
+//        search.ifPresent(searchValue -> queryParams.add("search", searchValue));
+//        username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
+//
+//        ResponseEntity<List<Object>> searchResults = keycloakApiService.getUsers(queryParams);
+//
+//        List<Object> users = searchResults.getBody();
+//
+//        if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
+//            List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
+//            users = filteredUsers;
+//
+//            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
+//        }
+//
+//        //Filter based on selected client & roles
+//        if (clientId.isPresent()) {
+//            users = filterUsersByRole(selectedRoles, clientId.get(), users);
+//            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
+//        }
+//
+//        if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
+//            Map<String, Object> namedParameters = new HashMap<>();
+//            String customDateCriteria = " AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
+//            Optional<String> lastLogBeforeCriteria = Optional.empty();
+//            if (lastLogAfter.isPresent()) {
+//                Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+//                customDateCriteria = " AND ee.event_time > :lastLogAfterEpoch";
+//                namedParameters.put("lastLogAfterEpoch", lastLogAfterEpoch);
+//            } else {
+//                Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+//                lastLogBeforeCriteria = Optional.of(" HAVING MAX(ee.event_time) < :lastLogBeforeEpoch");
+//                namedParameters.put("lastLogBeforeEpoch", lastLogBeforeEpoch);
+//            }
+//            Optional<String> clientAndRolesJoins = Optional.empty();
+//            Optional<String> clientAndRolesCriteria = Optional.empty();
+//            if (clientClientId.isPresent() && clientId.isPresent() && clientIdAndIdAreValid(clientClientId.get(), clientId.get())) {
+//                clientAndRolesJoins = Optional.of(
+//                        " JOIN keycloak.user_role_mapping urm ON urm.user_id = ue.id"
+//                                + " JOIN keycloak.keycloak_role kr ON kr.id = urm.role_id"
+//                                + " JOIN keycloak.client c ON c.id = kr.client"
+//                );
+//                clientAndRolesCriteria = Optional.of(
+//                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientId) OR (ee.client_id IS NULL AND c.client_id = :clientId))"
+//                                + " AND kr.name IN (:selectedRoles)"
+//                );
+//                namedParameters.put("clientId", clientClientId.get());
+//                namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
+//            }
+//            final String DO_NOT_INCLUDE = "";
+//
+//            String sql
+//                    = "SELECT ue.id, MAX(ee.event_time) AS LAST_LOGIN"
+//                    + "  FROM keycloak.user_entity ue"
+//                    + "  JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
+//                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
+//                    + " WHERE ee.type='LOGIN'" + customDateCriteria
+//                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
+//                    + " GROUP BY ue.id"
+//                    + lastLogBeforeCriteria.orElse(DO_NOT_INCLUDE);
+//
+//            List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
+//
+//            Map<String, Object> usersLastLogin = new HashMap<>();
+//            for (Map<String, Object> o : queryResult) {
+//                usersLastLogin.put(o.get("id").toString(), o.get("LAST_LOGIN"));
+//            }
+//
+//            List<Object> filteredUsersByLastLog = new ArrayList<>();
+//            for (Object user : users) {
+//                String userId = ((LinkedHashMap) user).get("id").toString();
+//                if (!userId.isEmpty() && usersLastLogin.containsKey(userId)) {
+//                    ((LinkedHashMap) user).put("lastLogDate", usersLastLogin.get(userId));
+//                    filteredUsersByLastLog.add(user);
+//                }
+//            }
+//
+//            //Users who haven't logged in for over a year
+//            if (lastLogBefore.isPresent()) {
+//                //Users who have those roles but no events connected to them
+//                sql
+//                    = "SELECT ue.id"
+//                    + "  FROM keycloak.user_entity ue"
+//                    + "  LEFT JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
+//                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
+//                    + " WHERE ee.user_id IS NULL"
+//                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
+//                    + "   AND ue.created_timestamp < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
+//
+//                queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
+//
+//                Map<String, Object> inactiveForOverYearIds = new HashMap<>();
+//                for (Map<String, Object> o : queryResult) {
+//                    inactiveForOverYearIds.put(o.get("id").toString(), "Over a year ago");
+//                }
+//
+//                List<Object> usersInactiveForOverYear = new ArrayList<>();
+//                for (Object user : users) {
+//                    String userId = ((LinkedHashMap) user).get("id").toString();
+//                    if (!userId.isEmpty() && inactiveForOverYearIds.containsKey(userId)) {
+//                        ((LinkedHashMap) user).put("lastLogDate", inactiveForOverYearIds.get(userId));
+//                        usersInactiveForOverYear.add(user);
+//                    }
+//                }
+//                filteredUsersByLastLog.addAll(usersInactiveForOverYear);
+//            }
+//            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
+//        }
+//        return searchResults;
     }
 
     private boolean clientIdAndIdAreValid(String clientId, String id) {
