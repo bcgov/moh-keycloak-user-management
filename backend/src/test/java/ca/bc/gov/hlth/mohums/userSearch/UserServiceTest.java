@@ -1,5 +1,6 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch;
 
+import ca.bc.gov.hlth.mohums.userSearch.user.*;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;

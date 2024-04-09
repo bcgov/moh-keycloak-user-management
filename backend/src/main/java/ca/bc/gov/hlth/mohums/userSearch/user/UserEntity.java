@@ -1,4 +1,4 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch.user;
 
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;

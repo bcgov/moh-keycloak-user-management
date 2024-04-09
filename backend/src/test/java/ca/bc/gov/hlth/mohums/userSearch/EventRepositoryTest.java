@@ -1,6 +1,7 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch;
 
-import org.junit.jupiter.api.Disabled;
+import ca.bc.gov.hlth.mohums.userSearch.event.EventRepository;
+import ca.bc.gov.hlth.mohums.userSearch.event.LastLogDate;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

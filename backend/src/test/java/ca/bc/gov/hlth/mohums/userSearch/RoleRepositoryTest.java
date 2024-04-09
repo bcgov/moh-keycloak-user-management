@@ -1,5 +1,7 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch;
 
+import ca.bc.gov.hlth.mohums.userSearch.role.RoleEntity;
+import ca.bc.gov.hlth.mohums.userSearch.role.RoleRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

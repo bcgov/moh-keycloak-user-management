@@ -1,4 +1,4 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch.event;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

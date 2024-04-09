@@ -1,4 +1,4 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

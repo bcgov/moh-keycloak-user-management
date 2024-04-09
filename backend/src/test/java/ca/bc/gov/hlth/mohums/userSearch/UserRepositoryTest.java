@@ -1,5 +1,8 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch;
 
+import ca.bc.gov.hlth.mohums.userSearch.user.UserEntity;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserRepository;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserSpecifications;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

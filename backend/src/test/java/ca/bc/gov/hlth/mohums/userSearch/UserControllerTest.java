@@ -1,6 +1,8 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch;
 
 import ca.bc.gov.hlth.mohums.controller.UsersController;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
 import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
 import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
 import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;

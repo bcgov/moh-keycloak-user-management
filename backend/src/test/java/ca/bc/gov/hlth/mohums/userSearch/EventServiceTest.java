@@ -1,5 +1,8 @@
-package ca.bc.gov.hlth.mohums.user;
+package ca.bc.gov.hlth.mohums.userSearch;
 
+import ca.bc.gov.hlth.mohums.userSearch.event.EventRepository;
+import ca.bc.gov.hlth.mohums.userSearch.event.EventService;
+import ca.bc.gov.hlth.mohums.userSearch.event.LastLogDate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
