@@ -33,8 +33,8 @@ public class EventServiceTest {
     @Test
     public void testGetLastLoginEventsAfterGivenDate() {
         List<LastLogDate> lastLogDateList = getMockLastLogDateList();
-        Map<String, String> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin().toString(),
-                lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin().toString());
+        Map<String, Object> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
+                lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin());
 
         Mockito.when(eventRepository.findMohApplicationsLastLoginEventsAfterGivenDate(dateInMilliseconds)).thenReturn(getMockLastLogDateList());
         Map<String, Object> results = eventService.getLastLoginEventsAfterGivenDate(date);
@@ -46,8 +46,8 @@ public class EventServiceTest {
     public void testGetLastLoginEventsBeforeGivenDate() {
         List<LastLogDate> lastLogDateList = getMockLastLogDateList();
         List<String> usersWithoutLogins = List.of("id-3", "id-4");
-        Map<String, String> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin().toString(),
-                lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin().toString(),
+        Map<String, Object> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
+                lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin(),
                 usersWithoutLogins.get(0), "Over a year ago",
                 usersWithoutLogins.get(1), "Over a year ago");
 

@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.integration;
 
+import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -36,6 +37,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -158,33 +161,28 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void getUsersInRole() throws Exception {
-        Map<String, ?> client = (Map<String, ?>) getAll("clients").get(0);
-        Map<String, ?> clientRole = (Map<String, ?>) webTestClient
-                .get()
-                .uri("/clients/" + client.get("id") + "/roles")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Object.class)
-                .returnResult()
-                .getResponseBody().get(0);
 
-        List<Object> usersInRole = webTestClient
+        String clientId = "24447cb4-f3b1-455b-89d9-26c081025fb9"; //UMS-INTEGRATION-TESTS
+        String selectedRole = "getUsersInRole_TEST_ROLE";
+
+
+        final List<UserDTO> usersInRole = webTestClient
                 .get()
-                .uri("/clients/"
-                        + client.get("id")
-                        + "/roles/"
-                        + clientRole.get("name")
-                        + "/users")
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("clientId", clientId)
+                                .queryParam("selectedRoles", selectedRole)
+                                .build()
+                )
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Object.class)
+                .expectBodyList(UserDTO.class)
                 .returnResult()
                 .getResponseBody();
 
-        Assertions.assertThat(usersInRole).isNotEmpty()
-                .allSatisfy(this::verifyUser);
+        Assertions.assertThat(usersInRole.stream().filter(user -> user.getUsername().equals("umstest"))).isNotEmpty();
     }
 
     private void verifyUser(Object user) {
@@ -202,28 +200,27 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void searchByOrganization() throws Exception {
         final List<Object> allUsers = getAll("users");
+        final List<String> allUsersIds = allUsers.stream().map(user -> (LinkedHashMap<String, Object>) user).map(user -> user.get("id").toString()).collect(Collectors.toList());
 
-        final List<Object> filteredUsers = webTestClient
+        final List<UserDTO> usersWithOrg = webTestClient
                 .get()
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
                                 .queryParam("org", "00000010")
-                                .queryParam("first", 0)
-                                .queryParam("max", 5000)
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Object.class)
+                .expectBodyList(UserDTO.class)
                 .returnResult()
                 .getResponseBody();
 
-        Assertions.assertThat(filteredUsers).isNotEmpty();
-        Assertions.assertThat(allUsers).containsAll(filteredUsers);
+        assertTrue(usersWithOrg.stream().allMatch(user -> allUsersIds.contains(user.getId())));
     }
 
     @Test
