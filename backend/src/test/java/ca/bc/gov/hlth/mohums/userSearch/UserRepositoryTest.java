@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings({"OptionalGetWithoutIsPresent"})
 @RunWith(SpringRunner.class)
@@ -36,23 +37,23 @@ public class UserRepositoryTest {
     @Test
     public void testFindByIdSuccessful() {
         String umsTestUserId = "c35d48ea-3df9-4758-a27b-94e4cab1ba44";
-        UserEntity found = userRepository.findMohApplicationsUserById(umsTestUserId).get();
+        UserEntity found = userRepository.findMohApplicationsUsersByIdList(List.of(umsTestUserId)).get(0);
 
         assertEquals(found.getId(), umsTestUserId);
     }
 
     @Test
     public void testFindByIdNotFound() {
-        Optional<UserEntity> notFound = userRepository.findMohApplicationsUserById("non-existing-user-id");
-        assertThat(notFound.isEmpty()).isTrue();
+        List<UserEntity> notFound = userRepository.findMohApplicationsUsersByIdList(List.of("non-existing-user-id"));
+        assertTrue(notFound.isEmpty());
     }
 
     @Test
     public void testFindByIdFromDifferentRealmNotFound() {
         String midtierAdminIdFromMasterRealm = "0474569b-74b6-4ad4-b43c-2673dd11bdfa";
-        Optional<UserEntity> notFound = userRepository.findMohApplicationsUserById(midtierAdminIdFromMasterRealm);
+        List<UserEntity> notFound = userRepository.findMohApplicationsUsersByIdList(List.of(midtierAdminIdFromMasterRealm));
 
-        assertThat(notFound.isEmpty()).isTrue();
+        assertTrue(notFound.isEmpty());
     }
 
     @Test
