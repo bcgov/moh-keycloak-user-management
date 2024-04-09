@@ -26,10 +26,6 @@ public class UserService {
         this.userSpecifications = userSpecifications;
     }
 
-    public Optional<UserDTO> getUserByID(String id) {
-        return userRepository.findById(id).map(user -> UserDTOMapper.convertToDTO(user, Map.of(), false, ""));
-    }
-
     public List<UserDTO> getUsers(UserSearchParameters userSearchParams) {
 
         Specification<UserEntity> userSpec = Specification.where(userSpecifications.fromMohApplicationsRealm())

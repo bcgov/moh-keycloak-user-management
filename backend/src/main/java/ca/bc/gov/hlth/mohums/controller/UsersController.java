@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ca.bc.gov.hlth.mohums.exceptions.UserNotFoundException;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
@@ -288,12 +287,6 @@ public class UsersController {
     @GetMapping("/users/{userId}")
     public ResponseEntity<Object> getUser(@PathVariable String userId) {
         return keycloakApiService.getUser(userId);
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String userId) {
-        Optional<UserDTO> user = userService.getUserByID(userId);
-        return ResponseEntity.ok(user.orElseThrow(() -> new UserNotFoundException("User not found")));
     }
 
     @PostMapping("/users")
