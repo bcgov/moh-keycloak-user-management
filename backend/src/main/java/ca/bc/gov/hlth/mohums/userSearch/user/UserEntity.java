@@ -8,6 +8,11 @@ import javax.persistence.*;
 import java.util.Collection;
 import java.util.LinkedList;
 
+
+/**
+ * Entity class based on Keycloak source code: https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/java/org/keycloak/models/jpa/entities/UserEntity.java
+ */
+
 @Entity
 @Table(name = "USER_ENTITY", schema = "KEYCLOAK")
 public class UserEntity {
@@ -141,4 +146,6 @@ public class UserEntity {
     public void setAttributes(Collection<UserAttributeEntity> attributes) {
         this.attributes = attributes;
     }
+
+    //TODO: Should equals method be overridden as well? Or maybe the equals method in other entity classes are just boilerplate for our use case?
 }

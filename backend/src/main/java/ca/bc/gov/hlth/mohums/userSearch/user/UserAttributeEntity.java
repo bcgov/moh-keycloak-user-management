@@ -2,6 +2,10 @@ package ca.bc.gov.hlth.mohums.userSearch.user;
 
 import javax.persistence.*;
 
+/**
+ * Entity class based on Keycloak source code: https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/java/org/keycloak/models/jpa/entities/UserAttributeEntity.java
+ */
+
 @Entity
 @Table(name = "USER_ATTRIBUTE", schema = "KEYCLOAK")
 public class UserAttributeEntity {

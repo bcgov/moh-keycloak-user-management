@@ -3,6 +3,10 @@ package ca.bc.gov.hlth.mohums.userSearch.user;
 import javax.persistence.*;
 import java.io.Serializable;
 
+/**
+ * Entity class based on Keycloak source code: https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/java/org/keycloak/models/jpa/entities/UserRoleMappingEntity.java
+ */
+
 @Table(name="USER_ROLE_MAPPING", schema = "KEYCLOAK")
 @Entity
 @IdClass(UserRoleMappingEntity.Key.class)
@@ -32,7 +36,9 @@ public class UserRoleMappingEntity {
         this.roleId = roleId;
     }
 
-
+    /**
+     * This class represents composite key
+     */
     public static class Key implements Serializable {
 
         protected UserEntity user;

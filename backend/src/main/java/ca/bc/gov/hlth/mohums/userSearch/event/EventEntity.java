@@ -5,6 +5,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * Entity class based on Keycloak source code: https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/java/org/keycloak/events/jpa/EventEntity.java
+ */
+
 @Entity
 @Table(name="EVENT_ENTITY", schema = "KEYCLOAK")
 public class EventEntity {
