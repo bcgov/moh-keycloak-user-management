@@ -50,12 +50,6 @@ public class UserService {
             searchResults = findAllUsersThatSatisfySpecification(userSpec, loginEventsMap);
         }
 
-        //if client id + selected roles present
-        //fetch roles from RoleEntity based on client id, names, moh_applications realm
-        //map of role id -> role name (role name will always be unique because it returns from one client only)
-        //fetch users based on list of role ids
-        //attach role names to the response object
-        //brief representation - should be returned at all times, but what about external API callers - do they need it?
         boolean briefRepresentation = userSearchParams.getOrganizationId().isEmpty();
 
         return mapResultsToDTO(searchResults, roleIdNameMap, loginEventsMap, briefRepresentation);
