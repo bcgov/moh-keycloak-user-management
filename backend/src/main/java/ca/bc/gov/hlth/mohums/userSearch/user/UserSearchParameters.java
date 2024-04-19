@@ -7,6 +7,7 @@ import java.util.Optional;
 @Component
 public class UserSearchParameters {
 
+    private final Optional<Boolean> briefRepresentation;
     private final Optional<String> email;
     private final Optional<String> firstName;
     private final Optional<String> lastName;
@@ -18,11 +19,13 @@ public class UserSearchParameters {
     private final Optional<String> lastLogAfter;
     private final Optional<String> lastLogBefore;
 
-    public UserSearchParameters(Optional<String> email, Optional<String> firstName,
+    public UserSearchParameters(Optional<Boolean> briefRepresentation,
+                                Optional<String> email, Optional<String> firstName,
                                 Optional<String> lastName, Optional<String> search,
                                 Optional<String> username, Optional<String> organizationId,
                                 Optional<String> clientId, Optional<String[]> selectedRoles,
                                 Optional<String> lastLogAfter, Optional<String> lastLogBefore) {
+        this.briefRepresentation = briefRepresentation;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -49,7 +52,6 @@ public class UserSearchParameters {
                 && username.isEmpty() && organizationId.isEmpty()
                 && clientId.isEmpty() && selectedRoles.isEmpty()
                 && lastLogAfter.isEmpty() && lastLogBefore.isEmpty();
-
     }
 
     public Optional<String> getEmail() {
@@ -90,5 +92,9 @@ public class UserSearchParameters {
 
     public Optional<String> getLastLogBefore() {
         return lastLogBefore;
+    }
+
+    public Optional<Boolean> getBriefRepresentation() {
+        return briefRepresentation;
     }
 }

@@ -50,7 +50,7 @@ public class UserService {
             searchResults = findAllUsersThatSatisfySpecification(userSpec, loginEventsMap);
         }
 
-        boolean briefRepresentation = userSearchParams.getOrganizationId().isEmpty();
+        boolean briefRepresentation = userSearchParams.getBriefRepresentation().orElse(false);
 
         return mapResultsToDTO(searchResults, roleIdNameMap, loginEventsMap, briefRepresentation);
     }

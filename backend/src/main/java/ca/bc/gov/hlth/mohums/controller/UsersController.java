@@ -107,7 +107,7 @@ public class UsersController {
             @RequestParam Optional<String> clientClientId,
             @RequestParam Optional<String[]> selectedRoles) {
 
-        UserSearchParameters params = new UserSearchParameters(email, firstName, lastName, search, username, org, clientId, selectedRoles, lastLogAfter, lastLogBefore);
+        UserSearchParameters params = new UserSearchParameters(briefRepresentation, email, firstName, lastName, search, username, org, clientId, selectedRoles, lastLogAfter, lastLogBefore);
         List<UserDTO> a = userService.getUsers(params);
         return ResponseEntity.ok(a);
     }
