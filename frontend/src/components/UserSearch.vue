@@ -470,9 +470,6 @@
       numberOfClientRoleColumns() {
         return this.clientRoles.length > 10 ? 2 : 1;
       },
-      maxResults() {
-        return this.$config.max_results ? this.$config.max_results : 100;
-      },
       maxDateInput() {
         return formatDate(new Date());
       },
@@ -508,15 +505,11 @@
       },
       searchUser: async function (queryParameters) {
         this.$store.commit("alert/dismissAlert");
-        const maxSearch = this.$config.max_search
-          ? this.$config.max_search
-          : this.maxResults * 10;
         this.userSearchLoadingStatus = true;
         try {
           let results = (
             await UsersRepository.get(
-              `?briefRepresentation=false&first=0&max=${maxSearch}` +
-                queryParameters
+              `?briefRepresentation=true` + queryParameters
             )
           ).data;
           for (let e of results) {

@@ -4,7 +4,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -73,38 +72,31 @@ public class UsersController {
     }
 
     /**
-     * 
-     * @param briefRepresentation indicates if a brief representation of the client should be returned by the Keycloak API get Users 
-     * @param email the email of the user
-     * @param first the pagination offset for the Keycloak api get Users
-     * @param firstName the first name of the user
-     * @param lastName the last name of the user
-     * @param max the maximum results size to be returned by the Keycloak API get Users
-     * @param search a String contained in username, first or last name, or email of the user
-     * @param username the username of the user
-     * @param org the ID of an Organization the user is associated to
-     * @param lastLogAfter the date after which the user logged in 
-     * @param lastLogBefore the date before which the user logged in
-     * @param clientId	the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model
-     * @param clientClientId the Client Id of the Client entity, maps to keycloak.client.clientId in the keycloak database model
-     * @param selectedRoles the roles the user must have, an empty list means all role for that client will be used
+     * @param briefRepresentation indicates if a brief representation of the client should be returned by the Keycloak API get Users
+     * @param email               the email of the user
+     * @param firstName           the first name of the user
+     * @param lastName            the last name of the user
+     * @param search              a String contained in username, first or last name, or email of the user
+     * @param username            the username of the user
+     * @param org                 the ID of an Organization the user is associated to
+     * @param lastLogAfter        the date after which the user logged in
+     * @param lastLogBefore       the date before which the user logged in
+     * @param clientId            the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model
+     * @param selectedRoles       the roles the user must have, an empty list means all role for that client will be used
      * @return a list of Users that match the specified criteria
      */
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
-            @RequestParam Optional<Integer> first,
             @RequestParam Optional<String> firstName,
             @RequestParam Optional<String> lastName,
-            @RequestParam Optional<Integer> max,
             @RequestParam Optional<String> search,
             @RequestParam Optional<String> username,
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
             @RequestParam Optional<String> lastLogBefore,
             @RequestParam Optional<String> clientId,
-            @RequestParam Optional<String> clientClientId,
             @RequestParam Optional<String[]> selectedRoles) {
 
         UserSearchParameters params = new UserSearchParameters(briefRepresentation, email, firstName, lastName, search, username, org, clientId, selectedRoles, lastLogAfter, lastLogBefore);

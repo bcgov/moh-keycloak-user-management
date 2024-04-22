@@ -1,6 +1,4 @@
 {
-  "max_search": 5000,
-  "max_results": 5000,
   "siteminder_logout": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi",
   "keycloak_logout": "https://common-logon-dev.hlth.gov.bc.ca/auth/realms/moh_applications/protocol/openid-connect/logout",
   "redirect_uri": "http://localhost:8080",
