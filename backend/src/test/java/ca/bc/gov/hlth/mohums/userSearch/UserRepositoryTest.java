@@ -97,23 +97,23 @@ public class UserRepositoryTest {
     @Test
     public void testFindAllByOrganizationAndUsername() {
         Specification<UserEntity> userSpec = baseUserSpecification()
-                .and(userSpecifications.usernameLike("umstest"))
+                .and(userSpecifications.usernameLike("ums-organization"))
                 .and(userSpecifications.hasOrganizationWithGivenId("00000010"));
         List<UserEntity> result = userRepository.findAll(userSpec);
 
         assertEquals(1, result.size());
-        assertEquals("umstest", result.get(0).getUsername());
+        assertEquals("ums-organization", result.get(0).getUsername());
     }
 
     @Test
     public void testFindAllByOrganizationAndEmail() {
         Specification<UserEntity> userSpec = baseUserSpecification()
-                .and(userSpecifications.emailLike("test@ums.com"))
+                .and(userSpecifications.emailLike("organization@ums.com"))
                 .and(userSpecifications.hasOrganizationWithGivenId("00000010"));
         List<UserEntity> result = userRepository.findAll(userSpec);
 
         assertEquals(1, result.size());
-        assertEquals("test@ums.com", result.get(0).getEmail());
+        assertEquals("organization@ums.com", result.get(0).getEmail());
     }
 
     @Test
