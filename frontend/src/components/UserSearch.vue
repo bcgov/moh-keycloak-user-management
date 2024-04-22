@@ -570,20 +570,7 @@
         return role;
       },
       setSearchResults(results) {
-        const maxRes = this.maxResults;
-        if (results.length > maxRes) {
-          this.searchResults = results.slice(0, maxRes);
-          this.$store.commit("alert/setAlert", {
-            message:
-              "Your search returned more than the maximum number of results (" +
-              maxRes +
-              "). Please consider refining the search criteria.",
-            type: "warning",
-          });
-          window.scrollTo(0, 0);
-        } else {
-          this.searchResults = results;
-        }
+        this.searchResults = results;
       },
       handleError(message, error) {
         this.$store.commit("alert/setAlert", {
