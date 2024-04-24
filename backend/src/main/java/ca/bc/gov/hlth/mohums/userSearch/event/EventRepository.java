@@ -32,10 +32,10 @@ public interface EventRepository extends JpaRepository<EventEntity, String> {
             nativeQuery = true)
     List<LastLogDate> findMohApplicationsLastLoginEventsWithGivenClientBeforeGivenDate(long milliseconds, String clientId);
 
-    @Query(value = "SELECT ue.id FROM KEYCLOAK.USER_ENTITY ue  LEFT JOIN KEYCLOAK.EVENT_ENTITY ee ON ee.user_id = ue.id " +
+    @Query(value = "SELECT ue.id AS userId, 'Over a year ago' AS lastLogin FROM KEYCLOAK.USER_ENTITY ue  LEFT JOIN KEYCLOAK.EVENT_ENTITY ee ON ee.user_id = ue.id " +
             "WHERE ee.user_id IS NULL AND ue.created_timestamp < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000) AND ue.REALM_ID = 'moh_applications'",
             nativeQuery = true)
-    List<String> findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
+    List<LastLogDate> findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
 
 
 }

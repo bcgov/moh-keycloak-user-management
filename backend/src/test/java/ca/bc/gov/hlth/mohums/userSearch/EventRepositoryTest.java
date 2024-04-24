@@ -34,7 +34,7 @@ public class EventRepositoryTest {
         List<LastLogDate> results = eventRepository.findMohApplicationsLastLoginEventsAfterGivenDate(dateInMillis);
 
         assertEquals(isResultEmpty, results.isEmpty());
-        assertTrue(results.stream().allMatch(lastLogDate -> lastLogDate.getLastLogin() > dateInMillis));
+        assertTrue(results.stream().allMatch(lastLogDate -> (Long)lastLogDate.getLastLogin() > dateInMillis));
     }
 
     @ParameterizedTest
@@ -43,7 +43,7 @@ public class EventRepositoryTest {
         List<LastLogDate> results = eventRepository.findMohApplicationsLastLoginEventsWithGivenClientAfterGivenDate(dateInMillis, "USER-MANAGEMENT");
 
         assertEquals(isResultEmpty, results.isEmpty());
-        assertTrue(results.stream().allMatch(lastLogDate -> lastLogDate.getLastLogin() > dateInMillis));
+        assertTrue(results.stream().allMatch(lastLogDate -> (Long)lastLogDate.getLastLogin() > dateInMillis));
     }
 
     private static Stream<Arguments> provideLastLoginAfterDates(){
@@ -67,7 +67,7 @@ public class EventRepositoryTest {
         List<LastLogDate> results = eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(dateInMillis);
 
         assertEquals(isResultEmpty, results.isEmpty());
-        assertTrue(results.stream().allMatch(lastLogDate -> lastLogDate.getLastLogin() < dateInMillis));
+        assertTrue(results.stream().allMatch(lastLogDate -> (Long)lastLogDate.getLastLogin() < dateInMillis));
     }
 
     private static Stream<Arguments> provideLastLoginBeforeDates(){
@@ -86,7 +86,7 @@ public class EventRepositoryTest {
 
     @Test
     public void testGetUsersThatExistForOverAYearWithoutLoginEvents(){
-        List<String> results = eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
+        List<LastLogDate> results = eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents();
 
         assertFalse(results.isEmpty());
     }

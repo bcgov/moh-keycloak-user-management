@@ -45,11 +45,11 @@ public class EventServiceTest {
     @Test
     public void testGetLastLoginEventsBeforeGivenDate() {
         List<LastLogDate> lastLogDateList = getMockLastLogDateList();
-        List<String> usersWithoutLogins = List.of("id-3", "id-4");
+        List<LastLogDate> usersWithoutLogins = getMockLastLogDateListWithNoDates();
         Map<String, Object> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
                 lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin(),
-                usersWithoutLogins.get(0), "Over a year ago",
-                usersWithoutLogins.get(1), "Over a year ago");
+                usersWithoutLogins.get(0).getUserId(), usersWithoutLogins.get(0).getLastLogin(),
+                usersWithoutLogins.get(1).getUserId(), usersWithoutLogins.get(1).getLastLogin());
 
         Mockito.when(eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(dateInMilliseconds)).thenReturn(getMockLastLogDateList());
         Mockito.when(eventRepository.findMohApplicationUsersThatExistForOverAYearWithoutLoginEvents()).thenReturn(usersWithoutLogins);
@@ -67,7 +67,7 @@ public class EventServiceTest {
             }
 
             @Override
-            public Long getLastLogin() {
+            public Object getLastLogin() {
                 return 1712349913139L;
             }
         };
@@ -79,8 +79,36 @@ public class EventServiceTest {
             }
 
             @Override
-            public Long getLastLogin() {
+            public Object getLastLogin() {
                 return 1712349913149L;
+            }
+        };
+
+        return List.of(lastLogDateOne, lastLogDateTow);
+    }
+
+    private List<LastLogDate> getMockLastLogDateListWithNoDates() {
+        LastLogDate lastLogDateOne = new LastLogDate() {
+            @Override
+            public String getUserId() {
+                return "id-1";
+            }
+
+            @Override
+            public Object getLastLogin() {
+                return "Over a year ago";
+            }
+        };
+
+        LastLogDate lastLogDateTow = new LastLogDate() {
+            @Override
+            public String getUserId() {
+                return "id-2";
+            }
+
+            @Override
+            public Object getLastLogin() {
+                return "Over a year ago";
             }
         };
 
