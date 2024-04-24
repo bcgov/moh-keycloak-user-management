@@ -37,6 +37,7 @@ public class UserService {
 
 
         if (userSearchParams.isSearchByLastLogOnly()) {
+            //fetch users in one query
             loginEventsMap = getUsersLoginEvents(userSearchParams);
             searchResults = findAllUsersThatSatisfyLoginEventConstraint(loginEventsMap);
         } else {
@@ -60,8 +61,20 @@ public class UserService {
     }
 
     private List<UserEntity> findAllUsersThatSatisfyLoginEventConstraint(Map<String, Object> loginEventsMap) {
+        List<UserEntity> users = new ArrayList<>();
         List<String> userIds = new ArrayList<>(loginEventsMap.keySet());
-        return userRepository.findMohApplicationsUsersByIdList(userIds);
+        //this request needs to be batched, as login events result set can be greater than 1000, which causes trouble with executing query in the database ORA-01795: maximum number of expressions in a list is 1000
+        int batchSize = 999;
+        List<List<String>> batches = new ArrayList<>();
+        for(int i=0; i<userIds.size(); i += batchSize){
+            int endIndex = Math.min( i + batchSize, userIds.size());
+            List<String> batch = userIds.subList(i, endIndex);
+            batches.add(batch);
+        }
+        for (List<String> userIdsBatch : batches) {
+            users.addAll(userRepository.findMohApplicationsUsersByIdList(userIdsBatch));
+        }
+        return users;
     }
 
     private List<UserEntity> findAllUsersThatSatisfySpecification(Specification<UserEntity> userSpec, Map<String, Object> loginEventsMap) {
