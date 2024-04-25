@@ -419,15 +419,6 @@
             "clientId",
             this.selectedClientId
           );
-          this.clients.forEach((client) => {
-            if (client.id == this.selectedClientId) {
-              params = this.addQueryParameter(
-                params,
-                "clientClientId",
-                client.clientId
-              );
-            }
-          });
         }
         if (this.selectedRoles) {
           let roles = this.selectedRoles.map((role) => role.name).join(",");
@@ -504,25 +495,42 @@
         this.$router.push({ name: "UserCreate" });
       },
       searchUser: async function (queryParameters) {
-        this.$store.commit("alert/dismissAlert");
-        this.userSearchLoadingStatus = true;
-        try {
-          let results = (
-            await UsersRepository.get(
-              `?briefRepresentation=true` + queryParameters
-            )
-          ).data;
-          for (let e of results) {
-            if (e.lastLogDate && e.lastLogDate !== "Over a year ago") {
-              e.lastLogDate = formatDate(e.lastLogDate);
+        if (this.noQueryParameters(queryParameters)) {
+          this.$store.commit("alert/setAlert", {
+            message: "The Search Criteria cannot be blank.",
+            type: "warning",
+          });
+          window.scrollTo(0, 0);
+          return;
+        } else {
+          this.$store.commit("alert/dismissAlert");
+          this.userSearchLoadingStatus = true;
+          try {
+            let results = (
+              await UsersRepository.get(
+                `?briefRepresentation=true` + queryParameters
+              )
+            ).data;
+            for (let e of results) {
+              if (e.lastLogDate && e.lastLogDate !== "Over a year ago") {
+                e.lastLogDate = formatDate(e.lastLogDate);
+              }
             }
+            this.setSearchResults(results);
+          } catch (error) {
+            this.handleError("User search failed", error);
+          } finally {
+            this.userSearchLoadingStatus = false;
           }
-          this.setSearchResults(results);
-        } catch (error) {
-          this.handleError("User search failed", error);
-        } finally {
-          this.userSearchLoadingStatus = false;
         }
+      },
+      noQueryParameters: function (queryParameters) {
+        //&search= corresponds to basic search with no parameters
+        return (
+          queryParameters === null ||
+          queryParameters.trim().length === 0 ||
+          queryParameters === "&search="
+        );
       },
       addQueryParameter: function (parameters, parameter, value) {
         if (value) {
