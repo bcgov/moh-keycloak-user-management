@@ -64,7 +64,7 @@ public class UserService {
         List<UserEntity> users = new ArrayList<>();
         List<String> userIds = new ArrayList<>(loginEventsMap.keySet());
         //this request needs to be batched, as login events result set can be greater than 1000, which causes trouble with executing query in the database ORA-01795: maximum number of expressions in a list is 1000
-        int batchSize = 5;
+        int batchSize = 999;
         List<List<String>> batches = new ArrayList<>();
         for(int i=0; i<userIds.size(); i += batchSize){
             int endIndex = Math.min( i + batchSize, userIds.size());
