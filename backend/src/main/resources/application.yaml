@@ -70,6 +70,7 @@ jasypt:
 springdoc:
   swagger-ui:
     path: /docs/swagger-ui.html
+    disable-swagger-default-url: true
   api-docs:
     path: /docs/api-docs
 server:
