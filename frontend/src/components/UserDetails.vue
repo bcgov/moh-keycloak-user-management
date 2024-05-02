@@ -348,6 +348,31 @@
         }
         return false;
       },
+      userAttributes() {
+        return this.$store.state.user.attributes;
+      },
+    },
+    watch: {
+      userAttributes: {
+        handler(updatedAttributes) {
+          if ("sfds_auth_1" in updatedAttributes) {
+            this.user.attributes.sfds_auth_1 = updatedAttributes.sfds_auth_1;
+          }
+          if ("sfds_auth_2" in updatedAttributes) {
+            this.user.attributes.sfds_auth_2 = updatedAttributes.sfds_auth_2;
+          }
+          if ("sfds_auth_3" in updatedAttributes) {
+            this.user.attributes.sfds_auth_3 = updatedAttributes.sfds_auth_3;
+          }
+          if ("sfds_auth_4" in updatedAttributes) {
+            this.user.attributes.sfds_auth_4 = updatedAttributes.sfds_auth_4;
+          }
+          if ("sfds_auth_5" in updatedAttributes) {
+            this.user.attributes.sfds_auth_5 = updatedAttributes.sfds_auth_5;
+          }
+        },
+        deep: true,
+      },
     },
     methods: {
       openResetIdentityProviderLinkDialog: function (provider) {
@@ -366,13 +391,11 @@
         this.user.federatedIdentities = this.user.federatedIdentities.filter(
           (fi) => fi.identityProvider !== deletedIdentityProvider
         );
-        console.log(this.user.federatedIdentities);
       },
       resetIdentityProviderLink: function () {
         const userIdIdpRealm = this.user.federatedIdentities.find(
           (fi) => fi.identityProvider === this.selectedIdentityProvider
         ).userId;
-        console.log(userIdIdpRealm);
         UsersRepository.resetUserIdentityProviderLink(
           this.userId,
           this.selectedIdentityProvider.split(",")[0],
