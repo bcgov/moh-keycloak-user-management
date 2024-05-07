@@ -42,8 +42,11 @@
             });
           })
           .catch((error) => {
+            const errorMessage = error.message.includes("409")
+              ? `${error.message}. User already exists.`
+              : error.message;
             this.$store.commit("alert/setAlert", {
-              message: "Error creating new user: " + error,
+              message: `Error creating new user: ${errorMessage}`,
               type: "error",
             });
           })

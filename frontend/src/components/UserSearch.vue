@@ -27,7 +27,7 @@
           outlined
           dense
           v-model.trim="userSearchInput"
-          placeholder="Username, email, name, or ID"
+          placeholder="Username, email, name"
           @keyup.enter="
             searchUser('&search=' + userSearchInput.replaceAll('\\', '%5C'))
           "
