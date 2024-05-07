@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -67,7 +68,8 @@ public class EventRepositoryTest {
         List<LastLogDate> results = eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(dateInMillis);
 
         assertEquals(isResultEmpty, results.isEmpty());
-        assertTrue(results.stream().allMatch(lastLogDate -> (Long)lastLogDate.getLastLogin() < dateInMillis));
+        //Java casts Object inside LastLogDate to BigDecimal and not Long, so this conversion is required
+        assertTrue(results.stream().allMatch(lastLogDate -> BigDecimal.valueOf(dateInMillis).compareTo((BigDecimal) lastLogDate.getLastLogin()) > 0));
     }
 
     private static Stream<Arguments> provideLastLoginBeforeDates(){

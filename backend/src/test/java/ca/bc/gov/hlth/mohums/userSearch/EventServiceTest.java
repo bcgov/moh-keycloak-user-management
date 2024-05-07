@@ -91,7 +91,7 @@ public class EventServiceTest {
         LastLogDate lastLogDateOne = new LastLogDate() {
             @Override
             public String getUserId() {
-                return "id-1";
+                return "id-3";
             }
 
             @Override
@@ -103,7 +103,7 @@ public class EventServiceTest {
         LastLogDate lastLogDateTow = new LastLogDate() {
             @Override
             public String getUserId() {
-                return "id-2";
+                return "id-4";
             }
 
             @Override
