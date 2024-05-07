@@ -146,6 +146,4 @@ public class UserEntity {
     public void setAttributes(Collection<UserAttributeEntity> attributes) {
         this.attributes = attributes;
     }
-
-    //TODO: Should equals method be overridden as well? Or maybe the equals method in other entity classes are just boilerplate for our use case?
 }

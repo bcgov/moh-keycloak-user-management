@@ -37,7 +37,6 @@ public class UserService {
 
 
         if (userSearchParams.isSearchByLastLogOnly()) {
-            //fetch users in one query
             loginEventsMap = getUsersLoginEvents(userSearchParams);
             searchResults = findAllUsersThatSatisfyLoginEventConstraint(loginEventsMap);
         } else {
