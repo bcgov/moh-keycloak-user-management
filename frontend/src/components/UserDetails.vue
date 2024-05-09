@@ -23,83 +23,18 @@
                 Username should include the corresponding prefix or suffix in
                 alignment with the id type.
                 <ul>
-                  <li>
-                    IDIR:
-                    <span>username</span>
-                    <strong>@idir</strong>
-                  </li>
-                  <li>
-                    Business BCeID:
-                    <span>username</span>
-                    <strong>@bceid_business</strong>
-                  </li>
-                  <li>
-                    BC Provider:
-                    <span>username</span>
-                    <strong>@bcp</strong>
-                    <br />
-                    <span class="tooltip-note">
-                      Note: The username will already contain an '@domain' that
-                      the '@bcp' will be appended to.
-                    </span>
-                  </li>
-                  <li>
-                    BC Services Card:
-                    <span>username</span>
-                    <strong>@bcsc</strong>
-                  </li>
-                  <li>
-                    FNHA:
-                    <span>username</span>
-                    <strong>@fnha</strong>
-                    <br />
-                    <span class="tooltip-note">
-                      Note: The username will already contain an '@domain' that
-                      the '@fnha' will be appended to.
-                    </span>
-                  </li>
-                  <li>
-                    Fraser Health:
-                    <strong>sfhr\</strong>
-                    <span>username</span>
-                  </li>
-                  <li style="display: inline-block">
-                    Interior Health:
-                    <strong>iha\</strong>
-                    <span>username</span>
-                  </li>
-                  <li>
-                    Northern Health:
-                    <strong>nirhb\</strong>
-                    <span>username</span>
-                  </li>
-                  <li>
-                    Providence Health Care:
-                    <strong>infosys\</strong>
-                    <span>username</span>
-                  </li>
-                  <li>
-                    Provincial Health:
-                    <span>username</span>
-                    <strong>@phsa</strong>
-                    <br />
-                    <span class="tooltip-note">
-                      Note: The username will already contain an '@domain' that
-                      the '@phsa' will be appended to.
-                    </span>
-                  </li>
-                  <li>
-                    Vancouver Coastal Health:
-                    <strong>vch\</strong>
-                    <span>username</span>
-                    or
-                    <strong>vrhb\</strong>
-                    <span>username</span>
-                  </li>
-                  <li>
-                    Vancouver Island Health:
-                    <strong>viha\</strong>
-                    <span>username</span>
+                  <li v-for="idp in identityProviders" :key="idp.name">
+                    <template>
+                      {{ idp.name }}:
+                      <span v-html="getTooltipUsername(idp)"></span>
+                      <template v-if="idp.domainNote">
+                        <br />
+                        <span class="tooltip-note">
+                          Note: The username will already contain an '@domain'
+                          that the '{{ idp.alias }}' will be appended to.
+                        </span>
+                      </template>
+                    </template>
                   </li>
                 </ul>
               </span>
@@ -295,6 +230,29 @@
     props: ["userId", "updateOrCreate"],
     data() {
       return {
+        identityProviders: [
+          { name: "IDIR", suffix: true, alias: "@idir" },
+          { name: "Business BCeID", suffix: true, alias: "@bceid_business" },
+          {
+            name: " BC Provider",
+            suffix: true,
+            alias: "@bcp",
+            domainNote: true,
+          },
+          { name: "BC Services Card", suffix: true, alias: "@bcsc" },
+          { name: "FNHA", suffix: true, alias: "@fnha", domainNote: true },
+          { name: "Fraser Health", suffix: false, alias: "sfhr\\" },
+          { name: "Interior Health", suffix: false, alias: "iha\\" },
+          { name: "Northern Health", suffix: false, alias: "nirhb\\" },
+          { name: "Providence Health Care", suffix: false, alias: "infosys\\" },
+          { name: "Provincial Health", suffix: false, alias: "phsabc\\" },
+          {
+            name: "Vancouver Coastal Health",
+            suffix: false,
+            alias: ["vch\\", "vrhb\\"],
+          },
+          { name: "Vancouver Island Health", suffix: false, alias: "viha\\" },
+        ],
         organizations: this.$organizations.map((item) => {
           item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
           item.text = `${item.organizationId} - ${item.name}`;
@@ -480,6 +438,27 @@
             }
           );
         }
+      },
+      getTooltipUsername: function (identityProvider) {
+        const formatAlias = (alias, isSuffix) => {
+          return isSuffix
+            ? `username${alias.bold()}`
+            : `${alias.bold()}username`;
+        };
+
+        let usernameTooltip;
+        //if idp has an array of possible aliases
+        if (typeof identityProvider.alias === "object") {
+          usernameTooltip = identityProvider.alias
+            .map((alias) => formatAlias(alias, identityProvider.suffix))
+            .join(" or ");
+        } else {
+          usernameTooltip = formatAlias(
+            identityProvider.alias,
+            identityProvider.suffix
+          );
+        }
+        return usernameTooltip;
       },
     },
     filters: {
