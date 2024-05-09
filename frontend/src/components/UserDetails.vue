@@ -80,8 +80,13 @@
                   </li>
                   <li>
                     Provincial Health:
-                    <strong>phsabc\</strong>
                     <span>username</span>
+                    <strong>@phsa</strong>
+                    <br />
+                    <span class="tooltip-note">
+                      Note: The username will already contain an '@domain' that
+                      the '@phsa' will be appended to.
+                    </span>
                   </li>
                   <li>
                     Vancouver Coastal Health:
