@@ -1,10 +1,10 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div id="user">
-    <h1>Create New User</h1>
+    <h1>Register User</h1>
     <user-details
       ref="userDetails"
-      update-or-create="Create"
+      update-or-register="Register User"
       @submit-user-updates="createUser"
     ></user-details>
   </div>
@@ -31,7 +31,7 @@
             );
 
             this.$store.commit("alert/setAlert", {
-              message: "User created successfully",
+              message: "User registered successfully",
               type: "success",
             });
 

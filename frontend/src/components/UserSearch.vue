@@ -62,7 +62,7 @@
           medium
           @click.native="goToCreateUser"
         >
-          Create New User
+          Register User
         </v-btn>
       </v-col>
     </v-row>
@@ -87,7 +87,7 @@
           medium
           @click.native="goToCreateUser"
         >
-          Create New User
+          Register User
         </v-btn>
       </v-col>
 

@@ -184,7 +184,7 @@
         medium
         @click="updateUser"
       >
-        {{ updateOrCreate }} User
+        {{ updateOrRegister }}
       </v-btn>
     </v-card>
     <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
@@ -227,7 +227,7 @@
 
   export default {
     name: "UserDetails",
-    props: ["userId", "updateOrCreate"],
+    props: ["userId", "updateOrRegister"],
     data() {
       return {
         identityProviders: [
