@@ -162,8 +162,8 @@
 </template>
 
 <script>
-  import UsersRepository from "@/api/UsersRepository";
   import SfdsRepository from "@/api/SfdsRepository";
+  import UsersRepository from "@/api/UsersRepository";
 
   export default {
     name: "UserUpdateSfdsAuth",
@@ -354,6 +354,7 @@
           )
         ) {
           this.alertStatus = true;
+          this.alertType = "error";
           this.alertMessage =
             "This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations.";
         }
@@ -430,10 +431,14 @@
             this.sfdsAuthorizations = JSON.parse(
               JSON.stringify(this.sfdsAuthorizationsToSet)
             );
-            this.closeDialog();
+            this.alertStatus = true;
+            this.alertType = "success";
+            this.alertMessage = "Mailbox Authorizations updated sucessfully";
+            setTimeout(this.closeDialog, 2000);
           })
           .catch((error) => {
             this.alertStatus = true;
+            this.alertType = "error";
             this.alertMessage =
               "Error updating user SFDS Authorizations: " + error;
             this.setSfdsAuthStoreState(this.sfdsAuthorizations);
@@ -448,6 +453,7 @@
           )
         ) {
           this.alertStatus = true;
+          this.alertType = "error";
           this.alertMessage =
             "This Mailbox has been deleted from SFDS. Please edit/remove this set of SFDS Authorizations.";
           this.setSfdsAuthStoreState(this.sfdsAuthorizations);
@@ -458,6 +464,7 @@
         // Keycloak can store 255 characters in an attribute. The UMC is coded to save 5 attributes. 5 attributes * 255 characters = 1275.
         if (sfdsAuthString.length > 1275) {
           this.alertStatus = true;
+          this.alertType = "error";
           this.alertMessage =
             "Error: There are too many SFDS Authorizations for this user, please remove some before adding more.";
           this.setSfdsAuthStoreState(this.sfdsAuthorizations);
