@@ -6,6 +6,8 @@ The "User Management Console" is custom user management console for Keycloak. Ke
 
 # Prerequisites
 
+To run UMC locally you need to have `node v18.19.0 and npm v10.2.3` installed.
+
 This application requires a Keycloak server and the User Management Service. It uses the Keycloak server for OIDC authentication, and it uses the User Management Service for user management. Installation instructions for the User Management Service are at [/backend/README.md](../backend). Keycloak installation and configuration instructions are not in scope for this README.
 
 (The User Management Service implements the same API as the Keycloak Administration REST API, so it's possible to configure the User Management Console to use Keycloak without deploying the User Management Service. This is only noted for posterity and is not supported or tested.)
@@ -64,8 +66,6 @@ Note that these instructions only apply to the MoH's Keycloak server which has a
 ### Lints and format files
 
 Using VSCode, install the recommended extension (prettier) to be able to auto-format to the standard.
-
-Also, be sure to have `node v14.16.1 and npm v6.14.12` else you may get an error with newer version of npm (with package-lock formating).
 
 To check lint on all files :
 `npm run lint`
