@@ -3,13 +3,14 @@ package ca.bc.gov.hlth.mohums.userSearch.user;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class UserSpecifications {
+
+    private static final char ESCAPE_BACKSLASH = '\\';
 
     public Specification<UserEntity> notServiceAccount() {
         return (root, query, criteriaBuilder) ->
@@ -41,20 +42,49 @@ public class UserSpecifications {
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), formatQueryParam(email));
     }
 
-    /*
-    This method doesn't use formatQueryParam method because according to Keycloak API specification,
-     the default search behaviour (when using search query param) is prefix-based
+    /**
+   To keep the basic search functionality intact, most of the logic is copied from this class:
+   https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/java/org/keycloak/models/jpa/JpaUserProvider.java
+   The method splits the input value and compares each part of it with first name, last name, email and username.
+     @param searchValue A String contained in username, first or last name, or email. Default search behavior is prefix-based (e.g., foo or foo*). Use foo for infix search and &quot;foo&quot; for exact search.
      */
     public Specification<UserEntity> userParamsLike(String searchValue) {
-        String searchParam = searchValue.toLowerCase() + "%";
         return (root, query, criteriaBuilder) -> {
-            Predicate usernamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), searchParam);
-            Predicate firstNamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), searchParam);
-            Predicate lastNamePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), searchParam);
-            Predicate emailPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), searchParam);
-            return criteriaBuilder.or(usernamePredicate, firstNamePredicate, lastNamePredicate, emailPredicate);
+            List<Predicate> searchPredicates = new ArrayList<>();
+            for (String value : searchValue.trim().split("\\s+")) {
+                searchPredicates.addAll(getSearchPredicateArray(value, root, criteriaBuilder));
+            }
+            return criteriaBuilder.or(searchPredicates.toArray(new Predicate[0]));
         };
     }
+
+    private List<Predicate> getSearchPredicateArray(String value, Root<UserEntity> root, CriteriaBuilder criteriaBuilder){
+        value = value.toLowerCase();
+
+        List<Predicate> orPredicates = new ArrayList<>();
+
+        if (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+            // exact search
+            value = value.substring(1, value.length() - 1);
+
+            orPredicates.add(criteriaBuilder.equal(root.get("username"), value));
+            orPredicates.add(criteriaBuilder.equal(root.get("email"), value));
+            orPredicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get("firstName")), value));
+            orPredicates.add(criteriaBuilder.equal(criteriaBuilder.lower(root.get("lastName")), value));
+        } else {
+            value = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+            value = value.replace("*", "%");
+            if (value.isEmpty() || value.charAt(value.length() - 1) != '%') value += "%";
+
+            orPredicates.add(criteriaBuilder.like(root.get("username"), value, ESCAPE_BACKSLASH));
+            orPredicates.add(criteriaBuilder.like(root.get("email"), value, ESCAPE_BACKSLASH));
+            orPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), value, ESCAPE_BACKSLASH));
+            orPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), value, ESCAPE_BACKSLASH));
+        }
+        return orPredicates;
+    }
+
+
 
     public Specification<UserEntity> rolesLike(List<String> roles) {
         return (root, query, criteriaBuilder) -> {

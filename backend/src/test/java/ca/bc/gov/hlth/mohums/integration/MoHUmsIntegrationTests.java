@@ -5,13 +5,15 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -36,7 +38,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -197,6 +201,73 @@ public class MoHUmsIntegrationTests {
 
         Assertions.assertThat(allUsers).isNotEmpty()
                 .allSatisfy(this::verifyUser);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideValuesForSearchBySearchParam")
+    public void searchBySearchParam(String searchParam, boolean shouldReturnResults) {
+
+        final List<UserDTO> usersThatSatisfySearchCondition = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("search", searchParam)
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(UserDTO.class)
+                .returnResult()
+                .getResponseBody();
+
+        boolean nonEmptyResultSet = usersThatSatisfySearchCondition.size() > 0;
+        assertTrue(nonEmptyResultSet == shouldReturnResults && usersThatSatisfySearchCondition.stream().allMatch(user -> userContainsSearchParam(user, searchParam)));
+
+
+    }
+
+    private boolean userContainsSearchParam(UserDTO user, String searchParam){
+        String username = user.getUsername();
+        String email = user.getEmail();
+        String lastName = user.getLastName();
+        String firstName = user.getFirstName();
+        int substringFoundInUser = 0;
+
+        for (String stringToSearch : searchParam.trim().split("\\s+")) {
+            if (stringToSearch.length() >= 2 && stringToSearch.charAt(0) == '"' && stringToSearch.charAt(stringToSearch.length() - 1) == '"') {
+                //exact search
+                String value = stringToSearch.toLowerCase().substring(1, stringToSearch.length() - 1);
+                Predicate<String> equalsValue = s -> s!= null && s.toLowerCase().equals(value);
+                if(equalsValue.test(username) || equalsValue.test(email) || equalsValue.test(lastName) || equalsValue.test(firstName)){
+                    substringFoundInUser ++;
+                }
+            } else {
+                String value = stringToSearch.toLowerCase().replace("*", "");
+                Predicate<String> containsValue = s -> s!= null && s.toLowerCase().contains(value);
+                if(containsValue.test(username) || containsValue.test(email) || containsValue.test(lastName) || containsValue.test(firstName)){
+                    substringFoundInUser ++;
+                }
+            }
+        }
+
+        return substringFoundInUser > 0;
+    }
+
+    private static Stream<Arguments> provideValuesForSearchBySearchParam() {
+        return Stream.of(Arguments.of("umstest", true),
+                Arguments.of("UMStEST", true),
+                Arguments.of("UMSTEST", true),
+                Arguments.of("test ums", true),
+                Arguments.of("test", true),
+                Arguments.of("ums", true),
+                Arguments.of("Organization UMS", true),
+                Arguments.of("@ums.com", false),
+                Arguments.of("*@ums.com", true),
+                Arguments.of("\"Organization UMS\"", false),
+                Arguments.of("\"Organization\"", true)
+                );
     }
 
     @Test
