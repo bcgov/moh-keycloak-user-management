@@ -578,7 +578,9 @@
         return role;
       },
       setSearchResults(results) {
-        this.searchResults = results;
+        this.searchResults = results.sort((a, b) =>
+          a.username.localeCompare(b.username)
+        );
       },
       handleError(message, error) {
         this.$store.commit("alert/setAlert", {
