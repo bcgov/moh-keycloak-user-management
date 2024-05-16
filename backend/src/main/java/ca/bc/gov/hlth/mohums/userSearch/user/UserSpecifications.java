@@ -44,7 +44,7 @@ public class UserSpecifications {
 
     /**
    To keep the basic search functionality intact, most of the logic is copied from this class:
-   https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/java/org/keycloak/models/jpa/JpaUserProvider.java
+     https://github.com/keycloak/keycloak/blob/24.0.4/model/jpa/src/main/java/org/keycloak/models/jpa/JpaUserProvider.java
    The method splits the input value and compares each part of it with first name, last name, email and username.
      @param searchValue A String contained in username, first or last name, or email. Default search behavior is prefix-based (e.g., foo or foo*). Use foo for infix search and &quot;foo&quot; for exact search.
      */
