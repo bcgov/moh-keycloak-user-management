@@ -52,13 +52,13 @@ public class UserSpecifications {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> searchPredicates = new ArrayList<>();
             for (String value : searchValue.trim().split("\\s+")) {
-                searchPredicates.addAll(getSearchPredicateArray(value, root, criteriaBuilder));
+                searchPredicates.add(criteriaBuilder.or(getSearchPredicateArray(value, root, criteriaBuilder)));
             }
-            return criteriaBuilder.or(searchPredicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(searchPredicates.toArray(new Predicate[0]));
         };
     }
 
-    private List<Predicate> getSearchPredicateArray(String value, Root<UserEntity> root, CriteriaBuilder criteriaBuilder){
+    private Predicate[] getSearchPredicateArray(String value, Root<UserEntity> root, CriteriaBuilder criteriaBuilder){
         value = value.toLowerCase();
 
         List<Predicate> orPredicates = new ArrayList<>();
@@ -81,7 +81,7 @@ public class UserSpecifications {
             orPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), value, ESCAPE_BACKSLASH));
             orPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), value, ESCAPE_BACKSLASH));
         }
-        return orPredicates;
+        return orPredicates.toArray(new Predicate[0]);
     }
 
 
