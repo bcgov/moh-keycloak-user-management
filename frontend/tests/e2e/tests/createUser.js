@@ -1,5 +1,5 @@
-import UserDetailsPage from "../pages/UserDetailsPage";
 import AlertPage from "../pages/AlertPage";
+import UserDetailsPage from "../pages/UserDetailsPage";
 import { itsbAccessTeamUser } from "../roles/roles";
 
 const ERROR_MESSAGE = "Please correct errors before submitting";
@@ -8,7 +8,7 @@ fixture.disablePageCaching`Create User`
   .page`http://localhost:8080/#/users/create`;
 
 //Skip this test until we have functionality to delete a user afterwards
-test.skip("User created successfully all fields", async (t) => {
+test.skip("User registered successfully all fields", async (t) => {
   await t
     .useRole(itsbAccessTeamUser)
     .typeText(UserDetailsPage.usernameInput, "uitestusername")
@@ -21,7 +21,7 @@ test.skip("User created successfully all fields", async (t) => {
     .typeText(UserDetailsPage.notesInput, "these are some notes")
     .click(UserDetailsPage.submitButton)
     .expect(AlertPage.alertBannerText.textContent)
-    .contains("User created successfully")
+    .contains("User registered successfully")
     .expect(UserDetailsPage.usernameInput.value)
     .eql("uitestusername")
     .expect(UserDetailsPage.firstnameInput.value)

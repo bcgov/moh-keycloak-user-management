@@ -1,16 +1,19 @@
 package ca.bc.gov.hlth.mohums.integration;
 
+import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -35,7 +38,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -158,33 +165,28 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void getUsersInRole() throws Exception {
-        Map<String, ?> client = (Map<String, ?>) getAll("clients").get(0);
-        Map<String, ?> clientRole = (Map<String, ?>) webTestClient
-                .get()
-                .uri("/clients/" + client.get("id") + "/roles")
-                .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(Object.class)
-                .returnResult()
-                .getResponseBody().get(0);
 
-        List<Object> usersInRole = webTestClient
+        String clientId = "24447cb4-f3b1-455b-89d9-26c081025fb9"; //UMS-INTEGRATION-TESTS
+        String selectedRole = "getUsersInRole_TEST_ROLE";
+
+
+        final List<UserDTO> usersInRole = webTestClient
                 .get()
-                .uri("/clients/"
-                        + client.get("id")
-                        + "/roles/"
-                        + clientRole.get("name")
-                        + "/users")
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("clientId", clientId)
+                                .queryParam("selectedRoles", selectedRole)
+                                .build()
+                )
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Object.class)
+                .expectBodyList(UserDTO.class)
                 .returnResult()
                 .getResponseBody();
 
-        Assertions.assertThat(usersInRole).isNotEmpty()
-                .allSatisfy(this::verifyUser);
+        Assertions.assertThat(usersInRole.stream().filter(user -> user.getUsername().equals("umstest"))).isNotEmpty();
     }
 
     private void verifyUser(Object user) {
@@ -201,29 +203,95 @@ public class MoHUmsIntegrationTests {
                 .allSatisfy(this::verifyUser);
     }
 
-    @Test
-    public void searchByOrganization() throws Exception {
-        final List<Object> allUsers = getAll("users");
+    @ParameterizedTest
+    @MethodSource("provideValuesForSearchBySearchParam")
+    public void searchBySearchParam(String searchParam, boolean shouldReturnResults) {
 
-        final List<Object> filteredUsers = webTestClient
+        final List<UserDTO> usersThatSatisfySearchCondition = webTestClient
                 .get()
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("org", "00000010")
-                                .queryParam("first", 0)
-                                .queryParam("max", 5000)
+                                .queryParam("search", searchParam)
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Object.class)
+                .expectBodyList(UserDTO.class)
                 .returnResult()
                 .getResponseBody();
 
-        Assertions.assertThat(filteredUsers).isNotEmpty();
-        Assertions.assertThat(allUsers).containsAll(filteredUsers);
+        boolean nonEmptyResultSet = usersThatSatisfySearchCondition.size() > 0;
+        assertTrue(nonEmptyResultSet == shouldReturnResults && usersThatSatisfySearchCondition.stream().allMatch(user -> userContainsSearchParam(user, searchParam)));
+
+
+    }
+
+    private boolean userContainsSearchParam(UserDTO user, String searchParam){
+        String username = user.getUsername();
+        String email = user.getEmail();
+        String lastName = user.getLastName();
+        String firstName = user.getFirstName();
+        int substringFoundInUser = 0;
+
+        for (String stringToSearch : searchParam.trim().split("\\s+")) {
+            if (stringToSearch.length() >= 2 && stringToSearch.charAt(0) == '"' && stringToSearch.charAt(stringToSearch.length() - 1) == '"') {
+                //exact search
+                String value = stringToSearch.toLowerCase().substring(1, stringToSearch.length() - 1);
+                Predicate<String> equalsValue = s -> s!= null && s.toLowerCase().equals(value);
+                if(equalsValue.test(username) || equalsValue.test(email) || equalsValue.test(lastName) || equalsValue.test(firstName)){
+                    substringFoundInUser ++;
+                }
+            } else {
+                String value = stringToSearch.toLowerCase().replace("*", "");
+                Predicate<String> containsValue = s -> s!= null && s.toLowerCase().contains(value);
+                if(containsValue.test(username) || containsValue.test(email) || containsValue.test(lastName) || containsValue.test(firstName)){
+                    substringFoundInUser ++;
+                }
+            }
+        }
+
+        return substringFoundInUser > 0;
+    }
+
+    private static Stream<Arguments> provideValuesForSearchBySearchParam() {
+        return Stream.of(Arguments.of("umstest", true),
+                Arguments.of("UMStEST", true),
+                Arguments.of("UMSTEST", true),
+                Arguments.of("test ums", true),
+                Arguments.of("test", true),
+                Arguments.of("ums", true),
+                Arguments.of("Organization UMS", true),
+                Arguments.of("@ums.com", false),
+                Arguments.of("*@ums.com", true),
+                Arguments.of("\"Organization UMS\"", false),
+                Arguments.of("\"Organization\"", true)
+                );
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void searchByOrganization() throws Exception {
+        final List<Object> allUsers = getAll("users");
+        final List<String> allUsersIds = allUsers.stream().map(user -> (LinkedHashMap<String, Object>) user).map(user -> user.get("id").toString()).collect(Collectors.toList());
+
+        final List<UserDTO> usersWithOrg = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("org", "00000010")
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(UserDTO.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertTrue(usersWithOrg.stream().allMatch(user -> allUsersIds.contains(user.getId())));
     }
 
     @Test

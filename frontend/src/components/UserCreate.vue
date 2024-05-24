@@ -1,10 +1,10 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div id="user">
-    <h1>Create New User</h1>
+    <h1>Register User</h1>
     <user-details
       ref="userDetails"
-      update-or-create="Create"
+      update-or-register="Register User"
       @submit-user-updates="createUser"
     ></user-details>
   </div>
@@ -31,7 +31,7 @@
             );
 
             this.$store.commit("alert/setAlert", {
-              message: "User created successfully",
+              message: "User registered successfully",
               type: "success",
             });
 
@@ -42,8 +42,11 @@
             });
           })
           .catch((error) => {
+            const errorMessage = error.message.includes("409")
+              ? `${error.message}. User already exists.`
+              : error.message;
             this.$store.commit("alert/setAlert", {
-              message: "Error creating new user: " + error,
+              message: `Error creating new user: ${errorMessage}`,
               type: "error",
             });
           })

@@ -2,11 +2,8 @@ package ca.bc.gov.hlth.mohums.controller;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,8 +12,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
+import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.UserPayee;
 import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.util.FilterUserByOrgId;
 import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
 import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
 import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
@@ -64,217 +61,47 @@ public class UsersController {
 
     private final String vanityHostname;
 
-    public UsersController(KeycloakApiService keycloakApiService, PayeeApiService payeeApiService, @Value("${config.vanity-hostname}") String vanityHostname) {
+    @Autowired
+    private final UserService userService;
+
+    public UsersController(KeycloakApiService keycloakApiService, PayeeApiService payeeApiService, @Value("${config.vanity-hostname}") String vanityHostname, UserService userService) {
         this.keycloakApiService = keycloakApiService;
         this.payeeApiService = payeeApiService;
         this.vanityHostname = vanityHostname;
+        this.userService = userService;
     }
 
     /**
-     * 
-     * @param briefRepresentation indicates if a brief representation of the client should be returned by the Keycloak API get Users 
-     * @param email the email of the user
-     * @param first the pagination offset for the Keycloak api get Users
-     * @param firstName the first name of the user
-     * @param lastName the last name of the user
-     * @param max the maximum results size to be returned by the Keycloak API get Users
-     * @param search a String contained in username, first or last name, or email of the user
-     * @param username the username of the user
-     * @param org the ID of an Organization the user is associated to
-     * @param lastLogAfter the date after which the user logged in 
-     * @param lastLogBefore the date before which the user logged in
-     * @param clientId	the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model
-     * @param clientClientId the Client Id of the Client entity, maps to keycloak.client.clientId in the keycloak database model
-     * @param selectedRoles the roles the user must have, an empty list means all role for that client will be used
+     * @param briefRepresentation indicates if a brief representation of the client should be returned by the Keycloak API get Users
+     * @param email               the email of the user
+     * @param firstName           the first name of the user
+     * @param lastName            the last name of the user
+     * @param search              a String contained in username, first or last name, or email of the user
+     * @param username            the username of the user
+     * @param org                 the ID of an Organization the user is associated to
+     * @param lastLogAfter        the date after which the user logged in
+     * @param lastLogBefore       the date before which the user logged in
+     * @param clientId            the Id, which is a UUID, of the Client entity, maps to keycloak.client.id in the keycloak database model
+     * @param selectedRoles       the roles the user must have, an empty list means all role for that client will be used
      * @return a list of Users that match the specified criteria
      */
     @GetMapping("/users")
-    public ResponseEntity<List<Object>> getUsers(
+    public ResponseEntity<List<UserDTO>> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
-            @RequestParam Optional<Integer> first,
             @RequestParam Optional<String> firstName,
             @RequestParam Optional<String> lastName,
-            @RequestParam Optional<Integer> max,
             @RequestParam Optional<String> search,
             @RequestParam Optional<String> username,
             @RequestParam Optional<String> org,
             @RequestParam Optional<String> lastLogAfter,
             @RequestParam Optional<String> lastLogBefore,
             @RequestParam Optional<String> clientId,
-            @RequestParam Optional<String> clientClientId,
             @RequestParam Optional<String[]> selectedRoles) {
-        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
-        briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation",
-                briefRepresentationValue.toString()));
-        email.ifPresent(emailValue -> queryParams.add("email", emailValue));
-        first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
-        firstName.ifPresent(firstNameValue -> queryParams.add("firstName", firstNameValue));
-        lastName.ifPresent(lastNameValue -> queryParams.add("lastName", lastNameValue));
-        max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
-        search.ifPresent(searchValue -> queryParams.add("search", searchValue));
-        username.ifPresent(usernameValue -> queryParams.add("username", usernameValue));
-
-        ResponseEntity<List<Object>> searchResults = keycloakApiService.getUsers(queryParams);
-
-        List<Object> users = searchResults.getBody();
-
-        if (org.isPresent() && !CollectionUtils.isEmpty(users)) {
-            List<Object> filteredUsers = users.stream().filter(new FilterUserByOrgId(org.get())).collect(Collectors.toList());
-            users = filteredUsers;
-
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsers);
-        }
-
-        //Filter based on selected client & roles
-        if (clientId.isPresent()) {
-            users = filterUsersByRole(selectedRoles, clientId.get(), users);
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(users);
-        }
-
-        if ((lastLogAfter.isPresent() || lastLogBefore.isPresent()) && !CollectionUtils.isEmpty(users)) {
-            Map<String, Object> namedParameters = new HashMap<>();
-            String customDateCriteria = " AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000";
-            Optional<String> lastLogBeforeCriteria = Optional.empty();
-            if (lastLogAfter.isPresent()) {
-                Long lastLogAfterEpoch = LocalDate.parse(lastLogAfter.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                customDateCriteria = " AND ee.event_time > :lastLogAfterEpoch";
-                namedParameters.put("lastLogAfterEpoch", lastLogAfterEpoch);
-            } else {
-                Long lastLogBeforeEpoch = LocalDate.parse(lastLogBefore.get()).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                lastLogBeforeCriteria = Optional.of(" HAVING MAX(ee.event_time) < :lastLogBeforeEpoch");
-                namedParameters.put("lastLogBeforeEpoch", lastLogBeforeEpoch);
-            }
-            Optional<String> clientAndRolesJoins = Optional.empty();
-            Optional<String> clientAndRolesCriteria = Optional.empty();
-            if (clientClientId.isPresent() && clientId.isPresent() && clientIdAndIdAreValid(clientClientId.get(), clientId.get())) {
-                clientAndRolesJoins = Optional.of(
-                        " JOIN keycloak.user_role_mapping urm ON urm.user_id = ue.id"
-                                + " JOIN keycloak.keycloak_role kr ON kr.id = urm.role_id"
-                                + " JOIN keycloak.client c ON c.id = kr.client"
-                );
-                clientAndRolesCriteria = Optional.of(
-                        " AND ((ee.client_id IS NOT NULL AND ee.client_id = :clientId) OR (ee.client_id IS NULL AND c.client_id = :clientId))"
-                                + " AND kr.name IN (:selectedRoles)"
-                );
-                namedParameters.put("clientId", clientClientId.get());
-                namedParameters.put("selectedRoles", Arrays.asList(getSelectedRolesForChosenClient(selectedRoles, clientId.get())));
-            }
-            final String DO_NOT_INCLUDE = "";
-
-            String sql
-                    = "SELECT ue.id, MAX(ee.event_time) AS LAST_LOGIN"
-                    + "  FROM keycloak.user_entity ue"
-                    + "  JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
-                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
-                    + " WHERE ee.type='LOGIN'" + customDateCriteria
-                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
-                    + " GROUP BY ue.id"
-                    + lastLogBeforeCriteria.orElse(DO_NOT_INCLUDE);
-
-            List<Map<String, Object>> queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
-
-            Map<String, Object> usersLastLogin = new HashMap<>();
-            for (Map<String, Object> o : queryResult) {
-                usersLastLogin.put(o.get("id").toString(), o.get("LAST_LOGIN"));
-            }
-
-            List<Object> filteredUsersByLastLog = new ArrayList<>();
-            for (Object user : users) {
-                String userId = ((LinkedHashMap) user).get("id").toString();
-                if (!userId.isEmpty() && usersLastLogin.containsKey(userId)) {
-                    ((LinkedHashMap) user).put("lastLogDate", usersLastLogin.get(userId));
-                    filteredUsersByLastLog.add(user);
-                }
-            }
-
-            //Users who haven't logged in for over a year
-            if (lastLogBefore.isPresent()) {
-                //Users who have those roles but no events connected to them
-                sql
-                    = "SELECT ue.id"
-                    + "  FROM keycloak.user_entity ue"
-                    + "  LEFT JOIN keycloak.event_entity ee ON ee.user_id = ue.id"
-                    + clientAndRolesJoins.orElse(DO_NOT_INCLUDE)
-                    + " WHERE ee.user_id IS NULL"
-                    + clientAndRolesCriteria.orElse(DO_NOT_INCLUDE)
-                    + "   AND ue.created_timestamp < ((SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000)";
-
-                queryResult = namedParameterJdbcTemplate.queryForList(sql, namedParameters);
-
-                Map<String, Object> inactiveForOverYearIds = new HashMap<>();
-                for (Map<String, Object> o : queryResult) {
-                    inactiveForOverYearIds.put(o.get("id").toString(), "Over a year ago");
-                }
-
-                List<Object> usersInactiveForOverYear = new ArrayList<>();
-                for (Object user : users) {
-                    String userId = ((LinkedHashMap) user).get("id").toString();
-                    if (!userId.isEmpty() && inactiveForOverYearIds.containsKey(userId)) {
-                        ((LinkedHashMap) user).put("lastLogDate", inactiveForOverYearIds.get(userId));
-                        usersInactiveForOverYear.add(user);
-                    }
-                }
-                filteredUsersByLastLog.addAll(usersInactiveForOverYear);
-            }
-            searchResults = ResponseEntity.status(searchResults.getStatusCode()).body(filteredUsersByLastLog);
-        }
-        return searchResults;
-    }
-
-    private boolean clientIdAndIdAreValid(String clientId, String id) {
-        LinkedHashMap client = (LinkedHashMap) keycloakApiService.getClient(id).getBody();
-        return client.get("clientId").equals(clientId);
-    }
-
-    private String[] getSelectedRolesForChosenClient(Optional<String[]> selectedRoles, String clientId) {
-        if (selectedRoles.isEmpty()) {
-            //If no roles selected, grab all roles for the selected client
-            ResponseEntity res = keycloakApiService.getClientRoles(clientId);
-            List<Map> allRoles = (List) res.getBody();
-            return allRoles.stream().map(r -> (String) r.get("name")).toArray(size -> new String[size]);
-        } else {
-            return selectedRoles.get();
-        }
-    }
-
-    /**
-     * Filter the results by the selected clientId, and optionally the list of selected roles If no roles selected, use
-     * all roles for that client.
-     *
-     * @param selectedRoles - Set of roles passed in as search parameters
-     * @param clientId      - cientId passed in as search parameter
-     * @param users         - Unfiltered search results
-     * @return List
-     */
-    private List filterUsersByRole(Optional<String[]> selectedRoles, String clientId, List users) {
-        List<Object> filteredUsers = new ArrayList<>();
-        String[] roles = getSelectedRolesForChosenClient(selectedRoles, clientId);
-        Map<String, String> userRoleMap = new HashMap<>();
-        for (String role : roles) {
-            MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-            queryParams.add("max", "-1");
-            ResponseEntity res = keycloakApiService.getUsersInRole(clientId, role, queryParams);
-            List<Map> usersInRole = (List) res.getBody();
-            for (Map u : usersInRole) {
-                String key = (String) u.get("id");
-                if (userRoleMap.containsKey(key)) {
-                    userRoleMap.put(key, userRoleMap.get(key) + ", " + role);
-                } else {
-                    userRoleMap.put(key, role);
-                }
-            }
-        }
-        for (Object user : users) {
-            Map userMap = (Map) user;
-            if (userRoleMap.containsKey((String) userMap.get("id"))) {
-                //Store the role in the user object for frontend display
-                userMap.put("role", userRoleMap.get((String) userMap.get("id")));
-                filteredUsers.add(user);
-            }
-        }
-        return filteredUsers;
+        UserSearchParameters params = new UserSearchParameters(briefRepresentation, email, firstName, lastName, search, username, org, clientId, selectedRoles, lastLogAfter, lastLogBefore);
+        List<UserDTO> a = userService.getUsers(params);
+        return ResponseEntity.ok(a);
     }
 
     @GetMapping("/users/{userId}")

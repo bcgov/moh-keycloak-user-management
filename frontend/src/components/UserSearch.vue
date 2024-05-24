@@ -27,7 +27,7 @@
           outlined
           dense
           v-model.trim="userSearchInput"
-          placeholder="Username, email, name, or ID"
+          placeholder="Username, email, name"
           @keyup.enter="
             searchUser('&search=' + userSearchInput.replaceAll('\\', '%5C'))
           "
@@ -62,7 +62,7 @@
           medium
           @click.native="goToCreateUser"
         >
-          Create New User
+          Register User
         </v-btn>
       </v-col>
     </v-row>
@@ -87,7 +87,7 @@
           medium
           @click.native="goToCreateUser"
         >
-          Create New User
+          Register User
         </v-btn>
       </v-col>
 
@@ -419,15 +419,6 @@
             "clientId",
             this.selectedClientId
           );
-          this.clients.forEach((client) => {
-            if (client.id == this.selectedClientId) {
-              params = this.addQueryParameter(
-                params,
-                "clientClientId",
-                client.clientId
-              );
-            }
-          });
         }
         if (this.selectedRoles) {
           let roles = this.selectedRoles.map((role) => role.name).join(",");
@@ -470,9 +461,6 @@
       numberOfClientRoleColumns() {
         return this.clientRoles.length > 10 ? 2 : 1;
       },
-      maxResults() {
-        return this.$config.max_results ? this.$config.max_results : 100;
-      },
       maxDateInput() {
         return formatDate(new Date());
       },
@@ -507,29 +495,42 @@
         this.$router.push({ name: "UserCreate" });
       },
       searchUser: async function (queryParameters) {
-        this.$store.commit("alert/dismissAlert");
-        const maxSearch = this.$config.max_search
-          ? this.$config.max_search
-          : this.maxResults * 10;
-        this.userSearchLoadingStatus = true;
-        try {
-          let results = (
-            await UsersRepository.get(
-              `?briefRepresentation=false&first=0&max=${maxSearch}` +
-                queryParameters
-            )
-          ).data;
-          for (let e of results) {
-            if (e.lastLogDate && e.lastLogDate !== "Over a year ago") {
-              e.lastLogDate = formatDate(e.lastLogDate);
+        if (this.noQueryParameters(queryParameters)) {
+          this.$store.commit("alert/setAlert", {
+            message: "The Search Criteria cannot be blank.",
+            type: "warning",
+          });
+          window.scrollTo(0, 0);
+          return;
+        } else {
+          this.$store.commit("alert/dismissAlert");
+          this.userSearchLoadingStatus = true;
+          try {
+            let results = (
+              await UsersRepository.get(
+                `?briefRepresentation=true` + queryParameters
+              )
+            ).data;
+            for (let e of results) {
+              if (e.lastLogDate && e.lastLogDate !== "Over a year ago") {
+                e.lastLogDate = formatDate(e.lastLogDate);
+              }
             }
+            this.setSearchResults(results);
+          } catch (error) {
+            this.handleError("User search failed", error);
+          } finally {
+            this.userSearchLoadingStatus = false;
           }
-          this.setSearchResults(results);
-        } catch (error) {
-          this.handleError("User search failed", error);
-        } finally {
-          this.userSearchLoadingStatus = false;
         }
+      },
+      noQueryParameters: function (queryParameters) {
+        //&search= corresponds to basic search with no parameters
+        return (
+          queryParameters === null ||
+          queryParameters.trim().length === 0 ||
+          queryParameters === "&search="
+        );
       },
       addQueryParameter: function (parameters, parameter, value) {
         if (value) {
@@ -577,20 +578,9 @@
         return role;
       },
       setSearchResults(results) {
-        const maxRes = this.maxResults;
-        if (results.length > maxRes) {
-          this.searchResults = results.slice(0, maxRes);
-          this.$store.commit("alert/setAlert", {
-            message:
-              "Your search returned more than the maximum number of results (" +
-              maxRes +
-              "). Please consider refining the search criteria.",
-            type: "warning",
-          });
-          window.scrollTo(0, 0);
-        } else {
-          this.searchResults = results;
-        }
+        this.searchResults = results.sort((a, b) =>
+          a.username.localeCompare(b.username)
+        );
       },
       handleError(message, error) {
         this.$store.commit("alert/setAlert", {
