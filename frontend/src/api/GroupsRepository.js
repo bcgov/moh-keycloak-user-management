@@ -14,4 +14,24 @@ export default {
       );
     }
   },
+  modifyGroupDescriptions(groups) {
+    let clientAliases = [
+      { clientId: "PHO-RSC", alias: "POSIT-USER-ROLES" },
+      { clientId: "PHO-RSC-GROUPS", alias: "POSIT-GROUP-ROLES" },
+    ];
+
+    return groups.map((group) => {
+      let newDescription = group.description;
+      clientAliases.forEach((alias) => {
+        newDescription = newDescription.replace(
+          alias.clientId.toLowerCase(),
+          alias.alias.toLowerCase()
+        );
+      });
+      return {
+        ...group,
+        description: newDescription,
+      };
+    });
+  },
 };
