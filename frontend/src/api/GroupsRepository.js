@@ -1,3 +1,4 @@
+import ClientsRepository from "./ClientsRepository";
 import { umsRequest } from "./Repository";
 
 const resource = "/groups";
@@ -15,10 +16,7 @@ export default {
     }
   },
   modifyGroupDescriptions(groups) {
-    let clientAliases = [
-      { clientId: "PHO-RSC", alias: "POSIT-USER-ROLES" },
-      { clientId: "PHO-RSC-GROUPS", alias: "POSIT-GROUP-ROLES" },
-    ];
+    let clientAliases = ClientsRepository.clientAliases;
 
     return groups.map((group) => {
       let newDescription = group.description;
