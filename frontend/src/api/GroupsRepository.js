@@ -1,3 +1,4 @@
+import ClientsRepository from "./ClientsRepository";
 import { umsRequest } from "./Repository";
 
 const resource = "/groups";
@@ -13,5 +14,22 @@ export default {
         axiosInstance.get(`${resource}`)
       );
     }
+  },
+  modifyGroupDescriptions(groups) {
+    let clientAliases = ClientsRepository.clientAliases;
+
+    return groups.map((group) => {
+      let newDescription = group.description;
+      clientAliases.forEach((alias) => {
+        newDescription = newDescription.replace(
+          alias.clientId.toLowerCase(),
+          alias.alias.toLowerCase()
+        );
+      });
+      return {
+        ...group,
+        description: newDescription,
+      };
+    });
   },
 };

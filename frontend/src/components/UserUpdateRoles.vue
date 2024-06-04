@@ -327,8 +327,11 @@
         });
 
         ClientsRepository.get().then((allClients) => {
+          const allClientsWithAliases = ClientsRepository.assignClientAliases(
+            allClients.data
+          );
           Promise.all(
-            allClients.data.map((client) => {
+            allClientsWithAliases.map((client) => {
               return UsersRepository.getUserEffectiveClientRoles(
                 this.userId,
                 client.id

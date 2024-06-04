@@ -22,4 +22,21 @@ export default {
       )
     );
   },
+
+  clientAliases: [
+    { clientId: "PHO-RSC", alias: "POSIT-USER-ROLES" },
+    { clientId: "PHO-RSC-GROUPS", alias: "POSIT-GROUP-ROLES" },
+  ],
+
+  assignClientAliases(clients) {
+    return clients.map((client) => {
+      const aliasMapping = this.clientAliases.find(
+        (clientAlias) => clientAlias.clientId === client.clientId
+      );
+      if (aliasMapping) {
+        return { ...client, clientId: aliasMapping.alias };
+      }
+      return client;
+    });
+  },
 };

@@ -544,7 +544,10 @@
       loadClients: function () {
         return ClientsRepository.get()
           .then((response) => {
-            this.clients.push(...response.data);
+            const clientsWithAliases = ClientsRepository.assignClientAliases(
+              response.data
+            );
+            this.clients.push(...clientsWithAliases);
           })
           .catch((error) => {
             this.handleError("Client search failed", error);
