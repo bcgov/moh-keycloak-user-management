@@ -21,8 +21,9 @@ export default {
     return groups.map((group) => {
       let newDescription = group.description;
       clientAliases.forEach((alias) => {
+        let regex = new RegExp(`\\b${alias.clientId.toLowerCase()}\\b`, "g");
         newDescription = newDescription.replace(
-          alias.clientId.toLowerCase(),
+          regex,
           alias.alias.toLowerCase()
         );
       });

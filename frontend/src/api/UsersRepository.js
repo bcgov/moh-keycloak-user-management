@@ -1,4 +1,5 @@
 import router from "../router";
+import ClientsRepository from "./ClientsRepository";
 import { umsRequest } from "./Repository";
 
 const resource = "/users";
@@ -152,5 +153,19 @@ export default {
         headers: { "Content-Type": "text/plain" },
       })
     );
+  },
+  mapClientAliasesOfLastLogins(lastLogins) {
+    console.log(lastLogins);
+    let clientAliases = ClientsRepository.clientAliases;
+    for (const [key, value] of Object.entries(lastLogins)) {
+      const aliasMapping = clientAliases.find(
+        (clientAlias) => clientAlias.clientId === key
+      );
+      if (aliasMapping) {
+        lastLogins[aliasMapping.alias] = value;
+        delete lastLogins[key];
+      }
+    }
+    return lastLogins;
   },
 };

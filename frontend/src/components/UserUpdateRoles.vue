@@ -323,7 +323,9 @@
         let clientsNoRolesAssigned = [];
 
         UsersRepository.getUserLogins(this.userId).then((lastLogins) => {
-          lastLoginMap = lastLogins.data;
+          lastLoginMap = UsersRepository.mapClientAliasesOfLastLogins(
+            lastLogins.data
+          );
         });
 
         ClientsRepository.get().then((allClients) => {
@@ -344,11 +346,10 @@
             .then((rolesArray) => {
               rolesArray.forEach((clientRoles) => {
                 if (clientRoles.data.length > 0) {
-                  let lastLoginStr = LAST_LOGIN_NOT_RECORDED;
-                  if (lastLoginMap[clientRoles.clientRepresentation.name]) {
-                    lastLoginStr =
-                      lastLoginMap[clientRoles.clientRepresentation.name];
-                  }
+                  let lastLoginStr =
+                    lastLoginMap[clientRoles.clientRepresentation.clientId] ||
+                    LAST_LOGIN_NOT_RECORDED;
+
                   clientRoles.roleArray = [];
                   clientRoles.data.forEach((role) => {
                     clientRoles.roleArray.push(role.name);
