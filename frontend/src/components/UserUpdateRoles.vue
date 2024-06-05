@@ -323,7 +323,7 @@
         let clientsNoRolesAssigned = [];
 
         UsersRepository.getUserLogins(this.userId).then((lastLogins) => {
-          lastLoginMap = UsersRepository.mapClientAliasesOfLastLogins(
+          lastLoginMap = UsersRepository.mapLastLoginsClientAliases(
             lastLogins.data
           );
         });
