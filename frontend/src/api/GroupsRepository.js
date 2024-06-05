@@ -17,11 +17,13 @@ export default {
   },
   modifyGroupDescriptions(groups) {
     let clientAliases = ClientsRepository.clientAliases;
-
     return groups.map((group) => {
       let newDescription = group.description;
       clientAliases.forEach((alias) => {
-        let regex = new RegExp(`\\b${alias.clientId.toLowerCase()}\\b`, "g");
+        let regex = new RegExp(
+          `(?<!\\w|-)${alias.clientId.toLowerCase()}(?!\\w|-)`,
+          "g"
+        );
         newDescription = newDescription.replace(
           regex,
           alias.alias.toLowerCase()

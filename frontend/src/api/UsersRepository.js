@@ -155,7 +155,6 @@ export default {
     );
   },
   mapClientAliasesOfLastLogins(lastLogins) {
-    console.log(lastLogins);
     let clientAliases = ClientsRepository.clientAliases;
     for (const [key, value] of Object.entries(lastLogins)) {
       const aliasMapping = clientAliases.find(
