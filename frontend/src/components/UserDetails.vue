@@ -245,7 +245,12 @@
           { name: "Interior Health", suffix: false, alias: "iha\\" },
           { name: "Northern Health", suffix: false, alias: "nirhb\\" },
           { name: "Providence Health Care", suffix: false, alias: "infosys\\" },
-          { name: "Provincial Health", suffix: false, alias: "phsabc\\" },
+          {
+            name: "Provincial Health",
+            suffix: true,
+            alias: "@phsa",
+            domainNote: true,
+          },
           {
             name: "Vancouver Coastal Health",
             suffix: false,
