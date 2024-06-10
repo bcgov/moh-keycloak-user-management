@@ -23,6 +23,11 @@ export default {
     );
   },
 
+  /**
+   * Some clients request that their application is referred by different name than Keycloak's Client Id
+   * Because changing Client Id requires updating authentication flow on the client side, UMC client aliases are intorduced.
+   * Define entry in the below array to display alias instead of clientID for a given client.
+   */
   clientAliases: [
     { clientId: "PHO-RSC", alias: "POSIT-USER-ROLES" },
     { clientId: "PHO-RSC-GROUPS", alias: "POSIT-GROUP-ROLES" },
