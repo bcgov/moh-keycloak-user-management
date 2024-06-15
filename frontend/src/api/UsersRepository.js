@@ -1,4 +1,5 @@
 import router from "../router";
+import ClientsRepository from "./ClientsRepository";
 import { umsRequest } from "./Repository";
 
 const resource = "/users";
@@ -152,5 +153,24 @@ export default {
         headers: { "Content-Type": "text/plain" },
       })
     );
+  },
+  /**
+   * This function transforms last-logins object.
+   * It swaps references to clientID with aliases, defined in ClientsRepository.clientAliases.
+   * For example "PHO-RSC": 1711383701558 -> "PHO-USER-ROLES": 1711383701558
+   * This is required, so that Last Log In field is populated in Update User Roles component.
+   */
+  mapLastLoginsClientAliases(lastLogins) {
+    let clientAliases = ClientsRepository.clientAliases;
+    for (const [key, value] of Object.entries(lastLogins)) {
+      const aliasMapping = clientAliases.find(
+        (clientAlias) => clientAlias.clientId === key
+      );
+      if (aliasMapping) {
+        lastLogins[aliasMapping.alias] = value;
+        delete lastLogins[key];
+      }
+    }
+    return lastLogins;
   },
 };
