@@ -30,10 +30,10 @@
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy -->
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOGS}/archived/ums-%d{yyyy-MM-dd}.%i.log
+            <fileNamePattern>${LOGS}/ums-%d{yyyy-MM-dd}.%i.log
             </fileNamePattern>
-            <!-- keep 30 days of history -->
-            <maxHistory>30</maxHistory>
+            <!-- keep history forever -->
+            <maxHistory>0</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
@@ -52,10 +52,10 @@
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy -->
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOGS}/archived/audit-%d{yyyy-MM-dd}.%i.log
+            <fileNamePattern>${LOGS}/audit-%d{yyyy-MM-dd}.%i.log
             </fileNamePattern>
-            <!-- keep 30 days of history -->
-            <maxHistory>30</maxHistory>
+            <!-- keep history forever -->
+            <maxHistory>0</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy
                     class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
