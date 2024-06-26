@@ -454,11 +454,12 @@
         let formattedIdentityProviders = {
           bceid_business: "BCeID Business",
           bcprovider_aad: "BC Provider",
+          fnha_aad: "FNHA MFA",
           idir: "IDIR",
-          idir_aad: "IDIR AzureAD",
+          idir_aad: "IDIR MFA",
           moh_idp: "Keycloak",
-          phsa: "Health Authority",
-          phsa_aad: "Health Authority AzureAD",
+          phsa: "Health Authority ID",
+          phsa_aad: "Health Authority ID MFA",
         };
 
         if (idp.startsWith("bcsc")) {
