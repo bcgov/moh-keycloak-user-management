@@ -32,6 +32,15 @@
                         <span class="tooltip-note">
                           Note: The username will already contain an '@domain'
                           that the '{{ idp.alias }}' will be appended to.
+                          <br />
+                          <span
+                            class="tooltip-note"
+                            v-if="idp.alias === '@phsa'"
+                          >
+                            This applies to all Health Authority users, for
+                            example: username@interiorhealth.ca@phsa or
+                            username@phsa.ca@phsa
+                          </span>
                         </span>
                       </template>
                     </template>
@@ -241,22 +250,12 @@
           },
           { name: "BC Services Card", suffix: true, alias: "@bcsc" },
           { name: "FNHA", suffix: true, alias: "@fnha", domainNote: true },
-          { name: "Fraser Health", suffix: false, alias: "sfhr\\" },
-          { name: "Interior Health", suffix: false, alias: "iha\\" },
-          { name: "Northern Health", suffix: false, alias: "nirhb\\" },
-          { name: "Providence Health Care", suffix: false, alias: "infosys\\" },
           {
-            name: "Provincial Health",
+            name: "Health Authority ID",
             suffix: true,
             alias: "@phsa",
             domainNote: true,
           },
-          {
-            name: "Vancouver Coastal Health",
-            suffix: false,
-            alias: ["vch\\", "vrhb\\"],
-          },
-          { name: "Vancouver Island Health", suffix: false, alias: "viha\\" },
         ],
         organizations: this.$organizations.map((item) => {
           item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
@@ -445,25 +444,7 @@
         }
       },
       getTooltipUsername: function (identityProvider) {
-        const formatAlias = (alias, isSuffix) => {
-          return isSuffix
-            ? `username${alias.bold()}`
-            : `${alias.bold()}username`;
-        };
-
-        let usernameTooltip;
-        //if idp has an array of possible aliases
-        if (typeof identityProvider.alias === "object") {
-          usernameTooltip = identityProvider.alias
-            .map((alias) => formatAlias(alias, identityProvider.suffix))
-            .join(" or ");
-        } else {
-          usernameTooltip = formatAlias(
-            identityProvider.alias,
-            identityProvider.suffix
-          );
-        }
-        return usernameTooltip;
+        return `username${identityProvider.alias.bold()}`;
       },
     },
     filters: {
