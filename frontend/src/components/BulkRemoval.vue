@@ -193,7 +193,12 @@
                 </v-btn>
               </download-csv>
               &nbsp; &nbsp;
-              <v-btn id="remove-button" class="error" small>
+              <v-btn
+                id="remove-button"
+                class="error"
+                small
+                @click="removeUserAccess"
+              >
                 Remove Users Access
               </v-btn>
             </v-toolbar>
@@ -423,7 +428,7 @@
       },
       removeUserAccess() {
         console.log(`Would remove ${this.selectedUsers.length} users access`);
-        console.log(this.searchUsers);
+        console.log(this.selectedUsers);
       },
     },
   };
