@@ -36,6 +36,17 @@
             Organizations
           </router-link>
         </li>
+        <li
+          v-if="bulkRemovalPermission"
+          :class="$route.name == 'Bulk Removal' ? 'active' : 'inactive'"
+        >
+          <router-link
+            @click.native="resetAlert"
+            :to="{ name: 'Bulk Removal' }"
+          >
+            Bulk Removal
+          </router-link>
+        </li>
       </ul>
     </div>
   </nav>
@@ -49,6 +60,7 @@
         dashboardPermission: false,
         userSearchPermission: false,
         organizationsPermission: false,
+        bulkRemovalPermission: true,
       };
     },
     async created() {
