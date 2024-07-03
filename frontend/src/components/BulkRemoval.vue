@@ -2,7 +2,7 @@
   <div>
     <v-row class="right-gutters">
       <v-col class="col-6">
-        <h1 id="adv-search-header">Bulk User Permission Removal</h1>
+        <h1 id="bulk-removal-header">Bulk User Access Removal</h1>
       </v-col>
     </v-row>
     <v-row>
@@ -19,7 +19,7 @@
           v-model="selectedClientId"
           @change="loadUserClientRoles()"
           clearable
-          @keyup.enter="searchUser(advancedSearchParams)"
+          @keyup.enter="searchUser(searchParams)"
         ></v-autocomplete>
       </v-col>
       <v-col class="col-2">
@@ -54,7 +54,7 @@
               outlined
               dense
               clearable
-              @keyup.enter="searchUser(advancedSearchParams)"
+              @keyup.enter="searchUser(searchParams)"
             ></v-text-field>
           </template>
           <v-date-picker
@@ -128,10 +128,10 @@
     <v-row class="right-gutters" style="margin-top: 30px">
       <v-col class="col-6" style="margin-bottom: 30px">
         <v-btn
-          id="adv-search-button"
+          id="search-button"
           class="primary"
           medium
-          @click.native="searchUser(advancedSearchParams)"
+          @click.native="searchUser(searchParams)"
         >
           Search Users
         </v-btn>
@@ -193,14 +193,91 @@
                 </v-btn>
               </download-csv>
               &nbsp; &nbsp;
-              <v-btn
-                id="remove-button"
-                class="error"
-                small
-                @click="removeUserAccess"
-              >
-                Remove Users Access
-              </v-btn>
+              <template>
+                <v-dialog
+                  v-model="removeAccessDialog"
+                  persistent
+                  scrollable
+                  max-width="700"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      id="remove-button"
+                      class="error"
+                      small
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      Remove Users Access
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <template v-if="!removingAccessComplete">
+                      <v-card-title class="text-h5">
+                        {{
+                          `Are you sure you want to remove access of ${
+                            selectedUsers.length
+                          } ${selectedUsers.length > 1 ? `users` : `user`}?`
+                        }}
+                      </v-card-title>
+                    </template>
+                    <template v-else>
+                      <v-card-title>Access Removed</v-card-title>
+                    </template>
+
+                    <v-card-text>
+                      <v-list>
+                        <v-subheader>
+                          {{ getSelectedClientName(selectedClientId) }}
+                          <v-spacer></v-spacer>
+                          <v-progress-circular
+                            v-if="removingAccessInProgress"
+                            color="primary"
+                            indeterminate
+                          ></v-progress-circular>
+                        </v-subheader>
+                        <v-divider></v-divider>
+                        <v-list-item
+                          v-for="(user, i) in selectedUsers"
+                          :key="i"
+                        >
+                          <v-list-item-avatar>
+                            <v-icon class="grey lighten-1" dark>
+                              mdi-account
+                            </v-icon>
+                          </v-list-item-avatar>
+
+                          <v-list-item-content>
+                            <v-list-item-title
+                              v-text="user.username"
+                            ></v-list-item-title>
+
+                            <v-list-item-subtitle
+                              v-text="user.role"
+                            ></v-list-item-subtitle>
+                          </v-list-item-content>
+                        </v-list-item>
+                      </v-list>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <template v-if="!removingAccessComplete">
+                        <v-btn class="primary" text @click="closeDialog">
+                          Cancel
+                        </v-btn>
+                        <v-btn class="error" text @click="removeUserAccess">
+                          Remove Access
+                        </v-btn>
+                      </template>
+                      <template v-else>
+                        <v-btn class="primary" text @click="closeDialog">
+                          Close
+                        </v-btn>
+                      </template>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </template>
             </v-toolbar>
           </template>
         </v-data-table>
@@ -232,13 +309,16 @@
         lastLogDate: "",
         rolesLoaded: false,
         selectedUsers: [],
+        removeAccessDialog: false,
+        removingAccessInProgress: false,
+        removingAccessComplete: false,
       };
     },
     async created() {
       await this.loadClients();
     },
     computed: {
-      advancedSearchParams() {
+      searchParams() {
         let params = "";
         if (this.radios == "Before" && this.lastLogDate) {
           params = this.addQueryParameter(
@@ -333,6 +413,7 @@
         } else {
           this.$store.commit("alert/dismissAlert");
           this.userSearchLoadingStatus = true;
+          this.selectedUsers = [];
           try {
             let results = (
               await UsersRepository.get(
@@ -426,9 +507,21 @@
         this.lastLogDate = "";
         this.radios = "";
       },
-      removeUserAccess() {
+      async removeUserAccess() {
+        this.removingAccessInProgress = true;
+        await new Promise((r) => setTimeout(r, 2000));
+        this.removingAccessInProgress = false;
+        this.removingAccessComplete = true;
         console.log(`Would remove ${this.selectedUsers.length} users access`);
         console.log(this.selectedUsers);
+      },
+      closeDialog() {
+        this.removingAccessComplete = false;
+        this.removingAccessInProgress = false;
+        this.removeAccessDialog = false;
+      },
+      getSelectedClientName(id) {
+        return this.clients.find((client) => client.id === id).clientId;
       },
     },
   };
@@ -436,19 +529,6 @@
 
 <style scoped>
   #search-button {
-    margin-top: 25px;
-    margin-left: 20px;
-  }
-  #adv-search-header {
-    display: inline-block;
-  }
-  #basic-search-link {
-    float: right;
-    display: inline-block;
-    margin-top: 10px;
-  }
-  #create-user-button {
-    float: right;
     margin-top: 25px;
   }
   #adv-create-user-button {
@@ -460,8 +540,7 @@
   .row.right-gutters {
     margin: 0;
   }
-  #clear-search-button-basic {
+  #clear-search-button {
     margin-top: 25px;
-    margin-left: 20px;
   }
 </style>
