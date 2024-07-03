@@ -208,7 +208,7 @@
                       v-bind="attrs"
                       v-on="on"
                     >
-                      Remove Users Access
+                      Remove Access
                     </v-btn>
                   </template>
                   <v-card>
