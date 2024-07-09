@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
@@ -185,6 +186,18 @@ public class UsersController {
             @RequestBody Object body) {
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return keycloakApiService.deleteUserClientRole(userId, clientGuid, body);
+        } else {
+            throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
+        }
+    }
+
+    @DeleteMapping("/bulk-removal/{clientGuid}")
+    public ResponseEntity<List<Object>> bulkRemoveUserClientRoles(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String clientGuid,
+            @RequestBody BulkRemovalRequest body) {
+        if (isAuthorizedToViewClient(token, clientGuid)) {
+            return ResponseEntity.ok(keycloakApiService.bulkRemoveUserClientRoles( clientGuid, body));
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
         }

@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -8,10 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -218,5 +216,15 @@ public class KeycloakApiService {
 
     private boolean identityProviderLinkDeletedSuccessfully(List<ResponseEntity<Object>> deleteIdentityProviderLinkResponses) {
         return deleteIdentityProviderLinkResponses.stream().allMatch(deleteIdentityProviderLinkResponse -> deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT));
+    }
+
+    public List<Object> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
+        List<Object> responseList = new ArrayList<>();
+        if(getClient(clientGuid).getStatusCode().is2xxSuccessful()){
+            bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> responseList.add(deleteUserClientRole(userId, clientGuid, rolesToDelete)));
+        } else {
+            responseList.add(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Client not found")));
+        }
+        return responseList;
     }
 }
