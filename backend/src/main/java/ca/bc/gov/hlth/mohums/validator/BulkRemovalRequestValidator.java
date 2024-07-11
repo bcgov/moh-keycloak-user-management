@@ -1,45 +1,30 @@
 package ca.bc.gov.hlth.mohums.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class BulkRemovalRequestValidator implements ConstraintValidator<ValidBulkRemovalRequest, Map<String, List<Object>>> {
+@Service
+public class BulkRemovalRequestValidator {
 
-    private String message;
-
-    @Override
-    public void initialize(ValidBulkRemovalRequest constraintAnnotation) {
-        this.message = constraintAnnotation.message();
-    }
-
-    @Override
-    public boolean isValid(Map<String, List<Object>> rolesForRemoval, ConstraintValidatorContext context) {
-        if (rolesForRemoval.isEmpty()) {
-            message = "Bulk Removal Request cannot be empty";
-            buildConstraintValidatorContext(context);
-            return false;
+    public Optional<String> validateBulkRemovalRequest(BulkRemovalRequest bulkRemovalRequest) {
+        if (bulkRemovalRequest.getUserRolesForRemoval() == null) {
+            return Optional.of("UserRolesForRemoval cannot be null");
         }
-
-        for (Map.Entry<String, List<Object>> entry : rolesForRemoval.entrySet()) {
+        if (bulkRemovalRequest.getUserRolesForRemoval().isEmpty()) {
+            return Optional.of("UserRolesForRemoval cannot be empty");
+        }
+        for (Map.Entry<String, List<Object>> entry : bulkRemovalRequest.getUserRolesForRemoval().entrySet()) {
             if (entry.getKey() == null || entry.getKey().isEmpty()) {
-                message = "User ID cannot be null or empty";
-                buildConstraintValidatorContext(context);
-                return false;
+                return Optional.of("User ID cannot be null or empty");
             }
             if (entry.getValue() == null || entry.getValue().isEmpty()) {
-                message = "List of roles to remove cannot be null or empty";
-                buildConstraintValidatorContext(context);
-                return false;
+                return Optional.of("List of roles to remove cannot be null or empty");
             }
         }
-        return true;
-    }
-
-    private void buildConstraintValidatorContext(ConstraintValidatorContext context) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(message)
-                .addConstraintViolation();
+        return Optional.empty();
     }
 }

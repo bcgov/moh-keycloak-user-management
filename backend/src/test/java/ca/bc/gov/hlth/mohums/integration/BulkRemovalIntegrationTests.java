@@ -4,12 +4,14 @@ import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -26,9 +28,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -135,9 +139,6 @@ public class BulkRemovalIntegrationTests {
         return createRoleRepresentation(NON_EXISTING, NON_EXISTING, UMS_INTEGRATION_TESTS_CLIENT_ID);
     }
 
-    private LinkedHashMap<String, Object> getRoleFromNonExistingClient() {
-        return createRoleRepresentation("ea6dcb83-f11b-4ff3-a725-c7a70477af8d", "bulk-removal-role-1", NON_EXISTING);
-    }
 
     private List<Object> getAssignedUserClientRoleMapping(String userId) {
         return webTestClient.method(HttpMethod.GET)
@@ -172,6 +173,32 @@ public class BulkRemovalIntegrationTests {
                 .expectBodyList(Object.class)
                 .returnResult()
                 .getResponseBody();
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideArgumentsForBulkRemove")
+    public void bulkRemoveInvalidRequestBody(BulkRemovalRequest request, String message) {
+        webTestClient
+                .method(HttpMethod.DELETE)
+                .uri("/bulk-removal/" + UMS_INTEGRATION_TESTS_CLIENT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").isEqualTo(message)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    private static Stream<Arguments> provideArgumentsForBulkRemove() {
+        return Stream.of(
+                Arguments.of(new BulkRemovalRequest(Collections.emptyMap()), "UserRolesForRemoval cannot be empty"),
+                Arguments.of(new BulkRemovalRequest(), "UserRolesForRemoval cannot be null"),
+                Arguments.of(new BulkRemovalRequest(Map.of("", List.of("role"))), "User ID cannot be null or empty"),
+                Arguments.of(new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, Collections.emptyList())), "List of roles to remove cannot be null or empty")
+        );
     }
 
     @Test
@@ -283,7 +310,7 @@ public class BulkRemovalIntegrationTests {
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
                 Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1()),
-                BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1())));
+                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 

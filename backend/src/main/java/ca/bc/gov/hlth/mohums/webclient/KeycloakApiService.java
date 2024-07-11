@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import ca.bc.gov.hlth.mohums.exceptions.BulkRemovalRequestException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
@@ -8,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -95,6 +95,7 @@ public class KeycloakApiService {
                 .filter(user -> !isServiceAccount(user))
                 .collect(Collectors.toList());
     }
+
     @SuppressWarnings("unchecked")
     public ResponseEntity<Object> getUser(String userId) {
         String path = USERS_PATH + "/" + userId;
@@ -110,7 +111,7 @@ public class KeycloakApiService {
         return userResponse;
     }
 
-    private boolean isServiceAccount(LinkedHashMap<String, Object> userAttributes){
+    private boolean isServiceAccount(LinkedHashMap<String, Object> userAttributes) {
         return userAttributes.get(USERNAME_ATTRIBUTE).toString().startsWith(SERVICE_ACCOUNT_PREFIX);
     }
 
@@ -176,17 +177,17 @@ public class KeycloakApiService {
     public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
 
         ArrayList<ResponseEntity<Object>> deleteIDPLinkResponses = new ArrayList<>();
-        if(identityProvider.startsWith("bcsc")){
+        if (identityProvider.startsWith("bcsc")) {
             LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
             ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
             federatedIdentities.forEach(fi -> {
                 String idpAlias = fi.get("identityProvider");
-                if(idpAlias.startsWith("bcsc")){
+                if (idpAlias.startsWith("bcsc")) {
                     ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, idpAlias);
                     deleteIDPLinkResponses.add(response);
                 }
             });
-        }else{
+        } else {
             ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, identityProvider);
             deleteIDPLinkResponses.add(response);
         }
@@ -220,9 +221,8 @@ public class KeycloakApiService {
     }
 
     public List<Object> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
-        validateBulkRemovalRequest(bulkRemovalRequest);
         List<Object> responseList = new ArrayList<>();
-        if(getClient(clientGuid).getStatusCode().is2xxSuccessful()){
+        if (getClient(clientGuid).getStatusCode().is2xxSuccessful()) {
             bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> responseList.add(deleteUserClientRole(userId, clientGuid, rolesToDelete)));
         } else {
             responseList.add(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Client not found")));

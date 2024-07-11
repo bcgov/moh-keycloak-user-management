@@ -1,23 +1,17 @@
 package ca.bc.gov.hlth.mohums.controller;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import ca.bc.gov.hlth.mohums.exceptions.BulkRemovalRequestException;
+import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
+import ca.bc.gov.hlth.mohums.model.UserPayee;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
-import ca.bc.gov.hlth.mohums.validator.ValidBulkRemovalRequest;
+import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
+import ca.bc.gov.hlth.mohums.validator.BulkRemovalRequestValidator;
+import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
+import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
+import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,30 +23,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
-import ca.bc.gov.hlth.mohums.model.UserPayee;
-import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
-import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
-import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
-
-import javax.validation.Valid;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @RestController
 public class UsersController {
-	
+
     private static final String KEY_PAYEE_NUMBER = "payeeNumber";
 
     @Autowired
@@ -61,8 +45,11 @@ public class UsersController {
     @Autowired
     private PermissionsValidator permissionsValidator;
 
+    @Autowired
+    private BulkRemovalRequestValidator bulkRemovalRequestValidator;
+
     private final KeycloakApiService keycloakApiService;
-    
+
     private final PayeeApiService payeeApiService;
 
     private final String vanityHostname;
@@ -195,13 +182,18 @@ public class UsersController {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
         }
     }
+
     @DeleteMapping("/bulk-removal/{clientGuid}")
     public ResponseEntity<List<Object>> bulkRemoveUserClientRoles(
             @RequestHeader("Authorization") String token,
             @PathVariable String clientGuid,
-            @Valid @RequestBody BulkRemovalRequest body) {
+            @RequestBody BulkRemovalRequest removalRequest) {
         if (isAuthorizedToViewClient(token, clientGuid)) {
-            return ResponseEntity.ok(keycloakApiService.bulkRemoveUserClientRoles( clientGuid, body));
+            Optional<String> removalRequestValidationError = bulkRemovalRequestValidator.validateBulkRemovalRequest(removalRequest);
+            removalRequestValidationError.ifPresent(message -> {
+                throw new BulkRemovalRequestException(message);
+            });
+            return ResponseEntity.ok(keycloakApiService.bulkRemoveUserClientRoles(clientGuid, removalRequest));
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
         }
@@ -252,10 +244,10 @@ public class UsersController {
     }
 
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
-    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
+    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
         return keycloakApiService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
     }
-    
+
     @GetMapping("/users/{userId}/payee")
     public ResponseEntity<Object> getUserPayee(@PathVariable String userId) {
         try {
@@ -267,7 +259,7 @@ public class UsersController {
             }
             // Create a new Response as returning the original response creates intermittent
             // network errors for the client 
-            return new ResponseEntity<Object>(response.getBody(), response.getStatusCode());            
+            return new ResponseEntity<Object>(response.getBody(), response.getStatusCode());
         } catch (Exception e) {
             // WebFlux will thrown an exception if the Body isn't as expected (which can happen with a Payee API exception)
             // so catch and return a 500
@@ -275,7 +267,7 @@ public class UsersController {
         }
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @PutMapping("/users/{userId}/payee")
     public ResponseEntity<Object> updateUserPayee(@PathVariable String userId, @RequestBody(required = false) String payee) {
