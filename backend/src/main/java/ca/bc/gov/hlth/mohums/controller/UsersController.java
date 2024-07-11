@@ -17,6 +17,7 @@ import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
+import ca.bc.gov.hlth.mohums.validator.ValidBulkRemovalRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +46,9 @@ import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
 import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
 import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
 import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
+
+import javax.validation.Valid;
+
 
 @RestController
 public class UsersController {
@@ -190,12 +195,11 @@ public class UsersController {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
         }
     }
-
     @DeleteMapping("/bulk-removal/{clientGuid}")
     public ResponseEntity<List<Object>> bulkRemoveUserClientRoles(
             @RequestHeader("Authorization") String token,
             @PathVariable String clientGuid,
-            @RequestBody BulkRemovalRequest body) {
+            @Valid @RequestBody BulkRemovalRequest body) {
         if (isAuthorizedToViewClient(token, clientGuid)) {
             return ResponseEntity.ok(keycloakApiService.bulkRemoveUserClientRoles( clientGuid, body));
         } else {

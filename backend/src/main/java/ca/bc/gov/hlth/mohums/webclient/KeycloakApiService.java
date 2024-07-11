@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -219,6 +220,7 @@ public class KeycloakApiService {
     }
 
     public List<Object> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
+        validateBulkRemovalRequest(bulkRemovalRequest);
         List<Object> responseList = new ArrayList<>();
         if(getClient(clientGuid).getStatusCode().is2xxSuccessful()){
             bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> responseList.add(deleteUserClientRole(userId, clientGuid, rolesToDelete)));
