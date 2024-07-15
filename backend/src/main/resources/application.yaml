@@ -24,6 +24,7 @@ user-management-client:
     manage-all-groups: manage-all-groups
     manage-own-groups: manage-own-groups
     manage-org: manage-org
+    bulk-removal: bulk-removal
 config:
   # vanity-hostname: Sets the HTTP "Location" header for the service.
   vanity-hostname: "http://localhost:${server.port}"
