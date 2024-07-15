@@ -1,8 +1,6 @@
 package ca.bc.gov.hlth.mohums.integration;
 
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,10 +24,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -51,25 +45,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 public class MoHUmsIntegrationTests {
 
-    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-
-    @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
-    String keycloakTokenUri;
-
     @Value("${client-test-id}")
-    String clientId;
+    String mohRealmClientId;
 
     @Value("${client-test-secret}")
-    String clientSecret;
+    String mohRealmClientSecret;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
     String masterRealmClientId;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-master.client-secret}")
     String masterRealmClientSecret;
-
-    @Value("${keycloak-moh.organizations-api-url}")
-    private String organizationsApiBaseUrl;
 
     @Value("${spring.datasource.url}")
     private String url;
@@ -83,35 +69,20 @@ public class MoHUmsIntegrationTests {
     @Autowired
     private WebTestClient webTestClient;
 
+    @Autowired
+    private IntegrationTestsUtils integrationTestsUtils;
+
     private String jwt;
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = getKcAccessToken();
+        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(mohRealmClientId, mohRealmClientSecret);
 
         webTestClient = webTestClient
                 .mutate()
                 .responseTimeout(Duration.ofSeconds(120))
                 .build();
 
-    }
-
-    private String getKcAccessToken() throws IOException, InterruptedException, ParseException {
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(keycloakTokenUri))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
-        String access_token = responseBodyAsJson.get("access_token").toString();
-
-        return access_token;
     }
 
 
@@ -812,7 +783,7 @@ public class MoHUmsIntegrationTests {
 
     @Test
     public void getUserFromIdirRealm() throws IOException, InterruptedException, ParseException {
-        String access_token = getMasterRealmKcToken();
+        String access_token = integrationTestsUtils.getMasterRealmKcToken(masterRealmClientId, masterRealmClientSecret);
 
         String baseUrlIdirRealm = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/idir/";
 
@@ -879,11 +850,11 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(getBcscIdentities(federatedIdentities)).isEmpty();
 
         //check that user does not exist in bcsc realm
-        String access_token = getMasterRealmKcToken();
-        String baseUrlIdirRealm = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/bcsc/";
+        String access_token = integrationTestsUtils.getMasterRealmKcToken(masterRealmClientId, masterRealmClientSecret);
+        String baseUrlBcscRealm = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/bcsc/";
         webTestClient
                 .mutate()
-                .baseUrl(baseUrlIdirRealm)
+                .baseUrl(baseUrlBcscRealm)
                 .build()
                 .get()
                 .uri(String.format("users/%s",bcscRealmUserId))
@@ -894,23 +865,6 @@ public class MoHUmsIntegrationTests {
 
     private List<LinkedHashMap<String, String>> getBcscIdentities(ArrayList<LinkedHashMap<String, String>> federatedIdentities) {
         return federatedIdentities.stream().filter(fi -> fi.get("identityProvider").contains("bcsc")).collect(Collectors.toList());
-    }
-
-    private String getMasterRealmKcToken() throws IOException, InterruptedException, ParseException {
-        String keycloakTokenUri = "https://common-logon-dev.hlth.gov.bc.ca/auth/realms/master/protocol/openid-connect/token";
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(keycloakTokenUri))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + masterRealmClientId + "&client_secret=" + masterRealmClientSecret))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
-        String access_token = responseBodyAsJson.get("access_token").toString();
-        return access_token;
     }
 
 }
