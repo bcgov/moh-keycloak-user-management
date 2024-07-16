@@ -1,15 +1,15 @@
 package ca.bc.gov.hlth.mohums.integration;
 
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -21,14 +21,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,67 +38,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 public class BulkRemovalIntegrationTests {
 
-    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-
-    @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
-    String keycloakTokenUri;
-
     @Value("${client-test-id}")
     String clientId;
 
     @Value("${client-test-secret}")
     String clientSecret;
 
-    @Value("${spring.security.oauth2.client.registration.keycloak-master.client-id}")
-    String masterRealmClientId;
-
-    @Value("${spring.security.oauth2.client.registration.keycloak-master.client-secret}")
-    String masterRealmClientSecret;
-
-    @Value("${keycloak-moh.organizations-api-url}")
-    private String organizationsApiBaseUrl;
-
-    @Value("${spring.datasource.url}")
-    private String url;
-
-    @Value("${spring.datasource.username}")
-    private String username;
-
-    @Value("${spring.datasource.password}")
-    private String password;
-
     @Autowired
     private WebTestClient webTestClient;
+
+    @Autowired
+    private IntegrationTestsUtils integrationTestsUtils;
 
     private String jwt;
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = getKcAccessToken();
+        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(clientId, clientSecret);
 
         webTestClient = webTestClient
                 .mutate()
                 .responseTimeout(Duration.ofSeconds(120))
                 .build();
 
-    }
-
-    private String getKcAccessToken() throws IOException, InterruptedException, ParseException {
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(keycloakTokenUri))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
-        String access_token = responseBodyAsJson.get("access_token").toString();
-
-        return access_token;
     }
 
     private static final String UMS_INTEGRATION_TESTS_CLIENT_ID = "24447cb4-f3b1-455b-89d9-26c081025fb9";
@@ -135,9 +95,6 @@ public class BulkRemovalIntegrationTests {
         return createRoleRepresentation(NON_EXISTING, NON_EXISTING, UMS_INTEGRATION_TESTS_CLIENT_ID);
     }
 
-    private LinkedHashMap<String, Object> getRoleFromNonExistingClient() {
-        return createRoleRepresentation("ea6dcb83-f11b-4ff3-a725-c7a70477af8d", "bulk-removal-role-1", NON_EXISTING);
-    }
 
     private List<Object> getAssignedUserClientRoleMapping(String userId) {
         return webTestClient.method(HttpMethod.GET)
@@ -172,6 +129,32 @@ public class BulkRemovalIntegrationTests {
                 .expectBodyList(Object.class)
                 .returnResult()
                 .getResponseBody();
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideArgumentsForBulkRemove")
+    public void bulkRemoveInvalidRequestBody(BulkRemovalRequest request, String message) {
+        webTestClient
+                .method(HttpMethod.DELETE)
+                .uri("/bulk-removal/" + UMS_INTEGRATION_TESTS_CLIENT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").isEqualTo(message)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    private static Stream<Arguments> provideArgumentsForBulkRemove() {
+        return Stream.of(
+                Arguments.of(new BulkRemovalRequest(Collections.emptyMap()), "UserRolesForRemoval cannot be empty"),
+                Arguments.of(new BulkRemovalRequest(), "UserRolesForRemoval cannot be null"),
+                Arguments.of(new BulkRemovalRequest(Map.of("", List.of("role"))), "User ID cannot be null or empty"),
+                Arguments.of(new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, Collections.emptyList())), "List of roles to remove cannot be null or empty")
+        );
     }
 
     @Test
@@ -232,20 +215,6 @@ public class BulkRemovalIntegrationTests {
         assertEquals("NOT_FOUND", responseItem.get("statusCode"));
     }
 
-    //This is a WIP, part of error-handling work
-    @Disabled
-    @Test
-    @SuppressWarnings("unchecked")
-    public void bulkRemoveOneRoleOneUserFailureClientDoesNotExist() {
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
-
-        List<Object> response = bulkRemove(bulkRemovalRequest, NON_EXISTING);
-
-        assertEquals(1, response.size());
-        LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
-        assertEquals("NOT_FOUND", responseItem.get("statusCode"));
-    }
-
     //Keycloak api works this way - pass list of roles to be deleted, if one of them is 404, request fails
     @Test
     @SuppressWarnings("unchecked")
@@ -283,7 +252,7 @@ public class BulkRemovalIntegrationTests {
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
                 Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1()),
-                BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1())));
+                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
