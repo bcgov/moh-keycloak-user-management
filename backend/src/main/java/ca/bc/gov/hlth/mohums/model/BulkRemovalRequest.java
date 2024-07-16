@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BulkRemovalRequest {
+
     private Map<String, List<Object>> userRolesForRemoval;
 
     public BulkRemovalRequest(Map<String, List<Object>> userRolesForRemoval) {

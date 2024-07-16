@@ -1,10 +1,6 @@
 package ca.bc.gov.hlth.mohums.integration;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 
 import org.assertj.core.api.Assertions;
@@ -21,12 +17,11 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import ca.bc.gov.hlth.mohums.model.UserPayee;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
 @ExtendWith(SpringExtension.class)
@@ -35,12 +30,7 @@ import net.minidev.json.parser.ParseException;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MspDirectApiIntegrationTests {
 
-    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-    
     private static final String PAYEE_PATH = "/payee-mapping";
-
-    @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
-    private String keycloakTokenUri;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-id}")
     private String clientId;
@@ -54,6 +44,9 @@ public class MspDirectApiIntegrationTests {
     @Autowired
     private WebTestClient payeeApiWebTestClient;
 
+    @Autowired
+    private IntegrationTestsUtils integrationTestsUtils;
+
     private String jwt;
 
     /** This is mspdirect_payee_test in Dev. This technically doesn't require a real account
@@ -65,7 +58,7 @@ public class MspDirectApiIntegrationTests {
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = getKcAccessToken();
+        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(clientId, clientSecret);
 
         payeeApiWebTestClient = payeeApiWebTestClient
                 .mutate()
@@ -83,24 +76,6 @@ public class MspDirectApiIntegrationTests {
     @AfterAll
     public void cleanupPayee() {
         deleteTestPayee();
-    }
-
-    private String getKcAccessToken() throws IOException, InterruptedException, ParseException {
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(keycloakTokenUri))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
-        String access_token = responseBodyAsJson.get("access_token").toString();
-
-        return access_token;
     }
 
     @Test
