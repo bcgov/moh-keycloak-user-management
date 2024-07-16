@@ -1,7 +1,5 @@
 package ca.bc.gov.hlth.mohums.integration;
 
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
@@ -17,10 +15,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 
@@ -30,22 +24,21 @@ import java.util.List;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class OrgApiIntegrationTests {
 
-    private static final JSONParser jsonParser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-
-    @Value("${spring.security.oauth2.client.provider.keycloak-moh.token-uri}")
-    String keycloakTokenUri;
-
     @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-id}")
-    String clientId;
+    private String clientId;
 
     @Value("${spring.security.oauth2.client.registration.keycloak-moh.client-secret}")
-    String clientSecret;
+    private String clientSecret;
+
 
     @Value("${keycloak-moh.organizations-api-url}")
     private String organizationsApiBaseUrl;
 
     @Autowired
     private WebTestClient orgApiWebTestClient;
+
+    @Autowired
+    private IntegrationTestsUtils integrationTestsUtils;
 
     private String jwt;
 
@@ -54,7 +47,7 @@ public class OrgApiIntegrationTests {
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = getKcAccessToken();
+        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(clientId, clientSecret);
 
         orgApiWebTestClient = orgApiWebTestClient
                 .mutate()
@@ -68,25 +61,6 @@ public class OrgApiIntegrationTests {
     @AfterAll
     public void cleanupOrgDatabase() {
         deleteTestOrg();
-    }
-
-
-    private String getKcAccessToken() throws IOException, InterruptedException, ParseException {
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(keycloakTokenUri))
-                .header("Accept", "application/json")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .POST(HttpRequest.BodyPublishers.ofString("grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        JSONObject responseBodyAsJson = (JSONObject) jsonParser.parse(response.body());
-        String access_token = responseBodyAsJson.get("access_token").toString();
-
-        return access_token;
     }
 
 
