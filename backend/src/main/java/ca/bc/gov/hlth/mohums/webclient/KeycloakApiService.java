@@ -234,11 +234,7 @@ public class KeycloakApiService {
 
     public List<Object> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
         List<Object> responseList = new ArrayList<>();
-        if (getClient(clientGuid).getStatusCode().is2xxSuccessful()) {
-            bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> responseList.add(deleteUserClientRole(userId, clientGuid, rolesToDelete)));
-        } else {
-            responseList.add(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Client not found")));
-        }
+        bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> responseList.add(deleteUserClientRole(userId, clientGuid, rolesToDelete)));
         return responseList;
     }
 }

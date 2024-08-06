@@ -3,7 +3,6 @@ package ca.bc.gov.hlth.mohums.integration;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import net.minidev.json.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +61,13 @@ public class BulkRemovalIntegrationTests {
                 .build();
 
     }
+
+    /**
+     * Constants used for integration tests:
+     * UMS_INTEGRATION_TESTS_CLIENT_ID -> ID of a Keycloak DEV client (service account) who is calling the bulk-removal endpoint.
+     * BULK_REMOVAL_USER_UMS_1 and 2 -> ID of a Keycloak DEV user whose roles are assigned and revoked.
+     * NON_EXISTING - constant for unhappy path testing. Used to mimic invalid user or role ID.
+     */
 
     private static final String UMS_INTEGRATION_TESTS_CLIENT_ID = "24447cb4-f3b1-455b-89d9-26c081025fb9";
     private static final String BULK_REMOVAL_USER_UMS_1 = "3d78de77-86dc-41a3-a3d9-432a494d9147";
@@ -132,9 +138,9 @@ public class BulkRemovalIntegrationTests {
     }
 
     @ParameterizedTest
-    @MethodSource("provideArgumentsForBulkRemove")
+    @MethodSource("provideInvalidArgumentsForBulkRemove")
     public void bulkRemoveInvalidRequestBody(BulkRemovalRequest request, String message) {
-        webTestClient
+        String response = webTestClient
                 .method(HttpMethod.DELETE)
                 .uri("/bulk-removal/" + UMS_INTEGRATION_TESTS_CLIENT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -142,13 +148,14 @@ public class BulkRemovalIntegrationTests {
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isBadRequest()
-                .expectBody()
-                .jsonPath("$.message").isEqualTo(message)
+                .expectBody(String.class)
                 .returnResult()
                 .getResponseBody();
+
+        assertEquals(message, response);
     }
 
-    private static Stream<Arguments> provideArgumentsForBulkRemove() {
+    private static Stream<Arguments> provideInvalidArgumentsForBulkRemove() {
         return Stream.of(
                 Arguments.of(new BulkRemovalRequest(Collections.emptyMap()), "UserRolesForRemoval cannot be empty"),
                 Arguments.of(new BulkRemovalRequest(), "UserRolesForRemoval cannot be null"),

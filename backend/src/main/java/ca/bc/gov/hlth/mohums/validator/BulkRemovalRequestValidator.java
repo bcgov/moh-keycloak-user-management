@@ -1,13 +1,11 @@
 package ca.bc.gov.hlth.mohums.validator;
 
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Service
 public class BulkRemovalRequestValidator {
 
     public Optional<String> validateBulkRemovalRequest(BulkRemovalRequest bulkRemovalRequest) {
