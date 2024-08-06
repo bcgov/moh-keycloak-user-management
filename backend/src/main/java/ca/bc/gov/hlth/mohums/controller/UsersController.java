@@ -45,8 +45,7 @@ public class UsersController {
     @Autowired
     private PermissionsValidator permissionsValidator;
 
-    @Autowired
-    private BulkRemovalRequestValidator bulkRemovalRequestValidator;
+    private final BulkRemovalRequestValidator bulkRemovalRequestValidator = new BulkRemovalRequestValidator();
 
     private final KeycloakApiService keycloakApiService;
 
@@ -183,6 +182,22 @@ public class UsersController {
         }
     }
 
+    /**
+     *
+     * @param token - bulk-removal role required
+     * @param clientGuid - id of a client, container of the roles that will be unassigned from users
+     * @param removalRequest - map of user id and list of roles to be unassigned from the user
+     * @return list of responses from Keycloak API with corresponding status codes
+     *
+     * Firstly, requester permissions and validity of client id are checked
+     * Secondly, the removal request is being validated. It is a required parameter. It must contain user id and a non-empty list of roles to be unassigned
+     * For each map entry, the method calls Keycloak API which revokes roles from the user. Those calls are not transactional - one can fail, but other can be processed.
+     *
+     * In case of a success the Keycloak API call returns a 204 status (NO_CONTENT)
+     * If user id from the request body cannot be associated with a Keycloak user, the Keycloak API will return 404 status (NOT_FOUND)
+     * If role id from the request body cannot be associated with a Keycloak user, the Keycloak API will return 404 status (NOT_FOUND).
+     * If at least one of the roles from the map entry is invalid, the Keycloak API call for this entry fails.
+     */
     @DeleteMapping("/bulk-removal/{clientGuid}")
     public ResponseEntity<List<Object>> bulkRemoveUserClientRoles(
             @RequestHeader("Authorization") String token,
@@ -374,5 +389,10 @@ public class UsersController {
         dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
+    }
+
+    @ExceptionHandler(BulkRemovalRequestException.class)
+    public ResponseEntity<String> handleBulkRemovalExceptions(BulkRemovalRequestException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
