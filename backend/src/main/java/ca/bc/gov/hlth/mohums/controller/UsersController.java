@@ -3,6 +3,7 @@ package ca.bc.gov.hlth.mohums.controller;
 import ca.bc.gov.hlth.mohums.exceptions.BulkRemovalRequestException;
 import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
+import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
 import ca.bc.gov.hlth.mohums.model.UserPayee;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
@@ -199,7 +200,7 @@ public class UsersController {
      * If at least one of the roles from the map entry is invalid, the Keycloak API call for this entry fails.
      */
     @DeleteMapping("/bulk-removal/{clientGuid}")
-    public ResponseEntity<List<Object>> bulkRemoveUserClientRoles(
+    public ResponseEntity<List<BulkRemovalResponse>> bulkRemoveUserClientRoles(
             @RequestHeader("Authorization") String token,
             @PathVariable String clientGuid,
             @RequestBody BulkRemovalRequest removalRequest) {

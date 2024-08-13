@@ -1,7 +1,7 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
-import ca.bc.gov.hlth.mohums.exceptions.BulkRemovalRequestException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
+import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,7 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -220,9 +223,13 @@ public class KeycloakApiService {
         return deleteIdentityProviderLinkResponses.stream().allMatch(deleteIdentityProviderLinkResponse -> deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT));
     }
 
-    public List<Object> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
-        List<Object> responseList = new ArrayList<>();
-        bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> responseList.add(deleteUserClientRole(userId, clientGuid, rolesToDelete)));
+    public List<BulkRemovalResponse> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
+        List<BulkRemovalResponse> responseList = new ArrayList<>();
+        bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> {
+                    ResponseEntity<Object> keycloakAPIResponse = deleteUserClientRole(userId, clientGuid, rolesToDelete);
+                    responseList.add(new BulkRemovalResponse(keycloakAPIResponse.getBody(), keycloakAPIResponse.getStatusCodeValue(), keycloakAPIResponse.getStatusCode(), userId));
+                }
+        );
         return responseList;
     }
 }
