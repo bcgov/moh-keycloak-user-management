@@ -304,7 +304,9 @@
           :footer-props="footerProps"
           :loading="userSearchLoadingStatus"
           loading-text="Searching for users"
+          :show-select="bulkRemovalAllowed"
           v-on:click:row="selectUser"
+          v-model="selectedUsers"
         >
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
           <template #item.username="{ item }">
@@ -337,6 +339,94 @@
                   Download results
                 </v-btn>
               </download-csv>
+              &nbsp; &nbsp;
+              <template v-if="bulkRemovalAllowed">
+                <v-dialog
+                  v-model="removeAccessDialog"
+                  persistent
+                  scrollable
+                  max-width="700"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      id="remove-button"
+                      class="error"
+                      small
+                      v-bind="attrs"
+                      v-on="on"
+                      :disabled="selectedUsers.length === 0"
+                    >
+                      Remove Access
+                    </v-btn>
+                  </template>
+
+                  <v-card>
+                    <template v-if="!bulkRemovalConfirmation">
+                      <v-card-title class="text-h5">
+                        {{
+                          `Are you sure you want to remove access of ${
+                            selectedUsers.length
+                          } ${selectedUsers.length > 1 ? `users` : `user`}?`
+                        }}
+                      </v-card-title>
+                    </template>
+                    <template v-else>
+                      <v-card-title>Access Removed</v-card-title>
+                    </template>
+
+                    <v-card-text>
+                      <v-list>
+                        <v-subheader>
+                          {{ getSelectedClientName(selectedClientId) }}
+                          <v-spacer></v-spacer>
+                          <v-progress-circular
+                            v-if="bulkRemovalRequestInProgress"
+                            color="primary"
+                            indeterminate
+                          ></v-progress-circular>
+                        </v-subheader>
+                        <v-divider></v-divider>
+                        <v-list-item
+                          v-for="(user, i) in selectedUsers"
+                          :key="i"
+                        >
+                          <v-list-item-avatar>
+                            <v-icon class="grey lighten-1" dark>
+                              mdi-account
+                            </v-icon>
+                          </v-list-item-avatar>
+
+                          <v-list-item-content>
+                            <v-list-item-title
+                              v-text="user.username"
+                            ></v-list-item-title>
+
+                            <v-list-item-subtitle
+                              v-text="user.role"
+                            ></v-list-item-subtitle>
+                          </v-list-item-content>
+                        </v-list-item>
+                      </v-list>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <template v-if="!bulkRemovalRequestInProgress && !bulkRemovalConfirmation">
+                        <v-btn class="primary" text @click="closeDialog">
+                          Cancel
+                        </v-btn>
+                        <v-btn class="error" text @click="removeUserAccess">
+                          Remove Access
+                        </v-btn>
+                      </template>
+                      <template v-else>
+                        <v-btn class="primary" text @click="closeDialog">
+                          Close
+                        </v-btn>
+                      </template>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </template>
             </v-toolbar>
           </template>
         </v-data-table>
@@ -379,6 +469,10 @@
         radios: "",
         lastLogDate: "",
         rolesLoaded: false,
+        selectedUsers: [],
+        removeAccessDialog: false,
+        bulkRemovalRequestInProgress: false,
+        bulkRemovalConfirmation: false,
       };
     },
     async created() {
@@ -476,6 +570,15 @@
         return this.$keycloak.tokenParsed.resource_access[
           umsClientId
         ].roles.includes(createUserRoleName);
+      },
+      bulkRemovalAllowed() {
+        return (
+          this.$keycloak.tokenParsed.resource_access?.[
+            "USER-MANAGEMENT-SERVICE"
+          ]?.roles.includes("bulk-removal") &&
+          this.advancedSearchSelected &&
+          !!this.selectedClientId
+        );
       },
     },
     methods: {
@@ -603,6 +706,39 @@
         this.selectedClientId = null;
         this.lastLogDate = "";
         this.radios = "";
+      },
+      async removeUserAccess() {
+        this.bulkRemovalRequestInProgress = true;
+          let bulkRemovalRequest = {};
+          this.selectedUsers.forEach((user) => {
+              bulkRemovalRequest[user.id] = this.getRolesRepresentation(user.role);
+          });
+          await UsersRepository.bulkRemoveUserRoles(this.selectedClientId, bulkRemovalRequest)
+        this.bulkRemovalRequestInProgress = false;
+        this.bulkRemovalConfirmation = true;
+      },
+      closeDialog() {
+        this.bulkRemovalConfirmation = false;
+        this.bulkRemovalRequestInProgress = false;
+        this.removeAccessDialog = false;
+      },
+      getSelectedClientName(id) {
+        return this.clients.find((client) => client.id === id).clientId;
+      },
+      getRolesRepresentation(roleNames) {
+        let tmp = roleNames.split(",").map((name) => name.trim());
+        let roles = [];
+        tmp.forEach((name) => {
+          let matchingRole = this.clientRoles.find((r) => r.name === name);
+          if (matchingRole) {
+              //In order for keycloak API to accept the payload, we need to filter out clientId from the RoleRepresentation
+              //Destructuring the object and discarding the clientId
+              const {...roleRepresentation} = matchingRole;
+              delete roleRepresentation.clientId
+            roles.push(roleRepresentation);
+          }
+        });
+        return roles;
       },
     },
   };
