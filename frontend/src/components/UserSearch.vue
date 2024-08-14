@@ -349,7 +349,7 @@
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
-                      id="remove-button"
+                      id="remove-access-button"
                       class="error"
                       small
                       v-bind="attrs"
@@ -371,7 +371,7 @@
                       </v-card-title>
                     </template>
                     <template v-else>
-                      <v-card-title>Access Removed</v-card-title>
+                      <v-card-title>Operation complete</v-card-title>
                     </template>
 
                     <v-card-text>
@@ -390,11 +390,32 @@
                           v-for="(user, i) in selectedUsers"
                           :key="i"
                         >
-                          <v-list-item-avatar>
-                            <v-icon class="grey lighten-1" dark>
-                              mdi-account
-                            </v-icon>
-                          </v-list-item-avatar>
+                          <template>
+                            <template
+                              v-if="
+                                bulkRemovalResponse &&
+                                bulkRemovalResponse.length
+                              "
+                            >
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-list-item-avatar v-bind="attrs" v-on="on">
+                                    <v-icon :class="getIconClass(user.id)" dark>
+                                      {{ getIcon(user.id) }}
+                                    </v-icon>
+                                  </v-list-item-avatar>
+                                </template>
+                                <span>{{ getTooltipText(user.id) }}</span>
+                              </v-tooltip>
+                            </template>
+                            <template v-else>
+                              <v-list-item-avatar>
+                                <v-icon :class="getIconClass(user.id)" dark>
+                                  {{ getIcon(user.id) }}
+                                </v-icon>
+                              </v-list-item-avatar>
+                            </template>
+                          </template>
 
                           <v-list-item-content>
                             <v-list-item-title
@@ -410,7 +431,12 @@
                     </v-card-text>
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <template v-if="!bulkRemovalRequestInProgress && !bulkRemovalConfirmation">
+                      <template
+                        v-if="
+                          !bulkRemovalRequestInProgress &&
+                          !bulkRemovalConfirmation
+                        "
+                      >
                         <v-btn class="primary" text @click="closeDialog">
                           Cancel
                         </v-btn>
@@ -473,6 +499,7 @@
         removeAccessDialog: false,
         bulkRemovalRequestInProgress: false,
         bulkRemovalConfirmation: false,
+        bulkRemovalResponse: [],
       };
     },
     async created() {
@@ -624,6 +651,7 @@
             this.handleError("User search failed", error);
           } finally {
             this.userSearchLoadingStatus = false;
+            this.selectedUsers = [];
           }
         }
       },
@@ -689,6 +717,7 @@
         );
       },
       handleError(message, error) {
+        this.closeDialog();
         this.$store.commit("alert/setAlert", {
           message: message + ": " + error,
           type: "error",
@@ -709,11 +738,21 @@
       },
       async removeUserAccess() {
         this.bulkRemovalRequestInProgress = true;
-          let bulkRemovalRequest = {};
-          this.selectedUsers.forEach((user) => {
-              bulkRemovalRequest[user.id] = this.getRolesRepresentation(user.role);
+        let bulkRemovalRequest = {};
+        this.selectedUsers.forEach((user) => {
+          bulkRemovalRequest[user.id] = this.getRolesRepresentation(user.role);
+        });
+        this.bulkRemovalResponse = await UsersRepository.bulkRemoveUserRoles(
+          this.selectedClientId,
+          bulkRemovalRequest
+        )
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            this.handleError("Bulk removal request failed", error);
           });
-          await UsersRepository.bulkRemoveUserRoles(this.selectedClientId, bulkRemovalRequest)
+        this.updateUserSearchResults();
         this.bulkRemovalRequestInProgress = false;
         this.bulkRemovalConfirmation = true;
       },
@@ -721,6 +760,8 @@
         this.bulkRemovalConfirmation = false;
         this.bulkRemovalRequestInProgress = false;
         this.removeAccessDialog = false;
+        this.bulkRemovalResponse = [];
+        this.selectedUsers = [];
       },
       getSelectedClientName(id) {
         return this.clients.find((client) => client.id === id).clientId;
@@ -731,14 +772,54 @@
         tmp.forEach((name) => {
           let matchingRole = this.clientRoles.find((r) => r.name === name);
           if (matchingRole) {
-              //In order for keycloak API to accept the payload, we need to filter out clientId from the RoleRepresentation
-              //Destructuring the object and discarding the clientId
-              const {...roleRepresentation} = matchingRole;
-              delete roleRepresentation.clientId
+            //In order for keycloak API to accept the payload, we need to filter out clientId from the RoleRepresentation
+            //Destructuring the object and discarding the clientId
+            const { ...roleRepresentation } = matchingRole;
+            delete roleRepresentation.clientId;
             roles.push(roleRepresentation);
           }
         });
         return roles;
+      },
+      getIcon(userId) {
+        const responseDetails = this.bulkRemovalResponse.find(
+          (details) => details.userId === userId
+        );
+        if (!responseDetails) return "mdi-account";
+        if (responseDetails.statusCode === "NO_CONTENT") {
+          return "mdi-check-circle";
+        } else {
+          return "mdi-alert-circle";
+        }
+      },
+      getIconClass(userId) {
+        const responseDetails = this.bulkRemovalResponse.find(
+          (details) => details.userId === userId
+        );
+        if (!responseDetails) return "grey lighten-1";
+        if (responseDetails.statusCode === "NO_CONTENT") {
+          return "green lighten-1";
+        } else {
+          return "red lighten-1";
+        }
+      },
+      getTooltipText(userId) {
+        const responseDetails = this.bulkRemovalResponse.find(
+          (details) => details.userId === userId
+        );
+        if (responseDetails.statusCode === "NO_CONTENT") {
+          return "Access removed successfully";
+        } else {
+          return "Could not remove access: " + responseDetails.body.error;
+        }
+      },
+      updateUserSearchResults() {
+        this.searchResults = this.searchResults.filter(
+          (user) =>
+            !this.bulkRemovalResponse.some(
+              (bulkResponseUser) => bulkResponseUser.userId === user.id
+            )
+        );
       },
     },
   };
