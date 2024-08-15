@@ -10,6 +10,10 @@ class AdvancedSearchForm {
     this.organizationInput = Selector("#org-details");
     this.selectClient = Selector("#select-client");
     this.advSearchButton = Selector("#adv-search-button");
+    this.bulkRemoveButton = Selector("#remove-access-button");
+    this.selectAllCheckbox = Selector(
+      "thead .v-data-table__checkbox.v-simple-checkbox"
+    ).nth(0);
   }
 
   getRoleCheckbox(roleName) {
