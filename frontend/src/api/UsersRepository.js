@@ -109,13 +109,10 @@ export default {
   },
 
   bulkRemoveUserRoles(clientId, bulkRemovalRequest) {
-    const deleteContent = { data: {userRolesForRemoval: bulkRemovalRequest} };
+    const deleteContent = { data: { userRolesForRemoval: bulkRemovalRequest } };
 
     return umsRequest().then((axiosInstance) =>
-        axiosInstance.delete(
-            `bulk-removal/${clientId}/`,
-            deleteContent
-        )
+      axiosInstance.delete(`bulk-removal/${clientId}/`, deleteContent)
     );
   },
 
