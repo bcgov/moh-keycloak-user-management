@@ -625,6 +625,7 @@
         this.$router.push({ name: "UserCreate" });
       },
       searchUser: async function (queryParameters) {
+        this.selectedUsers = [];
         if (this.noQueryParameters(queryParameters)) {
           this.$store.commit("alert/setAlert", {
             message: "The Search Criteria cannot be blank.",
@@ -651,7 +652,6 @@
             this.handleError("User search failed", error);
           } finally {
             this.userSearchLoadingStatus = false;
-            this.selectedUsers = [];
           }
         }
       },
