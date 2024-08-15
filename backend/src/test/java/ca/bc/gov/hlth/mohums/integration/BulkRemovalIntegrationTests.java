@@ -72,6 +72,14 @@ public class BulkRemovalIntegrationTests {
     private static final String UMS_INTEGRATION_TESTS_CLIENT_ID = "24447cb4-f3b1-455b-89d9-26c081025fb9";
     private static final String BULK_REMOVAL_USER_UMS_1 = "3d78de77-86dc-41a3-a3d9-432a494d9147";
     private static final String BULK_REMOVAL_USER_UMS_2 = "ead9626f-df90-4c95-91d4-e4e447afde5f";
+    private static final String BULK_REMOVAL_USER_UMS_3 = "c5b18aed-b2c7-4a60-9ead-379f2bfa795b";
+    private static final String BULK_REMOVAL_USER_UMS_4 = "f310236b-e294-4746-8536-092a946fef39";
+    private static final String BULK_REMOVAL_USER_UMS_5 = "eea5202b-d9d0-4efd-8b2d-bc0a76a6a8d5";
+    private static final String BULK_REMOVAL_USER_UMS_6 = "9f306a79-2790-4fbc-8a08-e61476fc7ea4";
+    private static final String BULK_REMOVAL_USER_UMS_7 = "57600b08-022f-4781-b88d-a6a756c73c5c";
+    private static final String BULK_REMOVAL_USER_UMS_8 = "97b9a0ec-58ce-4318-b5f6-9b30bfb41e2c";
+    private static final String BULK_REMOVAL_USER_UMS_9 = "ba9ab966-a9a9-4447-904f-60c26a0ac9da";
+    private static final String BULK_REMOVAL_USER_UMS_10 = "6f56aae7-de9c-4a66-92d8-22288f9f11d6";
     private static final String NON_EXISTING = "non-existing";
 
     private LinkedHashMap<String, Object> createRoleRepresentation(String id, String name, String containerId) {
@@ -337,6 +345,51 @@ public class BulkRemovalIntegrationTests {
 
         assertEquals(2, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
         assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_2).size());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void bulkRemoveTwoRolesTenUsersSuccess() {
+        addTestRoles(BULK_REMOVAL_USER_UMS_1);
+        addTestRoles(BULK_REMOVAL_USER_UMS_2);
+        addTestRoles(BULK_REMOVAL_USER_UMS_3);
+        addTestRoles(BULK_REMOVAL_USER_UMS_4);
+        addTestRoles(BULK_REMOVAL_USER_UMS_5);
+        addTestRoles(BULK_REMOVAL_USER_UMS_6);
+        addTestRoles(BULK_REMOVAL_USER_UMS_7);
+        addTestRoles(BULK_REMOVAL_USER_UMS_8);
+        addTestRoles(BULK_REMOVAL_USER_UMS_9);
+        addTestRoles(BULK_REMOVAL_USER_UMS_10);
+
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
+                Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_3, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_4, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_5, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_6, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_7, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_8, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_9, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        BULK_REMOVAL_USER_UMS_10, List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
+
+        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+
+        assertEquals(10, response.size());
+        assertTrue(response.stream()
+                .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
+                .allMatch(responseItem -> responseItem.get("statusCode").equals("NO_CONTENT")));
+
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_2).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_3).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_4).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_5).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_6).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_7).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_8).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_9).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_10).size());
     }
 
 }
