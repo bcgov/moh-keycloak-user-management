@@ -76,7 +76,7 @@ public class MoHUmsIntegrationTests {
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(mohRealmClientId, mohRealmClientSecret);
+        jwt = integrationTestsUtils.getMohApplicationsRealmKcToken(mohRealmClientId, mohRealmClientSecret);
 
         webTestClient = webTestClient
                 .mutate()

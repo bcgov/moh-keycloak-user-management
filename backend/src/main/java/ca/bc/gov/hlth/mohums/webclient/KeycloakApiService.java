@@ -226,8 +226,8 @@ public class KeycloakApiService {
     public List<BulkRemovalResponse> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
         List<BulkRemovalResponse> responseList = new ArrayList<>();
         bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> {
-                    ResponseEntity<Object> keycloakAPIResponse = deleteUserClientRole(userId, clientGuid, rolesToDelete);
-                    responseList.add(new BulkRemovalResponse(keycloakAPIResponse.getBody(), keycloakAPIResponse.getStatusCodeValue(), keycloakAPIResponse.getStatusCode(), userId));
+                    ResponseEntity<Object> keycloakApiResponse = deleteUserClientRole(userId, clientGuid, rolesToDelete);
+                    responseList.add(new BulkRemovalResponse(keycloakApiResponse.getBody(), keycloakApiResponse.getStatusCodeValue(), keycloakApiResponse.getStatusCode(), userId));
                 }
         );
         return responseList;
