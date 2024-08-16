@@ -23,7 +23,7 @@ public class IntegrationTestsUtils {
     String keycloakMasterTokenUri;
 
 
-    public String getMohApplicationsKcAccessToken(String clientId, String clientSecret) throws IOException, InterruptedException, ParseException {
+    public String getMohApplicationsRealmKcToken(String clientId, String clientSecret) throws IOException, InterruptedException, ParseException {
         return getAccessToken(keycloakMohTokenUri, clientId, clientSecret);
     }
 

@@ -3,9 +3,16 @@ package ca.bc.gov.hlth.mohums.model;
 import org.springframework.http.HttpStatus;
 
 public class BulkRemovalResponse {
+    /**
+     * Object body is an actual response from Keycloak API. If the request is successful the body will be empty.
+     * In case of failure an object wth the following structure will be passed: {body: error: {....}}
+     */
     private Object body;
     private int statusCodeValue;
     private HttpStatus statusCode;
+    /**
+     * userId is added to a response, so that it can be associated with a particular user
+     */
     private String userId;
 
     public BulkRemovalResponse(Object body, int statusCodeValue, HttpStatus statusCode, String userId) {

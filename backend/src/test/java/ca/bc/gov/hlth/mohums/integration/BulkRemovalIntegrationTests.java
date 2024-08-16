@@ -53,7 +53,7 @@ public class BulkRemovalIntegrationTests {
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(clientId, clientSecret);
+        jwt = integrationTestsUtils.getMohApplicationsRealmKcToken(clientId, clientSecret);
 
         webTestClient = webTestClient
                 .mutate()

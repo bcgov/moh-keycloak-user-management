@@ -17,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -58,7 +57,7 @@ public class MspDirectApiIntegrationTests {
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(clientId, clientSecret);
+        jwt = integrationTestsUtils.getMohApplicationsRealmKcToken(clientId, clientSecret);
 
         payeeApiWebTestClient = payeeApiWebTestClient
                 .mutate()

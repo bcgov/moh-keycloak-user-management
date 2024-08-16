@@ -361,7 +361,7 @@
                   </template>
 
                   <v-card>
-                    <template v-if="!bulkRemovalConfirmation">
+                    <template v-if="!bulkRemovalResponseIsPresent()">
                       <v-card-title class="text-h5">
                         {{
                           `Are you sure you want to remove access of ${
@@ -391,27 +391,32 @@
                           :key="i"
                         >
                           <template>
-                            <template
-                              v-if="
-                                bulkRemovalResponse &&
-                                bulkRemovalResponse.length
-                              "
-                            >
+                            <template v-if="bulkRemovalResponseIsPresent()">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
                                   <v-list-item-avatar v-bind="attrs" v-on="on">
-                                    <v-icon :class="getIconClass(user.id)" dark>
-                                      {{ getIcon(user.id) }}
+                                    <v-icon
+                                      :class="
+                                        getListItemDetails(user.id).iconClass
+                                      "
+                                      dark
+                                    >
+                                      {{ getListItemDetails(user.id).icon }}
                                     </v-icon>
                                   </v-list-item-avatar>
                                 </template>
-                                <span>{{ getTooltipText(user.id) }}</span>
+                                <span>
+                                  {{ getListItemDetails(user.id).tooltipText }}
+                                </span>
                               </v-tooltip>
                             </template>
                             <template v-else>
                               <v-list-item-avatar>
-                                <v-icon :class="getIconClass(user.id)" dark>
-                                  {{ getIcon(user.id) }}
+                                <v-icon
+                                  :class="getListItemDetails(user.id).iconClass"
+                                  dark
+                                >
+                                  {{ getListItemDetails(user.id).icon }}
                                 </v-icon>
                               </v-list-item-avatar>
                             </template>
@@ -431,13 +436,18 @@
                     </v-card-text>
                     <v-card-actions>
                       <v-spacer></v-spacer>
+                      <!-- If user did not send bulk removal request -->
                       <template
                         v-if="
                           !bulkRemovalRequestInProgress &&
-                          !bulkRemovalConfirmation
+                          !bulkRemovalResponseIsPresent()
                         "
                       >
-                        <v-btn class="primary" text @click="closeDialog">
+                        <v-btn
+                          class="primary"
+                          text
+                          @click="closeBulkRemovalDialog"
+                        >
                           Cancel
                         </v-btn>
                         <v-btn class="error" text @click="removeUserAccess">
@@ -445,7 +455,11 @@
                         </v-btn>
                       </template>
                       <template v-else>
-                        <v-btn class="primary" text @click="closeDialog">
+                        <v-btn
+                          class="primary"
+                          text
+                          @click="closeBulkRemovalDialog"
+                        >
                           Close
                         </v-btn>
                       </template>
@@ -497,9 +511,9 @@
         rolesLoaded: false,
         selectedUsers: [],
         removeAccessDialog: false,
-        bulkRemovalRequestInProgress: false,
-        bulkRemovalConfirmation: false,
+        bulkRemovalRequestInProgress: false, //waiting for a bulk-removal response from UMS
         bulkRemovalResponse: [],
+        bulkRemovalListItemDetails: {},
       };
     },
     async created() {
@@ -717,7 +731,7 @@
         );
       },
       handleError(message, error) {
-        this.closeDialog();
+        this.closeBulkRemovalDialog();
         this.$store.commit("alert/setAlert", {
           message: message + ": " + error,
           type: "error",
@@ -752,15 +766,15 @@
           .catch((error) => {
             this.handleError("Bulk removal request failed", error);
           });
-        this.updateUserSearchResults();
+        this.populateBulkRemovalListItemDetails();
         this.bulkRemovalRequestInProgress = false;
-        this.bulkRemovalConfirmation = true;
       },
-      closeDialog() {
-        this.bulkRemovalConfirmation = false;
+      closeBulkRemovalDialog() {
+        this.updateUserSearchResults();
         this.bulkRemovalRequestInProgress = false;
         this.removeAccessDialog = false;
         this.bulkRemovalResponse = [];
+        this.bulkRemovalListItemDetails = {};
         this.selectedUsers = [];
       },
       getSelectedClientName(id) {
@@ -781,45 +795,48 @@
         });
         return roles;
       },
-      getIcon(userId) {
-        const responseDetails = this.bulkRemovalResponse.find(
-          (details) => details.userId === userId
-        );
-        if (!responseDetails) return "mdi-account";
-        if (responseDetails.statusCode === "NO_CONTENT") {
-          return "mdi-check-circle";
-        } else {
-          return "mdi-alert-circle";
-        }
-      },
-      getIconClass(userId) {
-        const responseDetails = this.bulkRemovalResponse.find(
-          (details) => details.userId === userId
-        );
-        if (!responseDetails) return "grey lighten-1";
-        if (responseDetails.statusCode === "NO_CONTENT") {
-          return "green lighten-1";
-        } else {
-          return "red lighten-1";
-        }
-      },
-      getTooltipText(userId) {
-        const responseDetails = this.bulkRemovalResponse.find(
-          (details) => details.userId === userId
-        );
-        if (responseDetails.statusCode === "NO_CONTENT") {
-          return "Access removed successfully";
-        } else {
-          return "Could not remove access: " + responseDetails.body.error;
-        }
-      },
       updateUserSearchResults() {
-        this.searchResults = this.searchResults.filter(
-          (user) =>
-            !this.bulkRemovalResponse.some(
-              (bulkResponseUser) => bulkResponseUser.userId === user.id
-            )
-        );
+        if (this.bulkRemovalResponseIsPresent()) {
+          this.searchResults = this.searchResults.filter(
+            (user) =>
+              !this.bulkRemovalResponse.some(
+                (bulkResponseUser) => bulkResponseUser.userId === user.id
+              )
+          );
+        }
+      },
+      bulkRemovalResponseIsPresent() {
+        return this.bulkRemovalResponse && this.bulkRemovalResponse.length;
+      },
+      populateBulkRemovalListItemDetails() {
+        this.bulkRemovalResponse.forEach((details) => {
+          if (details.statusCode === "NO_CONTENT") {
+            this.bulkRemovalListItemDetails[details.userId] = {
+              icon: "mdi-check-circle",
+              iconClass: "green lighten-1",
+              tooltipText: "Access removed successfully",
+            };
+          } else {
+            this.bulkRemovalListItemDetails[details.userId] = {
+              icon: "mdi-alert-circle",
+              iconClass: "red lighten-1",
+              tooltipText: `Could not remove access: ${details.body.error}`,
+            };
+          }
+        });
+      },
+      getListItemDetails(userId) {
+        if (
+          !this.bulkRemovalListItemDetails ||
+          Object.keys(this.bulkRemovalListItemDetails).length !== 0
+        ) {
+          return this.bulkRemovalListItemDetails[userId];
+        } else {
+          return {
+            icon: "mdi-account",
+            iconClass: "grey lighten-1",
+          };
+        }
       },
     },
   };

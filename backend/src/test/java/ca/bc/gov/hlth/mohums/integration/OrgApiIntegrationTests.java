@@ -47,7 +47,7 @@ public class OrgApiIntegrationTests {
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
-        jwt = integrationTestsUtils.getMohApplicationsKcAccessToken(clientId, clientSecret);
+        jwt = integrationTestsUtils.getMohApplicationsRealmKcToken(clientId, clientSecret);
 
         orgApiWebTestClient = orgApiWebTestClient
                 .mutate()
