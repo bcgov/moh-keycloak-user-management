@@ -108,7 +108,7 @@ export default {
     );
   },
 
-  bulkRemoveUserRoles(clientId, bulkRemovalRequest) {
+  bulkDeleteUserClientRoles(clientId, bulkRemovalRequest) {
     const deleteContent = { data: { userRolesForRemoval: bulkRemovalRequest } };
 
     return umsRequest().then((axiosInstance) =>
