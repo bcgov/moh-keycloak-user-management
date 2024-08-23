@@ -306,7 +306,7 @@
           loading-text="Searching for users"
           :show-select="bulkRemovalAllowed"
           v-on:click:row="selectUser"
-          v-model="selectedUsers"
+          v-model="usersSelectedForBulkRemoval"
         >
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
           <template #item.username="{ item }">
@@ -342,7 +342,7 @@
               &nbsp; &nbsp;
               <template v-if="bulkRemovalAllowed">
                 <v-dialog
-                  v-model="removeAccessDialog"
+                  v-model="bulkRemoveAccessDialog"
                   persistent
                   scrollable
                   max-width="700"
@@ -354,7 +354,7 @@
                       small
                       v-bind="attrs"
                       v-on="on"
-                      :disabled="selectedUsers.length === 0"
+                      :disabled="usersSelectedForBulkRemoval.length === 0"
                     >
                       Remove Access
                     </v-btn>
@@ -365,8 +365,12 @@
                       <v-card-title class="text-h5">
                         {{
                           `Are you sure you want to remove access of ${
-                            selectedUsers.length
-                          } ${selectedUsers.length > 1 ? `users` : `user`}?`
+                            usersSelectedForBulkRemoval.length
+                          } ${
+                            usersSelectedForBulkRemoval.length > 1
+                              ? `users`
+                              : `user`
+                          }?`
                         }}
                       </v-card-title>
                     </template>
@@ -387,7 +391,7 @@
                         </v-subheader>
                         <v-divider></v-divider>
                         <v-list-item
-                          v-for="(user, i) in selectedUsers"
+                          v-for="(user, i) in usersSelectedForBulkRemoval"
                           :key="i"
                         >
                           <template>
@@ -397,26 +401,38 @@
                                   <v-list-item-avatar v-bind="attrs" v-on="on">
                                     <v-icon
                                       :class="
-                                        getListItemDetails(user.id).iconClass
+                                        getBulkRemovalListItemDetails(user.id)
+                                          .iconClass
                                       "
                                       dark
                                     >
-                                      {{ getListItemDetails(user.id).icon }}
+                                      {{
+                                        getBulkRemovalListItemDetails(user.id)
+                                          .icon
+                                      }}
                                     </v-icon>
                                   </v-list-item-avatar>
                                 </template>
                                 <span>
-                                  {{ getListItemDetails(user.id).tooltipText }}
+                                  {{
+                                    getBulkRemovalListItemDetails(user.id)
+                                      .tooltipText
+                                  }}
                                 </span>
                               </v-tooltip>
                             </template>
                             <template v-else>
                               <v-list-item-avatar>
                                 <v-icon
-                                  :class="getListItemDetails(user.id).iconClass"
+                                  :class="
+                                    getBulkRemovalListItemDetails(user.id)
+                                      .iconClass
+                                  "
                                   dark
                                 >
-                                  {{ getListItemDetails(user.id).icon }}
+                                  {{
+                                    getBulkRemovalListItemDetails(user.id).icon
+                                  }}
                                 </v-icon>
                               </v-list-item-avatar>
                             </template>
@@ -450,7 +466,7 @@
                         >
                           Cancel
                         </v-btn>
-                        <v-btn class="error" text @click="removeUserAccess">
+                        <v-btn class="error" text @click="bulkRemoveUserAccess">
                           Remove Access
                         </v-btn>
                       </template>
@@ -509,8 +525,8 @@
         radios: "",
         lastLogDate: "",
         rolesLoaded: false,
-        selectedUsers: [],
-        removeAccessDialog: false,
+        usersSelectedForBulkRemoval: [],
+        bulkRemoveAccessDialog: false,
         bulkRemovalRequestInProgress: false, //waiting for a bulk-removal response from UMS
         bulkRemovalResponse: [],
         bulkRemovalListItemDetails: {},
@@ -639,7 +655,7 @@
         this.$router.push({ name: "UserCreate" });
       },
       searchUser: async function (queryParameters) {
-        this.selectedUsers = [];
+        this.usersSelectedForBulkRemoval = [];
         if (this.noQueryParameters(queryParameters)) {
           this.$store.commit("alert/setAlert", {
             message: "The Search Criteria cannot be blank.",
@@ -750,32 +766,33 @@
         this.lastLogDate = "";
         this.radios = "";
       },
-      async removeUserAccess() {
+      async bulkRemoveUserAccess() {
         this.bulkRemovalRequestInProgress = true;
         let bulkRemovalRequest = {};
-        this.selectedUsers.forEach((user) => {
+        this.usersSelectedForBulkRemoval.forEach((user) => {
           bulkRemovalRequest[user.id] = this.getRolesRepresentation(user.role);
         });
-        this.bulkRemovalResponse = await UsersRepository.bulkRemoveUserRoles(
-          this.selectedClientId,
-          bulkRemovalRequest
-        )
-          .then((response) => {
-            return response.data;
-          })
-          .catch((error) => {
-            this.handleError("Bulk removal request failed", error);
-          });
+        this.bulkRemovalResponse =
+          await UsersRepository.bulkDeleteUserClientRoles(
+            this.selectedClientId,
+            bulkRemovalRequest
+          )
+            .then((response) => {
+              return response.data;
+            })
+            .catch((error) => {
+              this.handleError("Bulk removal request failed", error);
+            });
         this.populateBulkRemovalListItemDetails();
         this.bulkRemovalRequestInProgress = false;
       },
       closeBulkRemovalDialog() {
-        this.updateUserSearchResults();
+        this.updateUserSearchResultsAfterBulkRemoval();
         this.bulkRemovalRequestInProgress = false;
-        this.removeAccessDialog = false;
+        this.bulkRemoveAccessDialog = false;
         this.bulkRemovalResponse = [];
         this.bulkRemovalListItemDetails = {};
-        this.selectedUsers = [];
+        this.usersSelectedForBulkRemoval = [];
       },
       getSelectedClientName(id) {
         return this.clients.find((client) => client.id === id).clientId;
@@ -795,7 +812,7 @@
         });
         return roles;
       },
-      updateUserSearchResults() {
+      updateUserSearchResultsAfterBulkRemoval() {
         if (this.bulkRemovalResponseIsPresent()) {
           this.searchResults = this.searchResults.filter(
             (user) =>
@@ -825,7 +842,7 @@
           }
         });
       },
-      getListItemDetails(userId) {
+      getBulkRemovalListItemDetails(userId) {
         if (
           !this.bulkRemovalListItemDetails ||
           Object.keys(this.bulkRemovalListItemDetails).length !== 0
