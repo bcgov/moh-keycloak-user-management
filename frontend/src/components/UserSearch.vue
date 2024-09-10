@@ -341,6 +341,22 @@
               </download-csv>
               &nbsp; &nbsp;
               <template v-if="bulkRemovalAllowed">
+                <template v-if="searchResults.length > ITEMS_PER_PAGE">
+                  <v-btn
+                    id="toggle-all-button"
+                    class="primary"
+                    small
+                    v-on:click="toggleAllUsers"
+                  >
+                    {{
+                      usersSelectedForBulkRemoval.length > 0
+                        ? "Unselect all"
+                        : "Select all"
+                    }}
+                  </v-btn>
+                  &nbsp; &nbsp;
+                </template>
+
                 <v-dialog
                   v-model="bulkRemoveAccessDialog"
                   persistent
@@ -516,7 +532,8 @@
         selectedClientId: null,
         clientRoles: [],
         selectedRoles: [],
-        footerProps: { "items-per-page-options": [15] },
+        ITEMS_PER_PAGE: 15,
+        footerProps: {},
         userSearchInput: "",
         lastNameInput: "",
         firstNameInput: "",
@@ -536,6 +553,9 @@
         bulkRemovalResponse: [],
         bulkRemovalListItemDetails: {},
       };
+    },
+    mounted() {
+      this.footerProps = { "items-per-page-options": [this.ITEMS_PER_PAGE] };
     },
     async created() {
       await this.loadClients();
@@ -858,6 +878,15 @@
             icon: "mdi-account",
             iconClass: "grey lighten-1",
           };
+        }
+      },
+      toggleAllUsers() {
+        if (this.usersSelectedForBulkRemoval.length > 0) {
+          this.usersSelectedForBulkRemoval = [];
+        } else {
+          this.searchResults.forEach((user) =>
+            this.usersSelectedForBulkRemoval.push(user)
+          );
         }
       },
     },
