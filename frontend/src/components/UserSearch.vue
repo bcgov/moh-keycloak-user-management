@@ -354,7 +354,12 @@
                       small
                       v-bind="attrs"
                       v-on="on"
-                      :disabled="usersSelectedForBulkRemoval.length === 0"
+                      :disabled="
+                        usersSelectedForBulkRemoval.length === 0 ||
+                        !usersSelectedForBulkRemoval.every(
+                          (user) => 'role' in user
+                        )
+                      "
                     >
                       Remove Access
                     </v-btn>
