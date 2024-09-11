@@ -308,6 +308,15 @@
           v-on:click:row="selectUser"
           v-model="usersSelectedForBulkRemoval"
         >
+          <template v-slot:header.data-table-select>
+            <template v-if="searchResults.length > 0">
+              <v-checkbox
+                :indeterminate="someUsersSelected"
+                :input-value="allUsersSelected"
+                @click="toggleAllUsers"
+              ></v-checkbox>
+            </template>
+          </template>
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
           <template #item.username="{ item }">
             <a
@@ -341,22 +350,6 @@
               </download-csv>
               &nbsp; &nbsp;
               <template v-if="bulkRemovalAllowed">
-                <template v-if="searchResults.length > ITEMS_PER_PAGE">
-                  <v-btn
-                    id="toggle-all-button"
-                    class="primary"
-                    small
-                    v-on:click="toggleAllUsers"
-                  >
-                    {{
-                      usersSelectedForBulkRemoval.length > 0
-                        ? "Unselect all"
-                        : "Select all"
-                    }}
-                  </v-btn>
-                  &nbsp; &nbsp;
-                </template>
-
                 <v-dialog
                   v-model="bulkRemoveAccessDialog"
                   persistent
@@ -532,8 +525,7 @@
         selectedClientId: null,
         clientRoles: [],
         selectedRoles: [],
-        ITEMS_PER_PAGE: 15,
-        footerProps: {},
+        footerProps: { "items-per-page-options": [15] },
         userSearchInput: "",
         lastNameInput: "",
         firstNameInput: "",
@@ -553,9 +545,6 @@
         bulkRemovalResponse: [],
         bulkRemovalListItemDetails: {},
       };
-    },
-    mounted() {
-      this.footerProps = { "items-per-page-options": [this.ITEMS_PER_PAGE] };
     },
     async created() {
       await this.loadClients();
@@ -660,6 +649,18 @@
           ]?.roles.includes("bulk-removal") &&
           this.advancedSearchSelected &&
           !!this.selectedClientId
+        );
+      },
+      someUsersSelected() {
+        return (
+          this.usersSelectedForBulkRemoval.length > 0 &&
+          this.usersSelectedForBulkRemoval.length < this.searchResults.length
+        );
+      },
+      allUsersSelected() {
+        return (
+          this.searchResults.length > 0 &&
+          this.usersSelectedForBulkRemoval.length === this.searchResults.length
         );
       },
     },
@@ -881,12 +882,10 @@
         }
       },
       toggleAllUsers() {
-        if (this.usersSelectedForBulkRemoval.length > 0) {
+        if (this.allUsersSelected) {
           this.usersSelectedForBulkRemoval = [];
         } else {
-          this.searchResults.forEach((user) =>
-            this.usersSelectedForBulkRemoval.push(user)
-          );
+          this.usersSelectedForBulkRemoval = [...this.searchResults];
         }
       },
     },
