@@ -134,10 +134,14 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void clientsAuthorized() throws Exception {
         List<Object> clients = getAll("clients");
 
         Assertions.assertThat(clients).isNotEmpty();
+        Assertions.assertThat(clients.stream()
+                .map(client -> (LinkedHashMap<String, Object>) client)
+                .noneMatch(client -> client.containsKey("secret"))).isTrue();
     }
 
     @Test
