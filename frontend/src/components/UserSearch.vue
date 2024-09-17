@@ -304,8 +304,19 @@
           :footer-props="footerProps"
           :loading="userSearchLoadingStatus"
           loading-text="Searching for users"
+          :show-select="bulkRemovalAllowed"
           v-on:click:row="selectUser"
+          v-model="usersSelectedForBulkRemoval"
         >
+          <template v-slot:header.data-table-select>
+            <template v-if="searchResults.length > 0">
+              <v-checkbox
+                :indeterminate="someUsersSelected"
+                :input-value="allUsersSelected"
+                @click="toggleAllUsers"
+              ></v-checkbox>
+            </template>
+          </template>
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
           <template #item.username="{ item }">
             <a
@@ -337,6 +348,155 @@
                   Download results
                 </v-btn>
               </download-csv>
+              &nbsp; &nbsp;
+              <template v-if="bulkRemovalAllowed">
+                <v-dialog
+                  v-model="bulkRemoveAccessDialog"
+                  persistent
+                  scrollable
+                  max-width="700"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      id="remove-access-button"
+                      class="error"
+                      small
+                      v-bind="attrs"
+                      v-on="on"
+                      :disabled="
+                        usersSelectedForBulkRemoval.length === 0 ||
+                        !usersSelectedForBulkRemoval.every(
+                          (user) => 'role' in user
+                        )
+                      "
+                    >
+                      Remove Access
+                    </v-btn>
+                  </template>
+
+                  <v-card>
+                    <template v-if="!bulkRemovalResponseIsPresent()">
+                      <v-card-title class="text-h5">
+                        {{
+                          `Are you sure you want to remove access of ${
+                            usersSelectedForBulkRemoval.length
+                          } ${
+                            usersSelectedForBulkRemoval.length > 1
+                              ? `users`
+                              : `user`
+                          }?`
+                        }}
+                      </v-card-title>
+                    </template>
+                    <template v-else>
+                      <v-card-title>Operation complete</v-card-title>
+                    </template>
+
+                    <v-card-text>
+                      <v-list>
+                        <v-subheader>
+                          {{ getSelectedClientName(selectedClientId) }}
+                          <v-spacer></v-spacer>
+                          <v-progress-circular
+                            v-if="bulkRemovalRequestInProgress"
+                            color="primary"
+                            indeterminate
+                          ></v-progress-circular>
+                        </v-subheader>
+                        <v-divider></v-divider>
+                        <v-list-item
+                          v-for="(user, i) in usersSelectedForBulkRemoval"
+                          :key="i"
+                        >
+                          <template>
+                            <template v-if="bulkRemovalResponseIsPresent()">
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                  <v-list-item-avatar v-bind="attrs" v-on="on">
+                                    <v-icon
+                                      :class="
+                                        getBulkRemovalListItemDetails(user.id)
+                                          .iconClass
+                                      "
+                                      dark
+                                    >
+                                      {{
+                                        getBulkRemovalListItemDetails(user.id)
+                                          .icon
+                                      }}
+                                    </v-icon>
+                                  </v-list-item-avatar>
+                                </template>
+                                <span>
+                                  {{
+                                    getBulkRemovalListItemDetails(user.id)
+                                      .tooltipText
+                                  }}
+                                </span>
+                              </v-tooltip>
+                            </template>
+                            <template v-else>
+                              <v-list-item-avatar>
+                                <v-icon
+                                  :class="
+                                    getBulkRemovalListItemDetails(user.id)
+                                      .iconClass
+                                  "
+                                  dark
+                                >
+                                  {{
+                                    getBulkRemovalListItemDetails(user.id).icon
+                                  }}
+                                </v-icon>
+                              </v-list-item-avatar>
+                            </template>
+                          </template>
+
+                          <v-list-item-content>
+                            <v-list-item-title
+                              v-text="user.username"
+                            ></v-list-item-title>
+
+                            <v-list-item-subtitle
+                              v-text="user.role"
+                            ></v-list-item-subtitle>
+                          </v-list-item-content>
+                        </v-list-item>
+                      </v-list>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <!-- If user did not send bulk removal request -->
+                      <template
+                        v-if="
+                          !bulkRemovalRequestInProgress &&
+                          !bulkRemovalResponseIsPresent()
+                        "
+                      >
+                        <v-btn
+                          class="primary"
+                          text
+                          @click="closeBulkRemovalDialog"
+                        >
+                          Cancel
+                        </v-btn>
+                        <v-btn class="error" text @click="bulkRemoveUserAccess">
+                          Remove Access
+                        </v-btn>
+                      </template>
+                      <template v-else>
+                        <v-btn
+                          class="primary"
+                          text
+                          @click="closeBulkRemovalDialog"
+                        >
+                          Close
+                        </v-btn>
+                      </template>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </template>
             </v-toolbar>
           </template>
         </v-data-table>
@@ -379,6 +539,11 @@
         radios: "",
         lastLogDate: "",
         rolesLoaded: false,
+        usersSelectedForBulkRemoval: [],
+        bulkRemoveAccessDialog: false,
+        bulkRemovalRequestInProgress: false, //waiting for a bulk-removal response from UMS
+        bulkRemovalResponse: [],
+        bulkRemovalListItemDetails: {},
       };
     },
     async created() {
@@ -477,6 +642,27 @@
           umsClientId
         ].roles.includes(createUserRoleName);
       },
+      bulkRemovalAllowed() {
+        return (
+          this.$keycloak.tokenParsed.resource_access?.[
+            "USER-MANAGEMENT-SERVICE"
+          ]?.roles.includes("bulk-removal") &&
+          this.advancedSearchSelected &&
+          !!this.selectedClientId
+        );
+      },
+      someUsersSelected() {
+        return (
+          this.usersSelectedForBulkRemoval.length > 0 &&
+          this.usersSelectedForBulkRemoval.length < this.searchResults.length
+        );
+      },
+      allUsersSelected() {
+        return (
+          this.searchResults.length > 0 &&
+          this.usersSelectedForBulkRemoval.length === this.searchResults.length
+        );
+      },
     },
     methods: {
       openNewTab: function () {
@@ -495,6 +681,7 @@
         this.$router.push({ name: "UserCreate" });
       },
       searchUser: async function (queryParameters) {
+        this.usersSelectedForBulkRemoval = [];
         if (this.noQueryParameters(queryParameters)) {
           this.$store.commit("alert/setAlert", {
             message: "The Search Criteria cannot be blank.",
@@ -586,6 +773,7 @@
         );
       },
       handleError(message, error) {
+        this.closeBulkRemovalDialog();
         this.$store.commit("alert/setAlert", {
           message: message + ": " + error,
           type: "error",
@@ -603,6 +791,102 @@
         this.selectedClientId = null;
         this.lastLogDate = "";
         this.radios = "";
+      },
+      async bulkRemoveUserAccess() {
+        this.bulkRemovalRequestInProgress = true;
+        let bulkRemovalRequest = {};
+        this.usersSelectedForBulkRemoval.forEach((user) => {
+          bulkRemovalRequest[user.id] = this.getRolesRepresentation(user.role);
+        });
+        this.bulkRemovalResponse =
+          await UsersRepository.bulkDeleteUserClientRoles(
+            this.selectedClientId,
+            bulkRemovalRequest
+          )
+            .then((response) => {
+              return response.data;
+            })
+            .catch((error) => {
+              this.handleError("Bulk removal request failed", error);
+            });
+        this.populateBulkRemovalListItemDetails();
+        this.bulkRemovalRequestInProgress = false;
+      },
+      closeBulkRemovalDialog() {
+        this.updateUserSearchResultsAfterBulkRemoval();
+        this.bulkRemovalRequestInProgress = false;
+        this.bulkRemoveAccessDialog = false;
+        this.bulkRemovalResponse = [];
+        this.bulkRemovalListItemDetails = {};
+        this.usersSelectedForBulkRemoval = [];
+      },
+      getSelectedClientName(id) {
+        return this.clients.find((client) => client.id === id).clientId;
+      },
+      getRolesRepresentation(roleNames) {
+        let tmp = roleNames.split(",").map((name) => name.trim());
+        let roles = [];
+        tmp.forEach((name) => {
+          let matchingRole = this.clientRoles.find((r) => r.name === name);
+          if (matchingRole) {
+            //In order for keycloak API to accept the payload, we need to filter out clientId from the RoleRepresentation
+            //Destructuring the object and discarding the clientId
+            const { ...roleRepresentation } = matchingRole;
+            delete roleRepresentation.clientId;
+            roles.push(roleRepresentation);
+          }
+        });
+        return roles;
+      },
+      updateUserSearchResultsAfterBulkRemoval() {
+        if (this.bulkRemovalResponseIsPresent()) {
+          this.searchResults = this.searchResults.filter(
+            (user) =>
+              !this.bulkRemovalResponse.some(
+                (bulkResponseUser) => bulkResponseUser.userId === user.id
+              )
+          );
+        }
+      },
+      bulkRemovalResponseIsPresent() {
+        return this.bulkRemovalResponse && this.bulkRemovalResponse.length;
+      },
+      populateBulkRemovalListItemDetails() {
+        this.bulkRemovalResponse.forEach((details) => {
+          if (details.statusCode === "NO_CONTENT") {
+            this.bulkRemovalListItemDetails[details.userId] = {
+              icon: "mdi-check-circle",
+              iconClass: "green lighten-1",
+              tooltipText: "Access removed successfully",
+            };
+          } else {
+            this.bulkRemovalListItemDetails[details.userId] = {
+              icon: "mdi-alert-circle",
+              iconClass: "red lighten-1",
+              tooltipText: `Could not remove access: ${details.body.error}`,
+            };
+          }
+        });
+      },
+      getBulkRemovalListItemDetails(userId) {
+        if (
+          !this.bulkRemovalListItemDetails ||
+          Object.keys(this.bulkRemovalListItemDetails).length !== 0
+        ) {
+          return this.bulkRemovalListItemDetails[userId];
+        } else {
+          return {
+            icon: "mdi-account",
+            iconClass: "grey lighten-1",
+          };
+        }
+      },
+      toggleAllUsers() {
+        if (this.allUsersSelected) {
+          this.usersSelectedForBulkRemoval = [];
+        } else {
+          this.usersSelectedForBulkRemoval = [...this.searchResults];
+        }
       },
     },
   };

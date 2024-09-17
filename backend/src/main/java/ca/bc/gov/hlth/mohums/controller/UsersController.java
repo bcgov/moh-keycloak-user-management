@@ -1,21 +1,18 @@
 package ca.bc.gov.hlth.mohums.controller;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import ca.bc.gov.hlth.mohums.exceptions.BulkRemovalRequestException;
+import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
+import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
+import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
+import ca.bc.gov.hlth.mohums.model.UserPayee;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
+import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
+import ca.bc.gov.hlth.mohums.validator.BulkRemovalRequestValidator;
+import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
+import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
+import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,26 +24,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
-import ca.bc.gov.hlth.mohums.model.UserPayee;
-import ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser;
-import ca.bc.gov.hlth.mohums.validator.PermissionsValidator;
-import ca.bc.gov.hlth.mohums.webclient.KeycloakApiService;
-import ca.bc.gov.hlth.mohums.webclient.PayeeApiService;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 @RestController
 public class UsersController {
-	
+
     private static final String KEY_PAYEE_NUMBER = "payeeNumber";
 
     @Autowired
@@ -55,8 +46,10 @@ public class UsersController {
     @Autowired
     private PermissionsValidator permissionsValidator;
 
+    private final BulkRemovalRequestValidator bulkRemovalRequestValidator = new BulkRemovalRequestValidator();
+
     private final KeycloakApiService keycloakApiService;
-    
+
     private final PayeeApiService payeeApiService;
 
     private final String vanityHostname;
@@ -190,6 +183,38 @@ public class UsersController {
         }
     }
 
+    /**
+     *
+     * @param token - bulk-removal role required
+     * @param clientGuid - id of a client, container of the roles that will be unassigned from users
+     * @param removalRequest - map of user id and list of roles to be unassigned from the user
+     * @return list of responses from Keycloak API with corresponding status codes
+     *
+     * Firstly, requester permissions and validity of client id are checked
+     * Secondly, the removal request is being validated. It is a required parameter. It must contain user id and a non-empty list of roles to be unassigned
+     * For each map entry, the method calls Keycloak API which revokes roles from the user. Those calls are not transactional - one can fail, but other can be processed.
+     *
+     * In case of a success the Keycloak API call returns a 204 status (NO_CONTENT)
+     * If user id from the request body cannot be associated with a Keycloak user, the Keycloak API will return 404 status (NOT_FOUND)
+     * If role id from the request body cannot be associated with a Keycloak user, the Keycloak API will return 404 status (NOT_FOUND).
+     * If at least one of the roles from the map entry is invalid, the Keycloak API call for this entry fails.
+     */
+    @DeleteMapping("/bulk-removal/{clientGuid}")
+    public ResponseEntity<List<BulkRemovalResponse>> bulkRemoveUserClientRoles(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String clientGuid,
+            @RequestBody BulkRemovalRequest removalRequest) {
+        if (isAuthorizedToViewClient(token, clientGuid)) {
+            Optional<String> removalRequestValidationError = bulkRemovalRequestValidator.validateBulkRemovalRequest(removalRequest);
+            removalRequestValidationError.ifPresent(message -> {
+                throw new BulkRemovalRequestException(message);
+            });
+            return ResponseEntity.ok(keycloakApiService.bulkRemoveUserClientRoles(clientGuid, removalRequest));
+        } else {
+            throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
+        }
+    }
+
     @GetMapping("/users/{userId}/last-logins")
     public ResponseEntity<Object> getUserLogins(@PathVariable String userId) {
         int maxRecords = 5000;
@@ -235,10 +260,10 @@ public class UsersController {
     }
 
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
-    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm){
+    public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
         return keycloakApiService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
     }
-    
+
     @GetMapping("/users/{userId}/payee")
     public ResponseEntity<Object> getUserPayee(@PathVariable String userId) {
         try {
@@ -250,7 +275,7 @@ public class UsersController {
             }
             // Create a new Response as returning the original response creates intermittent
             // network errors for the client 
-            return new ResponseEntity<Object>(response.getBody(), response.getStatusCode());            
+            return new ResponseEntity<Object>(response.getBody(), response.getStatusCode());
         } catch (Exception e) {
             // WebFlux will thrown an exception if the Body isn't as expected (which can happen with a Payee API exception)
             // so catch and return a 500
@@ -258,7 +283,7 @@ public class UsersController {
         }
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @PutMapping("/users/{userId}/payee")
     public ResponseEntity<Object> updateUserPayee(@PathVariable String userId, @RequestBody(required = false) String payee) {
@@ -365,5 +390,10 @@ public class UsersController {
         dateFrom.ifPresent(dateFromValue -> queryEventParams.add("dateFrom", dateFromValue));
         dateTo.ifPresent(dateToValue -> queryEventParams.add("dateTo", dateToValue));
         return queryEventParams;
+    }
+
+    @ExceptionHandler(BulkRemovalRequestException.class)
+    public ResponseEntity<String> handleBulkRemovalExceptions(BulkRemovalRequestException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
