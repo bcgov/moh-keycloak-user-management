@@ -34,8 +34,20 @@ public class KeycloakApiService {
     }
 
     // Clients
+    @SuppressWarnings("unchecked")
     public ResponseEntity<List<Object>> getClients() {
-        return keycloakMohExternalApiCaller.getList(CLIENTS_PATH);
+        ResponseEntity<List<Object>> clientsResponse = keycloakMohExternalApiCaller.getList(CLIENTS_PATH);
+        if(clientsResponse.getStatusCode().is2xxSuccessful() && clientsResponse.hasBody()){
+            List<Object> clientsWithoutSecret = clientsResponse.getBody().stream()
+                    .map(client -> {
+                        LinkedHashMap<String, Object> clientMap = (LinkedHashMap<String, Object>) client;
+                        clientMap.remove("secret");
+                        return clientMap;
+                    })
+                    .collect(Collectors.toList());
+            clientsResponse = new ResponseEntity<>(clientsWithoutSecret, clientsResponse.getHeaders(), clientsResponse.getStatusCode());
+        }
+        return clientsResponse;
 
     }
 
