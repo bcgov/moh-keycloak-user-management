@@ -15,7 +15,7 @@
             <li>
               <a
                 href="/umc-guide.pdf"
-                download="HLTH Keycloak User Management Console User Guide.docx"
+                download="HLTH Keycloak User Management Console User Guide.pdf"
               >
                 User Guide
               </a>
