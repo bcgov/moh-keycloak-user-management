@@ -16,7 +16,7 @@ let initOptions = {
 let kcLogin = keycloak.login;
 keycloak.login = (options) => {
   if (process.env.NODE_ENV !== "development") {
-    options.idpHint = "idir";
+    options.idpHint = "idir_aad";
   }
   return kcLogin(options);
 };
