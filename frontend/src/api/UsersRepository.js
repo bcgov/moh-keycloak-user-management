@@ -108,6 +108,14 @@ export default {
     );
   },
 
+  bulkDeleteUserClientRoles(clientId, bulkRemovalRequest) {
+    const deleteContent = { data: { userRolesForRemoval: bulkRemovalRequest } };
+
+    return umsRequest().then((axiosInstance) =>
+      axiosInstance.delete(`bulk-removal/${clientId}/`, deleteContent)
+    );
+  },
+
   /* User Groups */
   getUserGroups(userId) {
     return umsRequest().then((axiosInstance) =>
