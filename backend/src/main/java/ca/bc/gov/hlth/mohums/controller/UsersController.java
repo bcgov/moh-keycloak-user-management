@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
@@ -86,7 +87,7 @@ public class UsersController {
      * @return a list of Users that match the specified criteria
      */
     @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>> getUsers(
+    public ResponseEntity<?> getUsers(
             @RequestParam Optional<Boolean> briefRepresentation,
             @RequestParam Optional<String> email,
             @RequestParam Optional<String> firstName,
@@ -100,6 +101,10 @@ public class UsersController {
             @RequestParam Optional<String[]> selectedRoles) {
 
         UserSearchParameters params = new UserSearchParameters(briefRepresentation, email, firstName, lastName, search, username, org, clientId, selectedRoles, lastLogAfter, lastLogBefore);
+        List<String> errors = params.validateParameters();
+        if(!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(errors.stream().collect(Collectors.joining()));
+        }
         List<UserDTO> a = userService.getUsers(params);
         return ResponseEntity.ok(a);
     }
