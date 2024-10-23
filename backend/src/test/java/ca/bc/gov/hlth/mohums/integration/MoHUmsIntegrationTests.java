@@ -163,7 +163,6 @@ public class MoHUmsIntegrationTests {
                 Arguments.of("lastLogAfter", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in after date\" must be in yyyy-mm-dd format."),
                 Arguments.of("lastLogBefore", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format."),
                 Arguments.of("lastLogBefore", Optional.of("random text"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format.")
-
         );
     }
 
