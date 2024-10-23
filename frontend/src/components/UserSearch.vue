@@ -29,7 +29,7 @@
           v-model.trim="userSearchInput"
           placeholder="Username, email, name"
           @keyup.enter="
-            searchUser('&search=' + userSearchInput.replaceAll('\\', '%5C'))
+            searchUser('&search=' + encodeURIComponent(userSearchInput))
           "
         />
       </v-col>
@@ -39,7 +39,7 @@
           class="primary"
           medium
           @click.native="
-            searchUser('&search=' + userSearchInput.replaceAll('\\', '%5C'))
+            searchUser('&search=' + encodeURIComponent(userSearchInput))
           "
         >
           Search Users
@@ -177,6 +177,7 @@
               outlined
               dense
               clearable
+              readonly
               @keyup.enter="searchUser(advancedSearchParams)"
             ></v-text-field>
           </template>
@@ -558,11 +559,7 @@
           "firstName",
           this.firstNameInput
         );
-        params = this.addQueryParameter(
-          params,
-          "username",
-          this.usernameInput.replaceAll("\\", "%5C")
-        );
+        params = this.addQueryParameter(params, "username", this.usernameInput);
         params = this.addQueryParameter(params, "email", this.emailInput);
         params = this.addQueryParameter(params, "org", this.organizationInput);
         if (this.radios == "Before" && this.lastLogDate) {
@@ -721,7 +718,7 @@
       },
       addQueryParameter: function (parameters, parameter, value) {
         if (value) {
-          parameters += "&" + parameter + "=" + value;
+          parameters += "&" + parameter + "=" + encodeURIComponent(value);
         }
         return parameters;
       },
