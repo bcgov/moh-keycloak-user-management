@@ -56,6 +56,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${user-management-client.roles.manage-org}")
     private String manageOrganizationsRole;
 
+    @Value("${user-management-client.roles.bulk-removal}")
+    private String bulkRemovalRole;
+
     @Value("${config.allowed-origins}")
     private String allowedOrigins;
 
@@ -70,6 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors(Customizer.withDefaults())
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
+                .mvcMatchers(HttpMethod.DELETE,"/bulk-removal/**").hasRole(bulkRemovalRole)
                 .mvcMatchers(HttpMethod.GET,"/realms").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET, "/dashboard/**").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET,"/events/**").hasRole(viewEventsRole)

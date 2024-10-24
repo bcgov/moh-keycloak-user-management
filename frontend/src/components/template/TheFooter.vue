@@ -12,6 +12,14 @@
                 Contact Us
               </a>
             </li>
+            <li>
+              <a
+                href="/umc-guide.pdf"
+                download="HLTH Keycloak User Management Console User Guide.pdf"
+              >
+                User Guide
+              </a>
+            </li>
           </ul>
         </v-col>
         <v-col class="col-3">
