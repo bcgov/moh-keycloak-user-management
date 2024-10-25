@@ -1,5 +1,7 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
+import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
+import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
 import ca.bc.gov.hlth.mohums.model.Group;
 import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -108,6 +110,7 @@ public class KeycloakApiService {
                 .filter(user -> !isServiceAccount(user))
                 .collect(Collectors.toList());
     }
+
     @SuppressWarnings("unchecked")
     public ResponseEntity<Object> getUser(String userId) {
         String path = USERS_PATH + "/" + userId;
@@ -123,7 +126,7 @@ public class KeycloakApiService {
         return userResponse;
     }
 
-    private boolean isServiceAccount(LinkedHashMap<String, Object> userAttributes){
+    private boolean isServiceAccount(LinkedHashMap<String, Object> userAttributes) {
         return userAttributes.get(USERNAME_ATTRIBUTE).toString().startsWith(SERVICE_ACCOUNT_PREFIX);
     }
 
@@ -189,17 +192,17 @@ public class KeycloakApiService {
     public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
 
         ArrayList<ResponseEntity<Object>> deleteIDPLinkResponses = new ArrayList<>();
-        if(identityProvider.startsWith("bcsc")){
+        if (identityProvider.startsWith("bcsc")) {
             LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
             ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
             federatedIdentities.forEach(fi -> {
                 String idpAlias = fi.get("identityProvider");
-                if(idpAlias.startsWith("bcsc")){
+                if (idpAlias.startsWith("bcsc")) {
                     ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, idpAlias);
                     deleteIDPLinkResponses.add(response);
                 }
             });
-        }else{
+        } else {
             ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, identityProvider);
             deleteIDPLinkResponses.add(response);
         }
@@ -230,5 +233,15 @@ public class KeycloakApiService {
 
     private boolean identityProviderLinkDeletedSuccessfully(List<ResponseEntity<Object>> deleteIdentityProviderLinkResponses) {
         return deleteIdentityProviderLinkResponses.stream().allMatch(deleteIdentityProviderLinkResponse -> deleteIdentityProviderLinkResponse.getStatusCode().equals(HttpStatus.NO_CONTENT));
+    }
+
+    public List<BulkRemovalResponse> bulkRemoveUserClientRoles(String clientGuid, BulkRemovalRequest bulkRemovalRequest) {
+        List<BulkRemovalResponse> responseList = new ArrayList<>();
+        bulkRemovalRequest.getUserRolesForRemoval().forEach((userId, rolesToDelete) -> {
+                    ResponseEntity<Object> keycloakApiResponse = deleteUserClientRole(userId, clientGuid, rolesToDelete);
+                    responseList.add(new BulkRemovalResponse(keycloakApiResponse.getBody(), keycloakApiResponse.getStatusCodeValue(), keycloakApiResponse.getStatusCode(), userId));
+                }
+        );
+        return responseList;
     }
 }
