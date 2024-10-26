@@ -10,9 +10,18 @@
               <h2 class="group-name">{{ group.name }}</h2>
               <v-divider></v-divider>
               <v-list dense v-if="group.members">
-                <v-list-item v-for="member in group.members" :key="member.id">
+                <div class="group-members-header">
+                  <span class="column-header">Username</span>
+                  <span class="column-header">First Name</span>
+                  <span class="column-header">Last Name</span>
+                  <span class="column-header">Email</span>
+                </div>
+                <v-list-item v-for="member in group.members" :key="member.id" class="member-row">
                   <v-list-item-content>
-                    <p class="member-name">{{ member.username }}</p>
+                    <span class="member-username">{{ member.username }}</span>
+                    <span class="member-first-name">{{ member.firstName }}</span>
+                    <span class="member-last-name">{{ member.lastName }}</span>
+                    <span class="member-email">{{ member.email }}</span>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -96,9 +105,34 @@ export default {
   color: #333;
 }
 
-.member-name {
+.group-members-header {
+  display: flex;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.column-header {
+  flex: 1;
+  text-align: left;
+}
+
+.member-row {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.member-username,
+.member-first-name,
+.member-last-name,
+.member-email {
+  flex: 1;
   color: #555;
   font-size: 1rem;
   margin-left: 10px;
+}
+
+.member-username {
+  margin-left: 0;
 }
 </style>
