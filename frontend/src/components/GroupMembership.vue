@@ -11,10 +11,18 @@
               <v-divider></v-divider>
               <v-list dense v-if="group.members">
                 <div class="group-members-header">
-                  <span class="column-header">Username</span>
-                  <span class="column-header">First Name</span>
-                  <span class="column-header">Last Name</span>
-                  <span class="column-header">Email</span>
+                  <span class="column-header">
+                    <v-icon small>mdi-account</v-icon> Username
+                  </span>
+                  <span class="column-header">
+                    <v-icon small>mdi-account</v-icon> First Name
+                  </span>
+                  <span class="column-header">
+                    <v-icon small>mdi-account</v-icon> Last Name
+                  </span>
+                  <span class="column-header">
+                    <v-icon small>mdi-email</v-icon> Email
+                  </span>
                 </div>
                 <v-list-item v-for="member in group.members" :key="member.id" class="member-row">
                   <v-list-item-content>
@@ -100,7 +108,7 @@ export default {
 }
 
 .group-name {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: #333;
 }
@@ -110,6 +118,8 @@ export default {
   font-weight: bold;
   color: #555;
   margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
 }
 
 .column-header {
@@ -120,6 +130,13 @@ export default {
 .member-row {
   display: flex;
   margin-bottom: 5px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.member-row:nth-child(even) {
+  background-color: #f2f2f2;
 }
 
 .member-username,
@@ -135,4 +152,8 @@ export default {
 .member-username {
   margin-left: 0;
 }
+
+/*.member-row:hover {*/
+/*  background-color: #e8f4fc;*/
+/*}*/
 </style>
