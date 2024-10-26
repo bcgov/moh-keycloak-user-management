@@ -1,23 +1,27 @@
 <template>
-  <v-card outlined class="user-groups">
-    <v-card-title>User Groups and Members</v-card-title>
+  <div id="group-membership">
+    <h1 class="heading">Group Memberships</h1>
+    <v-divider></v-divider>
     <v-card-text>
       <v-list dense>
         <v-list-item v-for="group in userGroups" :key="group.id">
           <v-list-item-content>
-            <v-list-item-title>{{ group.name }}</v-list-item-title>
-            <v-list dense v-if="group.members">
-              <v-list-item v-for="member in group.members" :key="member.id">
-                <v-list-item-content>
-                  <v-list-item-title>{{ member.username }}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+            <v-card class="group-card" outlined>
+              <h2 class="group-name">{{ group.name }}</h2>
+              <v-divider></v-divider>
+              <v-list dense v-if="group.members">
+                <v-list-item v-for="member in group.members" :key="member.id">
+                  <v-list-item-content>
+                    <p class="member-name">{{ member.username }}</p>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-card>
           </v-list-item-content>
         </v-list-item>
       </v-list>
     </v-card-text>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -66,8 +70,35 @@ export default {
 </script>
 
 <style scoped>
-.user-groups {
-  margin-top: 30px;
+#group-membership {
+  margin-top: 20px;
   padding: 16px;
+}
+
+.heading {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.group-card {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.group-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.member-name {
+  color: #555;
+  font-size: 1rem;
+  margin-left: 10px;
 }
 </style>
