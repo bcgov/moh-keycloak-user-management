@@ -36,6 +36,16 @@
             Organizations
           </router-link>
         </li>
+        <li
+          :class="$route.name == 'GroupMembership' ? 'active' : 'inactive'"
+        >
+          <router-link
+            @click.native="resetAlert"
+            :to="{ name: 'GroupMembership' }"
+          >
+            Group Membership
+          </router-link>
+        </li>
       </ul>
     </div>
   </nav>
