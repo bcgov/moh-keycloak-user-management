@@ -502,34 +502,12 @@
         </v-data-table>
       </v-col>
     </v-row>
-
-    <!-- Box Showing Current User Groups and Members -->
-    <v-card outlined class="user-groups">
-      <v-card-title>User Groups and Members</v-card-title>
-      <v-card-text>
-        <v-list dense>
-          <v-list-item v-for="group in userGroups" :key="group.id">
-            <v-list-item-content>
-              <v-list-item-title>{{ group.name }}</v-list-item-title>
-              <v-list dense v-if="group.members">
-                <v-list-item v-for="member in group.members" :key="member.id">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ member.username }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
   </div>
 </template>
 
 <script>
   import ClientsRepository from "@/api/ClientsRepository";
   import UsersRepository from "@/api/UsersRepository";
-  import GroupsRepository from "@/api/GroupsRepository";
 
   const options = { dateStyle: "short" };
   const formatDate = new Intl.DateTimeFormat("en-CA", options).format;
@@ -538,7 +516,6 @@
     name: "UserSearch",
     data() {
       return {
-        userGroups: [],
         organizations: this.$organizations.map((item) => {
           item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
           item.text = `${item.organizationId} - ${item.name}`;
@@ -571,7 +548,6 @@
     },
     async created() {
       await this.loadClients();
-      this.loadUserGroups();
     },
     computed: {
       advancedSearchParams() {
@@ -689,25 +665,6 @@
       },
     },
     methods: {
-      async loadUserGroups() {
-        try {
-          const groups = await UsersRepository.getUserGroups(this.$keycloak.tokenParsed.sub);
-          this.userGroups = groups.data;
-          await this.loadGroupMembers();
-        } catch (error) {
-          this.handleError("Failed to load user groups", error);
-        }
-      },
-      async loadGroupMembers() {
-        try {
-          for (let group of this.userGroups) {
-            const members = await GroupsRepository.getGroupMembers(group.id);
-            this.$set(group, 'members', members.data);
-          }
-        } catch (error) {
-          this.handleError("Failed to load group members", error);
-        }
-      },
       openNewTab: function () {
         this.newTab = true;
       },
@@ -964,9 +921,5 @@
   #clear-search-button-basic {
     margin-top: 25px;
     margin-left: 20px;
-  }
-  .user-groups {
-    margin-top: 30px;
-    padding: 16px;
   }
 </style>

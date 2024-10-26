@@ -35,11 +35,6 @@ public class KeycloakApiService {
         this.keycloakMasterExternalApiCaller = keycloakMasterExternalApiCaller;
     }
 
-    public ResponseEntity<Object> getGroupMembers(String groupId) {
-        String path = String.format("%s/%s/members", GROUPS_PATH, groupId);
-        return keycloakMohExternalApiCaller.get(path, null);
-    }
-
     // Clients
     @SuppressWarnings("unchecked")
     public ResponseEntity<List<Object>> getClients() {
