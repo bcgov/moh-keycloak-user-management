@@ -1,42 +1,34 @@
 <template>
   <div id="group-membership">
-    <h1 class="heading">Group Memberships</h1>
+    <h1 class="heading">Group Membership</h1>
     <v-divider></v-divider>
-    <v-card-text>
-      <v-list dense>
-        <v-list-item v-for="group in userGroups" :key="group.id">
-          <v-list-item-content>
-            <v-card class="group-card" outlined>
-              <h2 class="group-name">{{ group.name }}</h2>
-              <v-divider></v-divider>
-              <v-list dense v-if="group.members">
-                <div class="group-members-header">
-                  <span class="column-header">
-                    <v-icon small>mdi-account</v-icon> Username
-                  </span>
-                  <span class="column-header">
-                    <v-icon small>mdi-account</v-icon> First Name
-                  </span>
-                  <span class="column-header">
-                    <v-icon small>mdi-account</v-icon> Last Name
-                  </span>
-                  <span class="column-header">
-                    <v-icon small>mdi-email</v-icon> Email
-                  </span>
-                </div>
-                <v-list-item v-for="member in group.members" :key="member.id" class="member-row">
-                  <v-list-item-content>
-                    <span class="member-username">{{ member.username }}</span>
-                    <span class="member-first-name">{{ member.firstName }}</span>
-                    <span class="member-last-name">{{ member.lastName }}</span>
-                    <span class="member-email">{{ member.email }}</span>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+    <v-skeleton-loader
+        v-if="userGroups.length === 0"
+        type="table"
+        :loading="true"
+    ></v-skeleton-loader>
+    <v-card-text v-for="group in userGroups" :key="group.id" v-else>
+      <h2 class="group-name">{{ group.name }}</h2>
+      <v-data-table
+          :headers="groupHeaders"
+          :items="group.members"
+          class="elevation-1"
+          :items-per-page="5"
+          hide-default-footer
+      >
+        <template v-slot:item.username="{ item }">
+          <span>{{ item.username }}</span>
+        </template>
+        <template v-slot:item.firstName="{ item }">
+          <span>{{ item.firstName }}</span>
+        </template>
+        <template v-slot:item.lastName="{ item }">
+          <span>{{ item.lastName }}</span>
+        </template>
+        <template v-slot:item.email="{ item }">
+          <span>{{ item.email }}</span>
+        </template>
+      </v-data-table>
     </v-card-text>
   </div>
 </template>
@@ -50,6 +42,12 @@ export default {
   data() {
     return {
       userGroups: [],
+      groupHeaders: [
+        { text: "Username", value: "username" },
+        { text: "First Name", value: "firstName" },
+        { text: "Last Name", value: "lastName" },
+        { text: "Email", value: "email" },
+      ],
     };
   },
   async created() {
@@ -68,8 +66,8 @@ export default {
     async loadGroupMembers() {
       try {
         for (let group of this.userGroups) {
-          const members = await GroupsRepository.getGroupMembers(group.id);
-          this.$set(group, 'members', members.data);
+          const groupMembers = await GroupsRepository.getGroupMembers(group.id);
+          this.$set(group, 'members', groupMembers.data);
         }
       } catch (error) {
         this.handleError("Failed to load group members", error);
@@ -99,61 +97,14 @@ export default {
   margin-bottom: 20px;
 }
 
-.group-card {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  padding: 16px;
-  border: 1px solid #e0e0e0;
-  background-color: #f9f9f9;
-}
-
 .group-name {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  margin-top: 20px;
+  color: #444;
 }
 
-.group-members-header {
-  display: flex;
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  border-radius: 4px;
+.v-data-table {
+  margin-top: 10px;
 }
-
-.column-header {
-  flex: 1;
-  text-align: left;
-}
-
-.member-row {
-  display: flex;
-  margin-bottom: 5px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.member-row:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-.member-username,
-.member-first-name,
-.member-last-name,
-.member-email {
-  flex: 1;
-  color: #555;
-  font-size: 1rem;
-  margin-left: 10px;
-}
-
-.member-username {
-  margin-left: 0;
-}
-
-/*.member-row:hover {*/
-/*  background-color: #e8f4fc;*/
-/*}*/
 </style>
