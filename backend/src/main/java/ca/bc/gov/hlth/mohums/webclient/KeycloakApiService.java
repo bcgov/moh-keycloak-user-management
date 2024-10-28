@@ -68,6 +68,12 @@ public class KeycloakApiService {
         return keycloakMohExternalApiCaller.getList(path, queryParams);
     }
 
+    public ResponseEntity<List<Object>> getUsersInRoleInGivenRealm(String realmName, String clientId, String roleName,
+                                                                   MultiValueMap<String, String> queryParams) {
+        String path = String.format("/%s/%s/%s/roles/%s/users", realmName, CLIENTS_PATH, clientId, roleName);
+        return keycloakMasterExternalApiCaller.getList(path, queryParams);
+    }
+
     // Groups
     @SuppressWarnings("unchecked")
     public ResponseEntity<Object> getGroups() {
