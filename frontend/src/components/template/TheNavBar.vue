@@ -37,13 +37,14 @@
           </router-link>
         </li>
         <li
-          :class="$route.name == 'GroupMembership' ? 'active' : 'inactive'"
+            v-if="userSearchPermission"
+          :class="$route.name == 'GroupReport' ? 'active' : 'inactive'"
         >
           <router-link
             @click.native="resetAlert"
-            :to="{ name: 'GroupMembership' }"
+            :to="{ name: 'GroupReport' }"
           >
-            Group Membership
+            Group Report
           </router-link>
         </li>
       </ul>

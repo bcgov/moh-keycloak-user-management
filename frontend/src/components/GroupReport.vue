@@ -1,6 +1,6 @@
 <template>
-  <div id="group-membership">
-    <h1 class="heading">Group Membership</h1>
+  <div id="group-report">
+    <h1 class="heading">Group Report</h1>
     <v-divider></v-divider>
     <v-skeleton-loader
         v-if="userGroups.length === 0"
@@ -38,7 +38,7 @@ import UsersRepository from "@/api/UsersRepository";
 import GroupsRepository from "@/api/GroupsRepository";
 
 export default {
-  name: "GroupMembership",
+  name: "GroupReport",
   data() {
     return {
       userGroups: [],
@@ -85,7 +85,7 @@ export default {
 </script>
 
 <style scoped>
-#group-membership {
+#group-report {
   margin-top: 20px;
   padding: 16px;
 }
@@ -106,5 +106,9 @@ export default {
 
 .v-data-table {
   margin-top: 10px;
+}
+
+.v-data-table >>> tr:hover {
+  background: transparent !important;
 }
 </style>

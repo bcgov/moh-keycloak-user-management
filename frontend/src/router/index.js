@@ -5,7 +5,7 @@ import UserSearch from "../components/UserSearch.vue";
 import UserUpdate from "../components/UserUpdate.vue";
 import UserCreate from "../components/UserCreate.vue";
 import Dashboard from "../components/Dashboard.vue";
-import GroupMembership from "../components/GroupMembership.vue";
+import GroupReport from "../components/GroupReport.vue";
 import Organizations from "../views/Organizations.vue";
 import OrganizationsSearch from "../components/OrganizationsSearch.vue";
 import OrganizationsCreate from "../components/OrganizationsCreate.vue";
@@ -79,8 +79,8 @@ const routes = [
   },
   {
     path: "/groupmembership",
-    component: GroupMembership,
-    name: "GroupMembership",
+    component: GroupReport,
+    name: "GroupReport",
     meta: {
       requiredRole: [],
     },
