@@ -78,7 +78,7 @@ const routes = [
     },
   },
   {
-    path: "/groupmembership",
+    path: "/groupreport",
     component: GroupReport,
     name: "GroupReport",
     meta: {
