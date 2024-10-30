@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -21,10 +22,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +49,8 @@ public class BulkRemovalIntegrationTests {
 
     private String jwt;
 
+    private static Map<String, String> testUsers = new HashMap<>();
+
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
         jwt = integrationTestsUtils.getMohApplicationsRealmKcToken(clientId, clientSecret);
@@ -60,26 +60,68 @@ public class BulkRemovalIntegrationTests {
                 .responseTimeout(Duration.ofSeconds(120))
                 .build();
 
+        createTestUsersIfNotExist();
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createTestUsersIfNotExist() {
+
+        List<String> usernames = new ArrayList<>();
+        for (int i=1; i<=10; i++){
+            usernames.add(String.format("bulk-removal-test-user-%s", i));
+        }
+
+        usernames.forEach( username -> {
+            List<Object> user = getUser(username);
+            if(user.isEmpty()){
+                user = createUserAndGetDetails(username);
+            }
+            LinkedHashMap<String, Object> userDetails = (LinkedHashMap<String, Object>) user.get(0);
+            testUsers.put((String)userDetails.get("username"), (String) userDetails.get("id"));
+        });
+
+    }
+
+    private List<Object> getUser(String username){
+        final List<Object> usersResponse = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam("username", username)
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectBodyList(Object.class)
+                .returnResult()
+                .getResponseBody();
+
+        return usersResponse;
+    }
+
+    private List<Object> createUserAndGetDetails(String username){
+        String body = String.format("{\"enabled\":true,\"attributes\":{},\"username\":\"%s\"}", username);
+        webTestClient
+                .post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CREATED);
+        return getUser(username);
     }
 
     /**
      * Constants used for integration tests:
      * UMS_INTEGRATION_TESTS_CLIENT_ID -> ID of a Keycloak DEV client (service account) who is calling the bulk-removal endpoint.
-     * BULK_REMOVAL_USER_UMS_1 and 2 -> ID of a Keycloak DEV user whose roles are assigned and revoked.
      * NON_EXISTING - constant for unhappy path testing. Used to mimic invalid user or role ID.
+     * Roles from UMS_INTEGRATION_TESTS client
      */
 
     private static final String UMS_INTEGRATION_TESTS_CLIENT_ID = "24447cb4-f3b1-455b-89d9-26c081025fb9";
-    private static final String BULK_REMOVAL_USER_UMS_1 = "3d78de77-86dc-41a3-a3d9-432a494d9147";
-    private static final String BULK_REMOVAL_USER_UMS_2 = "ead9626f-df90-4c95-91d4-e4e447afde5f";
-    private static final String BULK_REMOVAL_USER_UMS_3 = "c5b18aed-b2c7-4a60-9ead-379f2bfa795b";
-    private static final String BULK_REMOVAL_USER_UMS_4 = "f310236b-e294-4746-8536-092a946fef39";
-    private static final String BULK_REMOVAL_USER_UMS_5 = "eea5202b-d9d0-4efd-8b2d-bc0a76a6a8d5";
-    private static final String BULK_REMOVAL_USER_UMS_6 = "9f306a79-2790-4fbc-8a08-e61476fc7ea4";
-    private static final String BULK_REMOVAL_USER_UMS_7 = "57600b08-022f-4781-b88d-a6a756c73c5c";
-    private static final String BULK_REMOVAL_USER_UMS_8 = "97b9a0ec-58ce-4318-b5f6-9b30bfb41e2c";
-    private static final String BULK_REMOVAL_USER_UMS_9 = "ba9ab966-a9a9-4447-904f-60c26a0ac9da";
-    private static final String BULK_REMOVAL_USER_UMS_10 = "6f56aae7-de9c-4a66-92d8-22288f9f11d6";
     private static final String NON_EXISTING = "non-existing";
 
     private LinkedHashMap<String, Object> createRoleRepresentation(String id, String name, String containerId) {
@@ -168,16 +210,16 @@ public class BulkRemovalIntegrationTests {
                 Arguments.of(new BulkRemovalRequest(Collections.emptyMap()), "UserRolesForRemoval cannot be empty"),
                 Arguments.of(new BulkRemovalRequest(), "UserRolesForRemoval cannot be null"),
                 Arguments.of(new BulkRemovalRequest(Map.of("", List.of("role"))), "User ID cannot be null or empty"),
-                Arguments.of(new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, Collections.emptyList())), "List of roles to remove cannot be null or empty")
+                Arguments.of(new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), Collections.emptyList())), "List of roles to remove cannot be null or empty")
         );
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveOneRoleOneUserSuccess() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
 
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1())));
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -185,16 +227,16 @@ public class BulkRemovalIntegrationTests {
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
         assertEquals("NO_CONTENT", responseItem.get("statusCode"));
 
-        List<Object> remainingRoles = getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1);
+        List<Object> remainingRoles = getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1"));
         assertEquals(1, remainingRoles.size());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveTwoRolesOneUserSuccess() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
 
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -202,7 +244,7 @@ public class BulkRemovalIntegrationTests {
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
         assertEquals("NO_CONTENT", responseItem.get("statusCode"));
 
-        List<Object> remainingRoles = getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1);
+        List<Object> remainingRoles = getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1"));
         assertEquals(0, remainingRoles.size());
     }
 
@@ -221,7 +263,7 @@ public class BulkRemovalIntegrationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveOneRoleOneUserFailureRoleDoesNotExist() {
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getNonExistingRole())));
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getNonExistingRole())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -234,8 +276,8 @@ public class BulkRemovalIntegrationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveTwoRolesOneUserOneRoleDoesNotExist() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getNonExistingRole())));
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getNonExistingRole())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -243,14 +285,14 @@ public class BulkRemovalIntegrationTests {
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
         assertEquals("NOT_FOUND", responseItem.get("statusCode"));
 
-        List<Object> remainingRoles = getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1);
+        List<Object> remainingRoles = getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1"));
         assertEquals(2, remainingRoles.size());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveOneRoleOneUserSuccessRoleNotAssigned() {
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getNotAssignedRole())));
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getNotAssignedRole())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -262,12 +304,12 @@ public class BulkRemovalIntegrationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveOneRoleTwoUsersSuccess() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
-        addTestRoles(BULK_REMOVAL_USER_UMS_2);
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
+        addTestRoles(testUsers.get("bulk-removal-test-user-2"));
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
-                Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1()),
-                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1())));
+                Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1()),
+                        testUsers.get("bulk-removal-test-user-2"), List.of(getBulkRemovalRole1())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -276,19 +318,19 @@ public class BulkRemovalIntegrationTests {
                 .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
                 .allMatch(responseItem -> responseItem.get("statusCode").equals("NO_CONTENT")));
 
-        assertEquals(1, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
-        assertEquals(1, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_2).size());
+        assertEquals(1, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1")).size());
+        assertEquals(1, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-2")).size());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveTwoRolesTwoUsersSuccess() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
-        addTestRoles(BULK_REMOVAL_USER_UMS_2);
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
+        addTestRoles(testUsers.get("bulk-removal-test-user-2"));
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
-                Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
+                Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
+                        testUsers.get("bulk-removal-test-user-2"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -297,17 +339,17 @@ public class BulkRemovalIntegrationTests {
                 .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
                 .allMatch(responseItem -> responseItem.get("statusCode").equals("NO_CONTENT")));
 
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_2).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1")).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-2")).size());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveOneRoleTwoUsersPartialFailureUserDoesNotExist() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
-                Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1()),
+                Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1()),
                         NON_EXISTING, List.of(getBulkRemovalRole1())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
@@ -320,18 +362,18 @@ public class BulkRemovalIntegrationTests {
                 .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
                 .anyMatch(responseItem -> responseItem.get("statusCode").equals("NOT_FOUND")));
 
-        assertEquals(1, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
+        assertEquals(1, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1")).size());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveTwoRolesTwoUsersOneRoleDoesNotExist() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
-        addTestRoles(BULK_REMOVAL_USER_UMS_2);
+        addTestRoles(testUsers.get("bulk-removal-test-user-1"));
+        addTestRoles(testUsers.get("bulk-removal-test-user-2"));
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
-                Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getNonExistingRole()),
-                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
+                Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getNonExistingRole()),
+                        testUsers.get("bulk-removal-test-user-2"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -343,35 +385,20 @@ public class BulkRemovalIntegrationTests {
                 .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
                 .anyMatch(responseItem -> responseItem.get("statusCode").equals("NOT_FOUND")));
 
-        assertEquals(2, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_2).size());
+        assertEquals(2, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-1")).size());
+        assertEquals(0, getAssignedUserClientRoleMapping(testUsers.get("bulk-removal-test-user-2")).size());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void bulkRemoveTwoRolesTenUsersSuccess() {
-        addTestRoles(BULK_REMOVAL_USER_UMS_1);
-        addTestRoles(BULK_REMOVAL_USER_UMS_2);
-        addTestRoles(BULK_REMOVAL_USER_UMS_3);
-        addTestRoles(BULK_REMOVAL_USER_UMS_4);
-        addTestRoles(BULK_REMOVAL_USER_UMS_5);
-        addTestRoles(BULK_REMOVAL_USER_UMS_6);
-        addTestRoles(BULK_REMOVAL_USER_UMS_7);
-        addTestRoles(BULK_REMOVAL_USER_UMS_8);
-        addTestRoles(BULK_REMOVAL_USER_UMS_9);
-        addTestRoles(BULK_REMOVAL_USER_UMS_10);
+        Map<String, List<Object>> bulkRemovalRequestBody = new HashMap<>();
+        testUsers.forEach((username, id) -> {
+            addTestRoles(id);
+            bulkRemovalRequestBody.put(id, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()));
+        });
 
-        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(
-                Map.of(BULK_REMOVAL_USER_UMS_1, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_2, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_3, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_4, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_5, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_6, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_7, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_8, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_9, List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
-                        BULK_REMOVAL_USER_UMS_10, List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
+        BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(bulkRemovalRequestBody);
 
         List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
 
@@ -380,16 +407,9 @@ public class BulkRemovalIntegrationTests {
                 .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
                 .allMatch(responseItem -> responseItem.get("statusCode").equals("NO_CONTENT")));
 
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_1).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_2).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_3).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_4).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_5).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_6).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_7).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_8).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_9).size());
-        assertEquals(0, getAssignedUserClientRoleMapping(BULK_REMOVAL_USER_UMS_10).size());
+        testUsers.forEach((username, id) -> {
+            assertEquals(0, getAssignedUserClientRoleMapping(id).size());
+        });
     }
 
 }

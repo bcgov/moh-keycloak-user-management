@@ -5,19 +5,6 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
 import ca.bc.gov.hlth.mohums.model.UserPayee;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
@@ -46,6 +33,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 @RestController

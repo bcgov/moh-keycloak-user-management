@@ -355,7 +355,7 @@ public class MoHUmsIntegrationTests {
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users")
-                        .queryParam("org", "00")
+                        .queryParam("org", "12345678987654321")
                         .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
