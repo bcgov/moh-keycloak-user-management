@@ -70,7 +70,7 @@ Using VSCode, install the recommended extension (prettier) to be able to auto-fo
 To check lint on all files :
 `npm run lint`
 
-To check if all files are formated :
+To check if all files are formatted :
 `npm run format:check`
 
 To format all the files to the standard :

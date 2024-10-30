@@ -17,7 +17,7 @@ export default {
   },
   async getGroupMembers(groupId) {
     return umsRequest().then((axiosInstance) =>
-        axiosInstance.get(`groups/${groupId}/members`)
+      axiosInstance.get(`groups/${groupId}/members`)
     );
   },
   /**
