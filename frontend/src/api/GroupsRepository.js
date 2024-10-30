@@ -16,12 +16,9 @@ export default {
     }
   },
   async getGroupMembers(groupId) {
-    try {
-      const axiosInstance = await umsRequest();
-      return axiosInstance.get(`groups/${groupId}/members`);
-    } catch (error) {
-      throw new Error("Failed to retrieve group members: " + error);
-    }
+    return umsRequest().then((axiosInstance) =>
+        axiosInstance.get(`groups/${groupId}/members`)
+    );
   },
   /**
    * This function transforms group descriptions.
