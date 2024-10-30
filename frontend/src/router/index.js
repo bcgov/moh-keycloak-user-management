@@ -82,7 +82,7 @@ const routes = [
     component: GroupReport,
     name: "GroupReport",
     meta: {
-      requiredRole: [],
+      requiredRole: ["view-users", "view-groups"],
     },
   },
   {

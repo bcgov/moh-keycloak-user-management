@@ -13,8 +13,7 @@
         :headers="groupHeaders"
         :items="group.members"
         class="elevation-1 no-data-table-hover"
-        :items-per-page="5"
-        hide-default-footer
+        :items-per-page="15"
         v-on:click:row="selectUser"
       >
         <template v-slot:item.username="{ item }">
