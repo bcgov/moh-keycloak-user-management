@@ -52,7 +52,6 @@ public class KeycloakApiService {
         return clientsResponse;
 
     }
-
     public ResponseEntity<Object> getClient(String clientId) {
         String path = CLIENTS_PATH + "/" + clientId;
         return keycloakMohExternalApiCaller.get(path, null);
@@ -84,6 +83,11 @@ public class KeycloakApiService {
         String path = String.format("%s/%s", GROUPS_PATH, groupId);
         ResponseEntity<Object> response = keycloakMohExternalApiCaller.get(path, null);
         return GroupDescriptionGenerator.createGroupWithDescription((LinkedHashMap<String, Object>) response.getBody());
+    }
+
+    public ResponseEntity<Object> getGroupMembers(String groupId) {
+        String path = String.format("%s/%s/members", GROUPS_PATH, groupId);
+        return keycloakMohExternalApiCaller.get(path, null);
     }
 
     // Users

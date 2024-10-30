@@ -36,6 +36,14 @@
             Organizations
           </router-link>
         </li>
+        <li
+          v-if="userSearchPermission"
+          :class="$route.name == 'GroupReport' ? 'active' : 'inactive'"
+        >
+          <router-link @click.native="resetAlert" :to="{ name: 'GroupReport' }">
+            Group Report
+          </router-link>
+        </li>
       </ul>
     </div>
   </nav>

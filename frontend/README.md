@@ -57,7 +57,7 @@ testcafe chrome tests/e2e/alltests.js -t "Test update user"
 # alltests.js contains a test named "Test update user"
 ```
 
-Make sure you have the `checkLoginIframe: false` flag set, as described above. The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Additional users used in E2E tests are called `testcafe-dashboard` and `testcafe-organizations`. All three users share the password. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. You might also need to add another environment variable named `NODE_ENV` with the value `Development` in case some of the tests fail.
+Make sure you have the `checkLoginIframe: false` flag set, as described above. The end-to-end tests require LDAP user credentials. The username `testcafe`, and the password is in the MoH KeePass. Additional users used in E2E tests are called `testcafe-dashboard` and `testcafe-organizations`. All three users share the password. Set the password in an OS environment variable named `TESTCAFE_PASSWORD`. You might also need to add another environment variable named `NODE_ENV` with the value `development` in case some of the tests fail.
 
 The client used for E2E tests is called `UMC-E2E-TESTS`.
 
@@ -70,7 +70,7 @@ Using VSCode, install the recommended extension (prettier) to be able to auto-fo
 To check lint on all files :
 `npm run lint`
 
-To check if all files are formated :
+To check if all files are formatted :
 `npm run format:check`
 
 To format all the files to the standard :

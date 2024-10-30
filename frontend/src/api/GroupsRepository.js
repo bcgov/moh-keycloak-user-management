@@ -15,6 +15,11 @@ export default {
       );
     }
   },
+  async getGroupMembers(groupId) {
+    return umsRequest().then((axiosInstance) =>
+      axiosInstance.get(`groups/${groupId}/members`)
+    );
+  },
   /**
    * This function transforms group descriptions.
    * It swaps references to clientID with aliases, defined in ClientsRepository.clientAliases.
