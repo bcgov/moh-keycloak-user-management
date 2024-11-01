@@ -74,7 +74,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.GET,"/docs/**").permitAll()
                 .mvcMatchers(HttpMethod.DELETE,"/bulk-removal/**").hasRole(bulkRemovalRole)
-                .mvcMatchers(HttpMethod.GET, "{realm}/clients/{client-uuid}/roles/{role-name}/users").permitAll()
                 .mvcMatchers(HttpMethod.GET,"/realms").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET, "/dashboard/**").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET,"/events/**").hasRole(viewEventsRole)
