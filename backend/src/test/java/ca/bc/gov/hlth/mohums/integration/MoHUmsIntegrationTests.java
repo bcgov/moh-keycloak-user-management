@@ -28,14 +28,12 @@ import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
@@ -136,6 +134,36 @@ public class MoHUmsIntegrationTests {
         Assertions.assertThat(clientRole)
                 .hasNoNullFieldsOrProperties()
                 .hasFieldOrPropertyWithValue("clientRole", Boolean.TRUE);
+    }
+
+    @ParameterizedTest()
+    @MethodSource("provideDataForValidateUserSearchQueryParameters")
+    public void validateUserSearchQueryParameters(String paramName, Optional<String> paramValue, String expectedResponse) {
+               String response = webTestClient
+                .get()
+                .uri(
+                        uriBuilder -> uriBuilder
+                                .path("/users")
+                                .queryParam(paramName, paramValue)
+                                .build()
+                )
+                .header("Authorization", "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(String.class)
+                .returnResult()
+                .getResponseBody();
+
+               assertEquals(expectedResponse, response);
+    }
+
+    private static Stream<Arguments> provideDataForValidateUserSearchQueryParameters() {
+        return Stream.of(
+                Arguments.of("org", Optional.of("123org"), "Invalid query parameter. Organization id must contain only numbers."),
+                Arguments.of("lastLogAfter", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in after date\" must be in yyyy-mm-dd format."),
+                Arguments.of("lastLogBefore", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format."),
+                Arguments.of("lastLogBefore", Optional.of("random text"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format.")
+        );
     }
 
     @Test
@@ -327,7 +355,7 @@ public class MoHUmsIntegrationTests {
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users")
-                        .queryParam("org", "non_existing_org_id")
+                        .queryParam("org", "12345678987654321")
                         .build())
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
