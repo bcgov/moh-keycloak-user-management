@@ -761,7 +761,7 @@ public class MoHUmsIntegrationTests {
 
         String baseUrl = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/";
 
-        Object response = webTestClient
+        webTestClient
                 .mutate()
                 .baseUrl(baseUrl)
                 .build()
