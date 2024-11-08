@@ -1,33 +1,31 @@
 import "@bcgov/bc-sans/css/BCSans.css";
 
-import Vue from "vue";
-import App from "./App.vue";
-import vuetify from "./plugins/vuetify";
+import { createApp } from "vue";
 import JsonCSV from "vue-json-csv";
-import router from "./router";
-import keycloak from "./keycloak";
-import store from "./store";
 import OrganizationsRepository from "./api/OrganizationsRepository";
+import App from "./App.vue";
+import keycloak from "./keycloak";
+import vuetify from "./plugins/vuetify";
+import router from "./router";
+import store from "./store";
 
-Vue.config.productionTip = false;
-Vue.prototype.$keycloak = keycloak;
-Vue.prototype.$UserCountCache = {};
-Vue.component("downloadCsv", JsonCSV);
+const app = createApp(App);
+
+app.config.globalProperties.$keycloak = keycloak;
+app.config.globalProperties.$UserCountCache = {};
+app.component("downloadCsv", JsonCSV);
 
 keycloak.onAuthSuccess = async function () {
   try {
     const configResp = await fetch(process.env.BASE_URL + "config.json");
-    Vue.prototype.$config = await configResp.json();
+    app.config.globalProperties.$config = await configResp.json();
     const organizationsResp = await OrganizationsRepository.get();
-    Vue.prototype.$organizations = await organizationsResp?.data;
+    app.config.globalProperties.$organizations = organizationsResp?.data;
   } catch (err) {
     console.error(err);
   } finally {
-    new Vue({
-      vuetify,
-      router,
-      store,
-      render: (h) => h(App),
-    }).$mount("#app");
+    app.use(vuetify).use(router).use(store).mount("#app");
   }
 };
+
+export default app;

@@ -1,14 +1,14 @@
-import Vue from "vue";
+import app from "../main";
 import store from "../store";
 import MetricsRepository from "./MetricsRepository";
 
 export default {
   async getLineChartData() {
-    let lineChartData = Vue.prototype.$UserCountCache;
+    let lineChartData = app.config.globalProperties.$UserCountCache;
     if (Object.keys(lineChartData).length === 0) {
       lineChartData = await MetricsRepository.get("total-active-user-count")
         .then((response) => {
-          Vue.prototype.$UserCountCache = response.data;
+          app.config.globalProperties.$UserCountCache = response.data;
           return response.data;
         })
         .catch((error) => {
