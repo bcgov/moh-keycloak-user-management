@@ -38,7 +38,7 @@
           id="search-button"
           class="primary"
           medium
-          @click.native="
+          @click="
             searchUser('&search=' + encodeURIComponent(userSearchInput))
           "
         >
@@ -48,7 +48,7 @@
           id="clear-search-button-basic"
           class="BC-Gov-SecondaryButton"
           medium
-          @click.native="clearSearchCriteria"
+          @click="clearSearchCriteria"
         >
           Clear Search
         </v-btn>
@@ -60,7 +60,7 @@
           id="create-user-button"
           class="success"
           medium
-          @click.native="goToCreateUser"
+          @click="goToCreateUser"
         >
           Register User
         </v-btn>
@@ -85,7 +85,7 @@
           id="adv-create-user-button"
           class="success"
           medium
-          @click.native="goToCreateUser"
+          @click="goToCreateUser"
         >
           Register User
         </v-btn>
@@ -279,7 +279,7 @@
           id="adv-search-button"
           class="primary"
           medium
-          @click.native="searchUser(advancedSearchParams)"
+          @click="searchUser(advancedSearchParams)"
         >
           Search Users
         </v-btn>
@@ -288,7 +288,7 @@
           id="clear-search-button"
           class="BC-Gov-SecondaryButton"
           medium
-          @click.native="clearSearchCriteria"
+          @click="clearSearchCriteria"
         >
           Clear Search
         </v-btn>

@@ -26,7 +26,7 @@
           id="create-organization-button"
           class="success"
           medium
-          @click.native="goToCreateOrganization"
+          @click="goToCreateOrganization"
         >
           Create New organization
         </v-btn>
