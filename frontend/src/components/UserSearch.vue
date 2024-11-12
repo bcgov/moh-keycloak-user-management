@@ -38,9 +38,7 @@
           id="search-button"
           class="primary"
           medium
-          @click="
-            searchUser('&search=' + encodeURIComponent(userSearchInput))
-          "
+          @click="searchUser('&search=' + encodeURIComponent(userSearchInput))"
         >
           Search Users
         </v-btn>
@@ -167,9 +165,9 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
+              v-bind="attrs"
               v-model.trim="lastLogDate"
               id="last-log-date"
-              v-bind="attrs"
               v-on="on"
               hint="YYYY-MM-DD format"
               prepend-inner-icon="mdi-calendar"
@@ -359,10 +357,10 @@
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
+                      v-bind="attrs"
                       id="remove-access-button"
                       class="error"
                       small
-                      v-bind="attrs"
                       v-on="on"
                       :disabled="
                         usersSelectedForBulkRemoval.length === 0 ||

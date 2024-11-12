@@ -166,8 +166,8 @@
               <v-tooltip right>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
-                    icon
                     v-bind="attrs"
+                    icon
                     v-on="on"
                     @click="
                       openResetIdentityProviderLinkDialog(
