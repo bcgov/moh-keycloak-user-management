@@ -159,7 +159,7 @@
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
               <span>
-                {{ identity.identityProvider | formatIdentityProvider }} [{{
+                {{ formatIdp(identity.identityProvider) }} [{{
                   identity.userName
                 }}]
               </span>
@@ -206,8 +206,8 @@
         <v-card-text>
           <br />
           Are you sure you want to reset the
-          {{ this.selectedIdentityProvider | formatIdentityProvider }} linked
-          identity for this user?
+          {{ formatIdp(this.selectedIdentityProvider) }} linked identity for
+          this user?
           <br />
           <br />
           Resetting a linked identity will retain all existing roles and details
@@ -446,11 +446,7 @@
       getTooltipUsername: function (identityProvider) {
         return `username${identityProvider.alias.bold()}`;
       },
-    },
-    filters: {
-      // The IDP alias in keycloak doesn't always match what's known by users
-      // Formatted to match standard naming conventions
-      formatIdentityProvider: function (idp) {
+      formatIdp: function (idp) {
         let formattedIdentityProviders = {
           bceid_business: "BCeID Business",
           bcprovider_aad: "BC Provider",
@@ -470,6 +466,7 @@
       },
     },
   };
+
   function mapBcscToClientName(federatedIdentityString) {
     const bcscMapping = {
       bcsc: "PIDP",
