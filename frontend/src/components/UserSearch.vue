@@ -453,11 +453,11 @@
 
                           <v-list-item-content>
                             <v-list-item-title
-                              v-text="user.username"
+                              {{user.username}}
                             ></v-list-item-title>
 
                             <v-list-item-subtitle
-                              v-text="user.role"
+                              {{user.role}}
                             ></v-list-item-subtitle>
                           </v-list-item-content>
                         </v-list-item>
