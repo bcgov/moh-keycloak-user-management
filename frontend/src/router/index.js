@@ -1,5 +1,3 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
 import Dashboard from "../components/Dashboard.vue";
 import GroupReport from "../components/GroupReport.vue";
 import OrganizationsCreate from "../components/OrganizationsCreate.vue";
@@ -12,8 +10,7 @@ import AccessDenied from "../views/AccessDenied.vue";
 import NotFound from "../views/NotFound.vue";
 import Organizations from "../views/Organizations.vue";
 import Users from "../views/Users.vue";
-
-Vue.use(VueRouter);
+import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
   { path: "/", redirect: "/users" },
@@ -97,7 +94,8 @@ const routes = [
   },
 ];
 
-const router = new VueRouter({
+const router = createRouter({
+  history: createWebHistory(),
   routes,
 });
 

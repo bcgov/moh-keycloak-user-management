@@ -14,16 +14,16 @@
   },
   "dependencies": {
     "@bcgov/bc-sans": "^1.0.1",
+    "@vue/compat": "^3.1.0",
     "axios": "^1.6.2",
     "chart.js": "^3.9.1",
     "chartjs-plugin-datalabels": "^2.1.0",
     "core-js": "^3.10.1",
     "keycloak-js": "^20.0.0",
     "vue": "^3.1.0",
-    "@vue/compat": "^3.1.0",
     "vue-chartjs": "^4.1.1",
     "vue-json-csv": "^1.2.12",
-    "vue-router": "^3.5.1",
+    "vue-router": "^4.4.5",
     "vuetify": "^3.7.3",
     "vuex": "^4.1.0"
   },
@@ -34,6 +34,7 @@
     "@vue/cli-plugin-unit-jest": "~5.0.8",
     "@vue/cli-plugin-vuex": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
+    "@vue/compiler-sfc": "^3.1.0",
     "@vue/test-utils": "^2.4.6",
     "babel-eslint": "^10.1.0",
     "eslint": "7.5.0",
@@ -43,8 +44,6 @@
     "sass": "^1.69.5",
     "sass-loader": "^8.0.0",
     "testcafe": "^1.14.0",
-    "vue-cli-plugin-vuetify": "^2.3.1",
-    "@vue/compiler-sfc": "^3.1.0",
     "webpack-plugin-vuetify": "^3.0.3"
   },
   "eslintConfig": {
