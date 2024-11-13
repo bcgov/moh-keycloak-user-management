@@ -1,17 +1,17 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Users from "../views/Users.vue";
-import UserSearch from "../components/UserSearch.vue";
-import UserUpdate from "../components/UserUpdate.vue";
-import UserCreate from "../components/UserCreate.vue";
 import Dashboard from "../components/Dashboard.vue";
 import GroupReport from "../components/GroupReport.vue";
-import Organizations from "../views/Organizations.vue";
-import OrganizationsSearch from "../components/OrganizationsSearch.vue";
 import OrganizationsCreate from "../components/OrganizationsCreate.vue";
-import NotFound from "../views/NotFound.vue";
-import AccessDenied from "../views/AccessDenied.vue";
+import OrganizationsSearch from "../components/OrganizationsSearch.vue";
+import UserCreate from "../components/UserCreate.vue";
+import UserSearch from "../components/UserSearch.vue";
+import UserUpdate from "../components/UserUpdate.vue";
 import keycloak from "../keycloak";
+import AccessDenied from "../views/AccessDenied.vue";
+import NotFound from "../views/NotFound.vue";
+import Organizations from "../views/Organizations.vue";
+import Users from "../views/Users.vue";
 
 Vue.use(VueRouter);
 
