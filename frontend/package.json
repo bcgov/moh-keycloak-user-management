@@ -52,7 +52,7 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/vue3-essential",
       "eslint:recommended",
       "plugin:testcafe/recommended"
     ],
@@ -66,7 +66,8 @@
           "allowModifiers": true
         }
       ],
-      "vue/multi-word-component-names": "off"
+      "vue/multi-word-component-names": "off",
+      "vue/no-deprecated-slot-attribute": "off"
     },
     "overrides": [
       {
