@@ -1,3 +1,4 @@
+import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../components/Dashboard.vue";
 import GroupReport from "../components/GroupReport.vue";
 import OrganizationsCreate from "../components/OrganizationsCreate.vue";
@@ -10,7 +11,6 @@ import AccessDenied from "../views/AccessDenied.vue";
 import NotFound from "../views/NotFound.vue";
 import Organizations from "../views/Organizations.vue";
 import Users from "../views/Users.vue";
-import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
   { path: "/", redirect: "/users" },
@@ -111,11 +111,14 @@ router.beforeEach((to, from, next) => {
   if (to.meta?.requiredRole) {
     if (!checkAccess(to.meta?.requiredRole) && to.name !== "AccessDenied") {
       next({ name: "AccessDenied" });
+      return;
     } else {
       next();
+      return;
     }
   }
   next();
+  return;
 });
 
 export default router;

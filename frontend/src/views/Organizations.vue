@@ -1,7 +1,9 @@
 <template>
   <div>
-    <keep-alive include="OrganizationSearch">
-      <router-view></router-view>
-    </keep-alive>
+    <router-view v-slot="{ Component }">
+      <keep-alive include="OrganizationSearch">
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
   </div>
 </template>
