@@ -78,6 +78,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET, "/dashboard/**").hasRole(viewMetricsRole)
                 .mvcMatchers(HttpMethod.GET,"/events/**").hasRole(viewEventsRole)
                 .mvcMatchers(HttpMethod.GET,"/admin-events/**").hasRole(viewEventsRole)
+                .mvcMatchers(HttpMethod.GET, "/{realm}/clients/{client-uuid}/roles/{role-name}/users").hasRole(viewClientsRole)
                 .mvcMatchers(HttpMethod.GET,"/clients/**").hasRole(viewClientsRole)
                 .mvcMatchers(HttpMethod.GET,"/groups/**").hasRole(viewGroupsRole)
                 .mvcMatchers(HttpMethod.GET,"/organizations/**").permitAll()

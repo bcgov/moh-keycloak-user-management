@@ -68,7 +68,7 @@ public class ClientsController {
      * The actual call to Keycloak API is executed by the service account in master realm. Minimal viable permissions for that service account are:
      *                 view-clients, view-users, query-clients, query-users roles.
      */
-    @GetMapping("{realm}/clients/{clientId}/roles/{roleName}/users")
+    @GetMapping("/{realm}/clients/{clientId}/roles/{roleName}/users")
     public ResponseEntity<List<Object>> getUsersInRoleAnyRealm(
             @PathVariable String realm,
             @PathVariable String clientId,
