@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="subgroup">
+  <v-card border class="subgroup">
     <v-data-table
       :headers="headers"
       :items="ClientsWithEffectiveRoles"
@@ -25,7 +25,7 @@
             <!-- pop up to add something -->
             <v-card>
               <v-card-title>
-                <span class="headline">{{ dialogTitle }}</span>
+                <span class="text-h5">{{ dialogTitle }}</span>
               </v-card-title>
               <v-card-text>
                 <!-- client selector -->
@@ -41,14 +41,14 @@
                   <v-col class="col-7">
                     <v-autocomplete
                       id="select-client"
-                      outlined
-                      dense
+                      variant="outlined"
+                      density="compact"
                       :items="isEdit ? [selectedClient] : clientWithoutRoles"
-                      item-text="clientId"
+                      item-title="clientId"
                       return-object
                       placeholder="Select an Application"
                       v-model="selectedClient"
-                      @change="getUserClientRoles()"
+                      @update:model-value="getUserClientRoles()"
                       :disabled="isEdit"
                     ></v-autocomplete>
                   </v-col>
@@ -127,9 +127,9 @@
                           <label>
                             Effective Roles
                             <!-- tooltip for effective roles -->
-                            <v-tooltip right>
-                              <template v-slot:activator="{ on }">
-                                <v-icon v-on="on" small>mdi-help-circle</v-icon>
+                            <v-tooltip location="right">
+                              <template v-slot:activator="{ props }">
+                                <v-icon v-bind="props" size="small">mdi-help-circle</v-icon>
                               </template>
                               <span>
                                 Effective roles represent all roles assigned to
@@ -177,13 +177,13 @@
                 <v-btn
                   v-if="hasRoleForManageUserRoles"
                   id="save-user-roles"
-                  class="primary"
-                  medium
+                  class="bg-primary"
+                  size="medium"
                   v-on:click="updateUserClientRoles()"
                 >
                   Save User Roles
                 </v-btn>
-                <v-btn outlined class="primary--text" @click="close()">
+                <v-btn variant="outlined" class="text-primary" @click="close()">
                   Cancel
                 </v-btn>
               </v-card-actions>
@@ -222,7 +222,7 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-icon small @click="editRoles(item.clientRepresentation)">
+        <v-icon size="small" @click="editRoles(item.clientRepresentation)">
           mdi-pencil
         </v-icon>
       </template>

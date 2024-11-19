@@ -24,7 +24,7 @@
           >
             {{ item.username }}
           </a>
-          <v-icon small>mdi-open-in-new</v-icon>
+          <v-icon size="small">mdi-open-in-new</v-icon>
         </template>
         <template v-slot:item.firstName="{ item }">
           <span>{{ item.firstName }}</span>

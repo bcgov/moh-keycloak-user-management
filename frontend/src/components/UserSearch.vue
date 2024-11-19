@@ -6,9 +6,9 @@
       <v-col class="col-6">
         <label for="user-search">
           Search
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <v-icon v-on="on" small>mdi-help-circle</v-icon>
+          <v-tooltip location="right">
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" size="small">mdi-help-circle</v-icon>
             </template>
             <span>Search by username, email, or name</span>
           </v-tooltip>
@@ -24,8 +24,8 @@
 
         <v-text-field
           id="user-search"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           v-model.trim="userSearchInput"
           placeholder="Username, email, name"
           @keyup.enter="
@@ -36,8 +36,8 @@
       <v-col class="col-4">
         <v-btn
           id="search-button"
-          class="primary"
-          medium
+          class="bg-primary"
+          size="medium"
           @click="searchUser('&search=' + encodeURIComponent(userSearchInput))"
         >
           Search Users
@@ -45,7 +45,7 @@
         <v-btn
           id="clear-search-button-basic"
           class="BC-Gov-SecondaryButton"
-          medium
+          size="medium"
           @click="clearSearchCriteria"
         >
           Clear Search
@@ -56,8 +56,8 @@
         <v-btn
           v-if="hasCreateUserRole"
           id="create-user-button"
-          class="success"
-          medium
+          class="bg-success"
+          size="medium"
           @click="goToCreateUser"
         >
           Register User
@@ -81,8 +81,8 @@
         <v-btn
           v-if="hasCreateUserRole"
           id="adv-create-user-button"
-          class="success"
-          medium
+          class="bg-success"
+          size="medium"
           @click="goToCreateUser"
         >
           Register User
@@ -93,8 +93,8 @@
         <label for="adv-search-last-name">Last Name</label>
         <v-text-field
           id="adv-search-last-name"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           v-model.trim="lastNameInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
@@ -103,8 +103,8 @@
         <label for="adv-search-first-name">First Name</label>
         <v-text-field
           id="adv-search-first-name"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           v-model.trim="firstNameInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
@@ -113,8 +113,8 @@
         <label for="adv-search-username">Username</label>
         <v-text-field
           id="adv-search-username"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           v-model.trim="usernameInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
@@ -123,8 +123,8 @@
         <label for="adv-search-email">Email</label>
         <v-text-field
           id="adv-search-email"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           v-model.trim="emailInput"
           @keyup.enter="searchUser(advancedSearchParams)"
         />
@@ -136,8 +136,8 @@
           v-model="organizationInput"
           :items="organizations"
           item-value="organizationId"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           clearable
           placeholder="Select an Organization"
           @keyup.enter="searchUser(advancedSearchParams)"
@@ -145,7 +145,12 @@
       </v-col>
       <v-col class="col-2">
         <label for="last-log-date-radio">Last logged-in</label>
-        <v-radio-group v-model="radios" row dense style="margin: 0px">
+        <v-radio-group
+          v-model="radios"
+          inline
+          density="compact"
+          style="margin: 0px"
+        >
           <v-radio
             id="last-log-date-radio"
             label="Before"
@@ -158,22 +163,20 @@
         <label for="last-log-date">Date</label>
         <v-menu
           :close-on-content-click="false"
-          :nudge-right="40"
+          :offset="40"
           transition="scale-transition"
-          offset-y
           min-width="auto"
         >
-          <template v-slot:activator="{ on, attrs }">
+          <template v-slot:activator="{ props }">
             <v-text-field
-              v-bind="attrs"
               v-model.trim="lastLogDate"
               id="last-log-date"
-              v-on="on"
+              v-bind="props"
               hint="YYYY-MM-DD format"
               prepend-inner-icon="mdi-calendar"
               :disabled="!(radios == 'Before' || radios == 'After')"
-              outlined
-              dense
+              variant="outlined"
+              density="compact"
               clearable
               readonly
               @keyup.enter="searchUser(advancedSearchParams)"
@@ -191,7 +194,7 @@
       </v-col>
     </v-row>
 
-    <v-card outlined class="subgroup" v-if="this.advancedSearchSelected">
+    <v-card border class="subgroup" v-if="this.advancedSearchSelected">
       <h2>User Roles</h2>
 
       <v-row no-gutters>
@@ -199,14 +202,14 @@
           <label for="select-client">Application</label>
           <v-autocomplete
             id="select-client"
-            outlined
-            dense
+            variant="outlined"
+            density="compact"
             :items="clients"
-            item-text="clientId"
+            item-title="clientId"
             item-value="id"
             placeholder="Select an Application"
             v-model="selectedClientId"
-            @change="loadUserClientRoles()"
+            @update:model-value="loadUserClientRoles()"
             clearable
             @keyup.enter="searchUser(advancedSearchParams)"
           ></v-autocomplete>
@@ -243,11 +246,11 @@
                         v-if="
                           clientRoles[roleArrayPosition(col, item)].description
                         "
-                        right
+                        location="right"
                         max-width="300px"
                       >
-                        <template v-slot:activator="{ on }">
-                          <span v-on="on">
+                        <template v-slot:activator="{ props }">
+                          <span v-bind="props">
                             {{ clientRoles[roleArrayPosition(col, item)].name }}
                           </span>
                         </template>
@@ -275,8 +278,8 @@
       <v-col class="col-6" style="margin-bottom: 30px">
         <v-btn
           id="adv-search-button"
-          class="primary"
-          medium
+          class="bg-primary"
+          size="medium"
           @click="searchUser(advancedSearchParams)"
         >
           Search Users
@@ -285,7 +288,7 @@
         <v-btn
           id="clear-search-button"
           class="BC-Gov-SecondaryButton"
-          medium
+          size="medium"
           @click="clearSearchCriteria"
         >
           Clear Search
@@ -311,7 +314,7 @@
             <template v-if="searchResults.length > 0">
               <v-checkbox
                 :indeterminate="someUsersSelected"
-                :input-value="allUsersSelected"
+                :model-value="allUsersSelected"
                 @click="toggleAllUsers"
               ></v-checkbox>
             </template>
@@ -325,7 +328,7 @@
             >
               {{ item.username }}
             </a>
-            <v-icon small>mdi-open-in-new</v-icon>
+            <v-icon size="small">mdi-open-in-new</v-icon>
           </template>
           <template v-if="searchResults.length > 0" v-slot:footer>
             <v-toolbar flat>
@@ -343,7 +346,7 @@
                   'lastLogDate',
                 ]"
               >
-                <v-btn id="csv-button" class="primary" small>
+                <v-btn id="csv-button" class="bg-primary" size="small">
                   Download results
                 </v-btn>
               </download-csv>
@@ -355,13 +358,12 @@
                   scrollable
                   max-width="700"
                 >
-                  <template v-slot:activator="{ on, attrs }">
+                  <template v-slot:activator="{ props }">
                     <v-btn
-                      v-bind="attrs"
                       id="remove-access-button"
-                      class="error"
-                      small
-                      v-on="on"
+                      class="bg-error"
+                      size="small"
+                      v-bind="props"
                       :disabled="
                         usersSelectedForBulkRemoval.length === 0 ||
                         !usersSelectedForBulkRemoval.every(
@@ -393,7 +395,7 @@
 
                     <v-card-text>
                       <v-list>
-                        <v-subheader>
+                        <v-list-subheader>
                           {{ getSelectedClientName(selectedClientId) }}
                           <v-spacer></v-spacer>
                           <v-progress-circular
@@ -401,7 +403,7 @@
                             color="primary"
                             indeterminate
                           ></v-progress-circular>
-                        </v-subheader>
+                        </v-list-subheader>
                         <v-divider></v-divider>
                         <v-list-item
                           v-for="(user, i) in usersSelectedForBulkRemoval"
@@ -409,22 +411,22 @@
                         >
                           <template>
                             <template v-if="bulkRemovalResponseIsPresent()">
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                  <v-list-item-avatar v-bind="attrs" v-on="on">
+                              <v-tooltip location="bottom">
+                                <template v-slot:activator="{ props }">
+                                  <v-avatar v-bind="props">
                                     <v-icon
                                       :class="
                                         getBulkRemovalListItemDetails(user.id)
                                           .iconClass
                                       "
-                                      dark
+                                      theme="dark"
                                     >
                                       {{
                                         getBulkRemovalListItemDetails(user.id)
                                           .icon
                                       }}
                                     </v-icon>
-                                  </v-list-item-avatar>
+                                  </v-avatar>
                                 </template>
                                 <span>
                                   {{
@@ -435,31 +437,29 @@
                               </v-tooltip>
                             </template>
                             <template v-else>
-                              <v-list-item-avatar>
+                              <v-avatar>
                                 <v-icon
                                   :class="
                                     getBulkRemovalListItemDetails(user.id)
                                       .iconClass
                                   "
-                                  dark
+                                  theme="dark"
                                 >
                                   {{
                                     getBulkRemovalListItemDetails(user.id).icon
                                   }}
                                 </v-icon>
-                              </v-list-item-avatar>
+                              </v-avatar>
                             </template>
                           </template>
 
-                          <v-list-item-content>
-                            <v-list-item-title
-                              {{user.username}}
-                            ></v-list-item-title>
+                          <v-list-item-title
+                            {{user.username}}
+                          ></v-list-item-title>
 
-                            <v-list-item-subtitle
-                              {{user.role}}
-                            ></v-list-item-subtitle>
-                          </v-list-item-content>
+                          <v-list-item-subtitle
+                            {{user.role}}
+                          ></v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
                     </v-card-text>
@@ -473,20 +473,24 @@
                         "
                       >
                         <v-btn
-                          class="primary"
-                          text
+                          class="bg-primary"
+                          variant="text"
                           @click="closeBulkRemovalDialog"
                         >
                           Cancel
                         </v-btn>
-                        <v-btn class="error" text @click="bulkRemoveUserAccess">
+                        <v-btn
+                          class="bg-error"
+                          variant="text"
+                          @click="bulkRemoveUserAccess"
+                        >
                           Remove Access
                         </v-btn>
                       </template>
                       <template v-else>
                         <v-btn
-                          class="primary"
-                          text
+                          class="bg-primary"
+                          variant="text"
                           @click="closeBulkRemovalDialog"
                         >
                           Close

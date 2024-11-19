@@ -1,5 +1,5 @@
 <template>
-  <footer class="primary">
+  <footer class="bg-primary">
     <div class="container">
       <v-row no-gutters>
         <v-col class="col-3">

@@ -19,20 +19,20 @@
           >
             <template #item.REALM="{ item }">
               <v-tooltip
-                bottom
+                location="bottom"
                 :disabled="!item.REALM_DESCRIPTION"
                 max-width="300px"
               >
-                <template v-slot:activator="{ on }">
-                  <span v-on="on">{{ item.REALM }}</span>
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props">{{ item.REALM }}</span>
                 </template>
                 <span>{{ item.REALM_DESCRIPTION }}</span>
               </v-tooltip>
             </template>
             <template #item.CLIENT="{ item }">
-              <v-tooltip bottom :disabled="!item.DESCRIPTION" max-width="300px">
-                <template v-slot:activator="{ on }">
-                  <span v-on="on">{{ item.CLIENT }}</span>
+              <v-tooltip location="bottom" :disabled="!item.DESCRIPTION" max-width="300px">
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props">{{ item.CLIENT }}</span>
                 </template>
                 <span>{{ item.DESCRIPTION }}</span>
               </v-tooltip>
@@ -44,9 +44,9 @@
         <div class="tile">
           <div class="heading">
             <p>Total Number of Users</p>
-            <v-tooltip right max-width="300px">
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on" small>mdi-help-circle</v-icon>
+            <v-tooltip location="right" max-width="300px">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" size="small">mdi-help-circle</v-icon>
               </template>
               <p class="tooltip">
                 Total Unique User Count by IDP + MHSU Realms that do not use an
@@ -111,7 +111,7 @@
             v-bind:class="getLineChartBtnClass(format)"
             v-bind:title="getLineChartBtnTitle(format)"
             @click="loadActiveTotalUser(format)"
-            small
+            size="small"
             rounded
           >
             {{ format }}

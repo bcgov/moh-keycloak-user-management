@@ -1,7 +1,7 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div id="user">
-    <v-card outlined class="subgroup">
+    <v-card border class="subgroup">
       <h2>User Details</h2>
       <v-row no-gutters>
         <v-col class="col-7">
@@ -13,9 +13,9 @@
             >
               Username
             </label>
-            <v-tooltip right v-if="!userId">
-              <template v-slot:activator="{ on }">
-                <v-icon id="user-name-tooltip-icon" v-on="on" small>
+            <v-tooltip location="right" v-if="!userId">
+              <template v-slot:activator="{ props }">
+                <v-icon id="user-name-tooltip-icon" v-bind="props" size="small">
                   mdi-help-circle
                 </v-icon>
               </template>
@@ -49,9 +49,9 @@
               </span>
             </v-tooltip>
             <v-text-field
-              dense
+              density="compact"
               :disabled="!!userId || !editUserDetailsPermission"
-              outlined
+              variant="outlined"
               id="user-name"
               v-model.trim="user.username"
               required
@@ -66,8 +66,8 @@
               First Name
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="first-name"
               v-model.trim="user.firstName"
@@ -83,8 +83,8 @@
               Last Name
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="last-name"
               v-model.trim="user.lastName"
@@ -100,8 +100,8 @@
               Email Address
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="email"
               v-model.trim="user.email"
@@ -114,8 +114,8 @@
               Telephone Number
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="phone"
               v-model.trim="user.attributes.phone"
@@ -129,16 +129,16 @@
               :disabled="!editUserDetailsPermission"
               v-model="user.attributes.org_details"
               :items="organizations"
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
             ></v-autocomplete>
 
             <label :disabled="!editUserDetailsPermission" for="notes">
               Notes
             </label>
             <v-textarea
-              outlined
-              dense
+              variant="outlined"
+              density="compact"
               id="notes"
               :disabled="!editUserDetailsPermission"
               v-model="user.attributes.access_team_notes"
@@ -163,19 +163,19 @@
                   identity.userName
                 }}]
               </span>
-              <v-tooltip right>
-                <template v-slot:activator="{ on, attrs }">
+              <v-tooltip location="right">
+                <template v-slot:activator="{ props }">
                   <v-btn
-                    v-bind="attrs"
+                   
                     icon
-                    v-on="on"
+                    v-bind="props"
                     @click="
                       openResetIdentityProviderLinkDialog(
                         identity.identityProvider
                       )
                     "
                   >
-                    <v-icon small style="vertical-align: middle">
+                    <v-icon size="small" style="vertical-align: middle">
                       mdi-link-variant-off
                     </v-icon>
                   </v-btn>
@@ -189,8 +189,8 @@
       <v-btn
         id="submit-button"
         v-if="editUserDetailsPermission"
-        class="primary"
-        medium
+        class="bg-primary"
+        size="medium"
         @click="updateUser"
       >
         {{ updateOrRegister }}
@@ -199,7 +199,7 @@
     <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
       <v-card>
         <v-card-title>
-          <span class="headline">
+          <span class="text-h5">
             Identity Provider Link Reset Confirmation
           </span>
         </v-card-title>
@@ -215,12 +215,12 @@
           Keycloak login event.
         </v-card-text>
         <v-card-actions>
-          <v-btn class="primary" @click="resetIdentityProviderLink">
+          <v-btn class="bg-primary" @click="resetIdentityProviderLink">
             Reset Identity Provider Link
           </v-btn>
           <v-btn
-            outlined
-            class="primary--text"
+            variant="outlined"
+            class="text-primary"
             @click="closeResetIdentityProviderLinkDialog"
           >
             Cancel

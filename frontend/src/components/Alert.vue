@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-alert id="primary-alert" v-model="active" :type="type" dismissible>
+    <v-alert id="primary-alert" v-model="active" :type="type" closable>
       {{ message }}
     </v-alert>
   </div>

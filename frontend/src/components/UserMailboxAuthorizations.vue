@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="clientsWithRoles.length > 0" outlined class="subgroup">
+  <v-card v-if="clientsWithRoles.length > 0" border class="subgroup">
     <h2 class="sfds-authorizations-header">Mailbox Authorizations</h2>
 
     <div class="nav-tabs" style="width: 100%">

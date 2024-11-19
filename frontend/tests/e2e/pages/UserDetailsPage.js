@@ -1,7 +1,5 @@
 import { Selector } from "testcafe";
 
-const label = Selector("label");
-
 class UserDetailsPage {
   constructor() {
     this.usernameInput = Selector("#user-name");
