@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@bcgov/bc-sans": "^1.0.1",
-    "@vue/compat": "^3.1.0",
     "axios": "^1.6.2",
     "chart.js": "^3.9.1",
     "chartjs-plugin-datalabels": "^2.1.0",

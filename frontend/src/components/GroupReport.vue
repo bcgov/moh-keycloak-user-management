@@ -41,14 +41,15 @@
 </template>
 
 <script>
-  import UsersRepository from "@/api/UsersRepository";
   import GroupsRepository from "@/api/GroupsRepository";
+  import UsersRepository from "@/api/UsersRepository";
+  import { reactive } from "vue";
 
   export default {
     name: "GroupReport",
     data() {
       return {
-        userGroups: [],
+        userGroups: reactive([]),
         groupHeaders: [
           { text: "Username", value: "username" },
           { text: "First Name", value: "firstName" },
@@ -78,7 +79,7 @@
             const groupMembers = await GroupsRepository.getGroupMembers(
               group.id
             );
-            this.$set(group, "members", groupMembers.data);
+            group.members = groupMembers.data;
           }
         } catch (error) {
           this.handleError("Failed to load group members", error);
