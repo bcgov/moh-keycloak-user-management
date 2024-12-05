@@ -1,21 +1,21 @@
 <template>
   <div class="lineChart" style="background-color: white">
-    <LineChartGenerator :chartOptions="chartOptions" :chartData="chartData" />
+    <LineChartGenerator :options="chartOptions" :data="chartData" />
   </div>
 </template>
 
 <script>
   import {
-    Chart as ChartJS,
     CategoryScale,
+    Chart as ChartJS,
+    Legend,
     LinearScale,
-    PointElement,
     LineElement,
+    PointElement,
     Title,
     Tooltip,
-    Legend,
   } from "chart.js";
-  import { Line as LineChartGenerator } from "vue-chartjs/legacy";
+  import { Line as LineChartGenerator } from "vue-chartjs";
 
   ChartJS.register(
     CategoryScale,
@@ -59,7 +59,7 @@
             mode: "index",
           },
           scales: {
-            xAxis: {
+            x: {
               ticks: {
                 maxTicksLimit: 24,
               },
