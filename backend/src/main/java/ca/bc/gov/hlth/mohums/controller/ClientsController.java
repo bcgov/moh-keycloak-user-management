@@ -53,13 +53,43 @@ public class ClientsController {
             @RequestParam Optional<Integer> first,
             @RequestParam Optional<Integer> max
     ) {
+        MultiValueMap<String, String> queryParams = prepareQueryParams(briefRepresentation, first, max);
+
+        return keycloakApiService.getUsersInRole(clientId, roleName, queryParams);
+    }
+
+    /**
+     * This endpoint lets you fetch users from a given realm that have assigned a specified role
+     * @param realm - name of the realm
+     * @param clientId - id (GUID) of the client
+     * @param roleName - name of the role
+     * The function will return a list of users that specify the criteria.
+     * The function will return 404 if realm/client/role cannot be found.
+     * The actual call to Keycloak API is executed by the service account in master realm. Minimal viable permissions for that service account are:
+     *                 view-clients, view-users, query-clients, query-users roles.
+     */
+    @GetMapping("/{realm}/clients/{clientId}/roles/{roleName}/users")
+    public ResponseEntity<List<Object>> getUsersInRoleAnyRealm(
+            @PathVariable String realm,
+            @PathVariable String clientId,
+            @PathVariable String roleName,
+            @RequestParam Optional<Boolean> briefRepresentation,
+            @RequestParam Optional<Integer> first,
+            @RequestParam Optional<Integer> max
+    ) {
+        MultiValueMap<String, String> queryParams = prepareQueryParams(briefRepresentation, first, max);
+
+        return keycloakApiService.getUsersInRoleInGivenRealm(realm, clientId, roleName, queryParams);
+    }
+
+    private MultiValueMap<String, String> prepareQueryParams(Optional<Boolean> briefRepresentation, Optional<Integer> first, Optional<Integer> max){
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
         briefRepresentation.ifPresent(briefRepresentationValue -> queryParams.add("briefRepresentation", briefRepresentationValue.toString()));
         first.ifPresent(firstValue -> queryParams.add("first", firstValue.toString()));
         max.ifPresent(maxValue -> queryParams.add("max", maxValue.toString()));
 
-        return keycloakApiService.getUsersInRole(clientId, roleName, queryParams);
+        return queryParams;
     }
 
 }

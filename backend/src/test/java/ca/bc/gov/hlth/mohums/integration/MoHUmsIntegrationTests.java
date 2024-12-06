@@ -750,6 +750,28 @@ public class MoHUmsIntegrationTests {
                 .expectStatus().isUnauthorized(); //HTTP 401
     }
 
+    /*
+    Constants used for the test:
+        66a78981-5419-4a41-95d7-11ecfb32ac86 -> UMS_INTEGRATION_TESTS client in moh_citizen realm
+        UMS_INTEGRATION_TESTS_ROLE -> role assigned to the client above
+     */
+    @Test
+    public void getUsersInRoleFromGivenRealm() throws IOException, ParseException, InterruptedException {
+        String access_token = integrationTestsUtils.getMasterRealmKcToken(masterRealmClientId, masterRealmClientSecret);
+
+        String baseUrl = "https://common-logon-dev.hlth.gov.bc.ca/auth/admin/realms/";
+
+        webTestClient
+                .mutate()
+                .baseUrl(baseUrl)
+                .build()
+                .get()
+                .uri("moh_citizen/clients/66a78981-5419-4a41-95d7-11ecfb32ac86/roles/UMS_INTEGRATION_TESTS_ROLE/users")
+                .header("Authorization", "Bearer " + access_token)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
     private List<Object> getAll(String resource) {
         return webTestClient
                 .get()
