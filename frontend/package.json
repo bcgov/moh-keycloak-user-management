@@ -21,7 +21,7 @@
     "keycloak-js": "^20.0.0",
     "vue": "^3.5.12",
     "vue-chartjs": "^5.3.2",
-    "vue-json-csv": "^1.2.12",
+    "vue-json-csv": "^2.1.0",
     "vue-router": "^4.4.5",
     "vuetify": "^3.7.3",
     "vuex": "^4.1.0"

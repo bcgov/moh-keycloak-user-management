@@ -303,12 +303,13 @@
           class="base-table select-table"
           :headers="headers"
           :items="searchResults"
-          :footer-props="footerProps"
+          items-per-page="15"
           :loading="userSearchLoadingStatus"
           loading-text="Searching for users"
           :show-select="bulkRemovalAllowed"
           v-on:click:row="selectUser"
           v-model="usersSelectedForBulkRemoval"
+          :item-value="(item) => item"
         >
           <template v-slot:header.data-table-select>
             <template v-if="searchResults.length > 0">
@@ -320,6 +321,7 @@
             </template>
           </template>
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
+          <!-- :footer-props="footerProps" -->
           <template #item.username="{ item }">
             <a
               target="_blank"
@@ -330,7 +332,7 @@
             </a>
             <v-icon size="small">mdi-open-in-new</v-icon>
           </template>
-          <template v-if="searchResults.length > 0" v-slot:footer>
+          <template v-if="searchResults.length > 0" v-slot:bottom>
             <v-toolbar flat>
               <v-spacer />
               <download-csv
@@ -521,7 +523,7 @@
       return {
         organizations: this.$organizations.map((item) => {
           item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
-          item.text = `${item.organizationId} - ${item.name}`;
+          item.title = `${item.organizationId} - ${item.name}`;
           return item;
         }),
         clients: [""],
@@ -593,10 +595,10 @@
       },
       headers() {
         let hdrs = [
-          { text: "Username", value: "username", class: "table-header" },
-          { text: "First name", value: "firstName", class: "table-header" },
-          { text: "Last name", value: "lastName", class: "table-header" },
-          { text: "Email", value: "email", class: "table-header" },
+          { title: "Username", value: "username", class: "table-header" },
+          { title: "First name", value: "firstName", class: "table-header" },
+          { title: "Last name", value: "lastName", class: "table-header" },
+          { title: "Email", value: "email", class: "table-header" },
         ];
         let showLogins =
           this.radios != null &&
@@ -607,13 +609,13 @@
           this.selectedClientId != null && this.selectedClientId != "";
         if (showLogins) {
           hdrs.push({
-            text: "Last Log Date",
+            title: "Last Log Date",
             value: "lastLogDate",
             class: "table-header",
           });
         }
         if (showRoles) {
-          hdrs.push({ text: "Role", value: "role", class: "table-header" });
+          hdrs.push({ title: "Role", value: "role", class: "table-header" });
         }
         return hdrs;
       },

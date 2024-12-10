@@ -89,7 +89,9 @@
           >
             Save Changes
           </v-btn>
-          <v-btn variant="outlined" class="text-primary" @click="close()">Cancel</v-btn>
+          <v-btn variant="outlined" class="text-primary" @click="close()">
+            Cancel
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -104,8 +106,8 @@
       return {
         dialog: false,
         headers: [
-          { text: "ID", value: "organizationId", class: "table-header" },
-          { text: "Name", value: "name", class: "table-header" },
+          { title: "ID", value: "organizationId", class: "table-header" },
+          { title: "Name", value: "name", class: "table-header" },
           // { text: "Actions", value: "actions", class: "table-header"} disabled until further talks about org edit
         ],
         organizations: this.$organizations,
