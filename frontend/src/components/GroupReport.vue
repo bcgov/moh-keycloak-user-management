@@ -51,10 +51,10 @@
       return {
         userGroups: reactive([]),
         groupHeaders: [
-          { text: "Username", value: "username" },
-          { text: "First Name", value: "firstName" },
-          { text: "Last Name", value: "lastName" },
-          { text: "Email", value: "email" },
+          { title: "Username", value: "username" },
+          { title: "First Name", value: "firstName" },
+          { title: "Last Name", value: "lastName" },
+          { title: "Email", value: "email" },
         ],
       };
     },

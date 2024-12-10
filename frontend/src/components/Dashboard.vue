@@ -30,7 +30,11 @@
               </v-tooltip>
             </template>
             <template #item.CLIENT="{ item }">
-              <v-tooltip location="bottom" :disabled="!item.DESCRIPTION" max-width="300px">
+              <v-tooltip
+                location="bottom"
+                :disabled="!item.DESCRIPTION"
+                max-width="300px"
+              >
                 <template v-slot:activator="{ props }">
                   <span v-bind="props">{{ item.CLIENT }}</span>
                 </template>
@@ -144,21 +148,21 @@
     data() {
       return {
         headerActiveUserCount: [
-          { text: "Realm", value: "REALM" },
-          { text: "Client", value: "CLIENT", groupable: false },
+          { title: "Realm", value: "REALM" },
+          { title: "Client", value: "CLIENT", groupable: false },
           {
-            text: "Active User Count",
+            title: "Active User Count",
             value: "ACTIVE_USER_COUNT",
             groupable: false,
           },
         ],
         headerUniqueUserCountByIDP: [
-          { text: "IDP", value: "IDP" },
-          { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
+          { title: "IDP", value: "IDP" },
+          { title: "Unique User Count", value: "UNIQUE_USER_COUNT" },
         ],
         headerUniqueUserCountByRealm: [
-          { text: "Realm", value: "REALM" },
-          { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
+          { title: "Realm", value: "REALM" },
+          { title: "Unique User Count", value: "UNIQUE_USER_COUNT" },
         ],
         totalNumberOfUsers: "",
         activeUserCount: [],
