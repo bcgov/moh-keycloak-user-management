@@ -166,7 +166,6 @@
               <v-tooltip location="right">
                 <template v-slot:activator="{ props }">
                   <v-btn
-                   
                     icon
                     v-bind="props"
                     @click="
@@ -199,9 +198,7 @@
     <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
       <v-card>
         <v-card-title>
-          <span class="text-h5">
-            Identity Provider Link Reset Confirmation
-          </span>
+          <span class="text-h5">Identity Provider Link Reset Confirmation</span>
         </v-card-title>
         <v-card-text>
           <br />
@@ -284,9 +281,6 @@
       };
     },
     async created() {
-      //Create global ref to allow role update from UserUpdateRoles
-      this.$root.$refs.UserDetails = this;
-      // TODO error handling
       this.$store.commit("user/resetState");
       if (this.userId) {
         await this.getUser();

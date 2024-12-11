@@ -669,7 +669,8 @@
       openNewTab: function () {
         this.newTab = true;
       },
-      selectUser: function (user) {
+      selectUser: function (click, row) {
+        const user = row.item;
         if (this.newTab) {
           this.newTab = false;
           return;

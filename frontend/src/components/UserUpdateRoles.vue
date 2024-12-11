@@ -129,7 +129,9 @@
                             <!-- tooltip for effective roles -->
                             <v-tooltip location="right">
                               <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" size="small">mdi-help-circle</v-icon>
+                                <v-icon v-bind="props" size="small">
+                                  mdi-help-circle
+                                </v-icon>
                               </template>
                               <span>
                                 Effective roles represent all roles assigned to
@@ -264,7 +266,6 @@
       };
     },
     async created() {
-      this.$root.$refs.UserUpdateRoles = this;
       this.loadUserRoles();
       if (this.hasRoleForManageUserRoles) {
         this.headers.push({
@@ -462,7 +463,8 @@
             });
           })
           .finally(() => {
-            this.$root.$refs.UserMailboxAuthorizations.getMailboxClients();
+            console.log(this.$parent.getMailboxClients);
+            this.$parent.getMailboxClients();
             window.scrollTo(0, 0);
           });
       },

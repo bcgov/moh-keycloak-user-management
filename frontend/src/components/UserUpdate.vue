@@ -16,9 +16,11 @@
       ></user-details>
       <user-update-roles
         :userId="this.$route.params.userid"
+        ref="userUpdateRoles"
       ></user-update-roles>
       <user-mailbox-authorizations
         :userId="this.$route.params.userid"
+        ref="userMailboxAuthorizations"
       ></user-mailbox-authorizations>
       <user-update-groups
         :userId="this.$route.params.userid"
@@ -62,6 +64,12 @@
           .finally(() => {
             window.scrollTo(0, 0);
           });
+      },
+      getMailboxClients: function () {
+        this.$refs.userMailboxAuthorizations.getMailboxClients();
+      },
+      loadUserRoles: function () {
+        this.$refs.userUpdateRoles.loadUserRoles();
       },
     },
     computed: {

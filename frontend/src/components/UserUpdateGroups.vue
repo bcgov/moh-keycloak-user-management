@@ -164,7 +164,7 @@
               message: "User Groups updated successfully",
               type: "success",
             });
-            this.$root.$refs.UserUpdateRoles.loadUserRoles();
+            this.$parent.loadUserRoles();
           })
           .catch((error) => {
             this.$store.commit("alert/setAlert", {
