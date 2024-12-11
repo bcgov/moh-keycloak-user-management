@@ -15,6 +15,7 @@
         class="elevation-1 no-data-table-hover"
         :items-per-page="15"
         v-on:click:row="selectUser"
+        :item-value="(item) => item"
       >
         <template v-slot:item.username="{ item }">
           <a
@@ -88,7 +89,8 @@
       openNewTab() {
         this.newTab = true;
       },
-      selectUser: function (user) {
+      selectUser: function (click, row) {
+        const user = row.item;
         if (this.newTab) {
           this.newTab = false;
           return;
