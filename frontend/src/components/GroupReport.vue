@@ -13,7 +13,7 @@
         :headers="groupHeaders"
         :items="group.members"
         class="elevation-1 no-data-table-hover"
-        :items-per-page="15"
+        :hide-default-footer="true"
         v-on:click:row="selectUser"
         :item-value="(item) => item"
       >
@@ -35,6 +35,12 @@
         </template>
         <template v-slot:item.email="{ item }">
           <span>{{ item.email }}</span>
+        </template>
+        <template v-slot:bottom>
+          <v-data-table-footer
+            items-per-page="15"
+            items-per-page-text=""
+          ></v-data-table-footer>
         </template>
       </v-data-table>
     </v-card-text>

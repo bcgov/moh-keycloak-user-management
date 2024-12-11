@@ -310,6 +310,7 @@
           v-on:click:row="selectUser"
           v-model="usersSelectedForBulkRemoval"
           :item-value="(item) => item"
+          :hide-default-footer="true"
         >
           <template v-slot:header.data-table-select>
             <template v-if="searchResults.length > 0">
@@ -455,13 +456,13 @@
                             </template>
                           </template>
 
-                          <v-list-item-title
-                            {{user.username}}
-                          ></v-list-item-title>
+                          <v-list-item-title>
+                            {{ user.username }}
+                          </v-list-item-title>
 
-                          <v-list-item-subtitle
-                            {{user.role}}
-                          ></v-list-item-subtitle>
+                          <v-list-item-subtitle>
+                            {{ user.role }}
+                          </v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
                     </v-card-text>
@@ -503,6 +504,10 @@
                 </v-dialog>
               </template>
             </v-toolbar>
+            <v-data-table-footer
+              items-per-page="15"
+              items-per-page-text=""
+            ></v-data-table-footer>
           </template>
         </v-data-table>
       </v-col>
