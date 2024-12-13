@@ -86,3 +86,6 @@ input {
   background-color: #003366;
   color: #ffffff;
 }
+.v-data-table-footer__items-per-page {
+  display: none;
+}
