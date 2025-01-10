@@ -75,17 +75,37 @@ input {
 .v-data-footer {
   justify-content: flex-end;
 }
-
-.theme--light.v-btn.BC-Gov-SecondaryButton {
-  background: none;
-  border: 2px solid #003366;
-  color: #003366;
-}
-.theme--light.v-btn.BC-Gov-SecondaryButton:hover {
-  opacity: 0.8;
-  background-color: #003366;
-  color: #ffffff;
-}
 .v-data-table-footer__items-per-page {
   display: none;
+}
+.v-data-table-footer {
+  border-top: thin solid rgba(0, 0, 0, 0.12);
+}
+
+table > thead > tr > th > div {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.v-data-table {
+  border-top: 2px solid #003366;
+}
+
+.v-application ol,
+.v-application ul {
+  padding-left: 24px;
+}
+
+.v-data-table__th,
+.search-label,
+.help-icon {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.lineChart > canvas {
+  height: 400px;
+}
+
+.v-card .v-card-title {
+  padding: 16px 24px 10px;
 }

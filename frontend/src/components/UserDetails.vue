@@ -4,7 +4,7 @@
     <v-card border class="subgroup">
       <h2>User Details</h2>
       <v-row no-gutters>
-        <v-col class="col-7">
+        <v-col cols="7">
           <v-form ref="form">
             <label
               for="user-name"
@@ -147,7 +147,7 @@
           </v-form>
         </v-col>
         <v-col
-          class="col-4"
+          cols="4"
           style="
             margin-left: 30px;
             padding-left: 20px;
@@ -166,7 +166,9 @@
               <v-tooltip location="right">
                 <template v-slot:activator="{ props }">
                   <v-btn
+                    class="idp-link-button"
                     icon
+                    size="small"
                     v-bind="props"
                     @click="
                       openResetIdentityProviderLinkDialog(
@@ -504,5 +506,8 @@
   }
   .tooltip-note {
     padding-left: 20px;
+  }
+  .idp-link-button {
+    box-shadow: none;
   }
 </style>

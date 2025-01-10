@@ -4,6 +4,7 @@
       :headers="headers"
       :items="ClientsWithEffectiveRoles"
       :loading="!rolesLoaded"
+      id="user-table"
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -69,7 +70,7 @@
                     id="select-user-roles"
                     v-show="clientRoles && !isClientRoleLoading"
                   >
-                    <v-row>
+                    <v-row class="role-list">
                       <!-- shows all possible roles -->
                       <v-col cols="8">
                         <!-- header -->
@@ -84,6 +85,7 @@
                           >
                             <span v-for="item in itemsInColumn" :key="item">
                               <v-checkbox
+                                density="compact"
                                 :disabled="!hasRoleForManageUserRoles"
                                 v-if="item * col <= clientRoles.length"
                                 class="roles-checkbox"
@@ -578,5 +580,12 @@
   }
   .v-toolbar {
     background: #ffffff;
+  }
+  #user-table {
+    border-top: none;
+  }
+  .role-list {
+    margin: 0;
+    padding-left: 15px;
   }
 </style>

@@ -50,7 +50,9 @@
             <p>Total Number of Users</p>
             <v-tooltip location="right" max-width="300px">
               <template v-slot:activator="{ props }">
-                <v-icon v-bind="props" size="small">mdi-help-circle</v-icon>
+                <v-icon v-bind="props" class="help-icon" size="x-small">
+                  mdi-help-circle
+                </v-icon>
               </template>
               <p class="tooltip">
                 Total Unique User Count by IDP + MHSU Realms that do not use an
