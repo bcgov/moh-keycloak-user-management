@@ -189,7 +189,7 @@
         id="submit-button"
         v-if="editUserDetailsPermission"
         class="bg-primary"
-        size="medium"
+        size="default"
         @click="updateUser"
       >
         {{ updateOrRegister }}

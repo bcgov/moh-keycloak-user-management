@@ -25,7 +25,7 @@
         <v-btn
           id="create-organization-button"
           class="bg-success"
-          size="medium"
+          size="default"
           @click="goToCreateOrganization"
         >
           Create New organization
@@ -84,7 +84,7 @@
           <v-btn
             id="save-organization"
             class="bg-primary"
-            size="medium"
+            size="default"
             v-on:click="validateOrganizationToBeSaved()"
           >
             Save Changes

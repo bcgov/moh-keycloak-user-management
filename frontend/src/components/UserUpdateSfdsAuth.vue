@@ -12,7 +12,6 @@
         <v-dialog v-model="editDialog" max-width="840px">
           <template v-slot:activator="{ props }">
             <v-btn
-             
               id="new-sfds-auth-btn"
               color="primary"
               darkclass="mb-2"
@@ -105,7 +104,11 @@
               >
                 Save Mailbox Authorization
               </v-btn>
-              <v-btn variant="outlined" class="text-primary" @click="closeDialog">
+              <v-btn
+                variant="outlined"
+                class="text-primary"
+                @click="closeDialog"
+              >
                 Cancel
               </v-btn>
             </v-card-actions>
@@ -143,7 +146,11 @@
               >
                 Delete
               </v-btn>
-              <v-btn variant="outlined" class="text-primary" @click="closeDialog">
+              <v-btn
+                variant="outlined"
+                class="text-primary"
+                @click="closeDialog"
+              >
                 Cancel
               </v-btn>
             </v-card-actions>
@@ -153,8 +160,14 @@
     </template>
 
     <template v-slot:item.actions="{ item }">
-      <v-icon size="small" class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-      <v-icon :id="item.m + '-delete-btn'" size="small" @click="deleteItem(item)">
+      <v-icon size="small" class="mr-2" @click="editItem(item)">
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        :id="item.m + '-delete-btn'"
+        size="small"
+        @click="deleteItem(item)"
+      >
         mdi-delete
       </v-icon>
     </template>
@@ -171,10 +184,10 @@
     data() {
       return {
         sfdsTableHeaders: [
-          { text: "Mailbox", value: "m" },
-          { text: "Uses", value: "u", width: "60%", class: "break" },
-          { text: "Permission", value: "p" },
-          { text: "Actions", value: "actions", sortable: false },
+          { title: "Mailbox", value: "m" },
+          { title: "Uses", value: "u", width: "60%", class: "break" },
+          { title: "Permission", value: "p" },
+          { title: "Actions", value: "actions", sortable: false },
         ],
         sfdsAuthorizations: [],
         sfdsAuthorizationsToSet: [],
@@ -497,5 +510,8 @@
   }
   .break {
     word-break: break-all;
+  }
+  .v-toolbar {
+    background: #ffffff;
   }
 </style>

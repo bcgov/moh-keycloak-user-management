@@ -28,7 +28,7 @@
       <v-btn
         id="save-user-groups"
         class="bg-primary"
-        size="medium"
+        size="default"
         v-on:click="updateUserGroups()"
         v-if="adminUser && allGroups.length > 0"
       >

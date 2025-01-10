@@ -3,7 +3,7 @@
   <div>
     <!-- Basic Search -->
     <v-row no-gutters v-if="!this.advancedSearchSelected">
-      <v-col class="col-6">
+      <v-col cols="6">
         <label for="user-search">
           Search
           <v-tooltip location="right">
@@ -33,11 +33,11 @@
           "
         />
       </v-col>
-      <v-col class="col-4">
+      <v-col cols="4">
         <v-btn
           id="search-button"
           class="bg-primary"
-          size="medium"
+          size="default"
           @click="searchUser('&search=' + encodeURIComponent(userSearchInput))"
         >
           Search Users
@@ -45,19 +45,19 @@
         <v-btn
           id="clear-search-button-basic"
           class="BC-Gov-SecondaryButton"
-          size="medium"
+          size="default"
           @click="clearSearchCriteria"
         >
           Clear Search
         </v-btn>
       </v-col>
 
-      <v-col class="col-2">
+      <v-col cols="2">
         <v-btn
           v-if="hasCreateUserRole"
           id="create-user-button"
           class="bg-success"
-          size="medium"
+          size="default"
           @click="goToCreateUser"
         >
           Register User
@@ -67,7 +67,7 @@
 
     <!-- Advanced Search -->
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
-      <v-col class="col-6">
+      <v-col cols="6">
         <h1 id="adv-search-header">Advanced User Search</h1>
         <a
           id="basic-search-link"
@@ -77,19 +77,19 @@
           Return to Basic Search
         </a>
       </v-col>
-      <v-col class="col-6">
+      <v-col cols="6">
         <v-btn
           v-if="hasCreateUserRole"
           id="adv-create-user-button"
           class="bg-success"
-          size="medium"
+          size="default"
           @click="goToCreateUser"
         >
           Register User
         </v-btn>
       </v-col>
 
-      <v-col class="col-6">
+      <v-col cols="6">
         <label for="adv-search-last-name">Last Name</label>
         <v-text-field
           id="adv-search-last-name"
@@ -99,7 +99,7 @@
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
-      <v-col class="col-6">
+      <v-col cols="6">
         <label for="adv-search-first-name">First Name</label>
         <v-text-field
           id="adv-search-first-name"
@@ -109,7 +109,7 @@
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
-      <v-col class="col-6">
+      <v-col cols="6">
         <label for="adv-search-username">Username</label>
         <v-text-field
           id="adv-search-username"
@@ -119,7 +119,7 @@
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
-      <v-col class="col-6">
+      <v-col cols="6">
         <label for="adv-search-email">Email</label>
         <v-text-field
           id="adv-search-email"
@@ -129,7 +129,7 @@
           @keyup.enter="searchUser(advancedSearchParams)"
         />
       </v-col>
-      <v-col class="col-6">
+      <v-col cols="6">
         <label for="org-details">Organization</label>
         <v-autocomplete
           id="org-details"
@@ -143,7 +143,7 @@
           @keyup.enter="searchUser(advancedSearchParams)"
         ></v-autocomplete>
       </v-col>
-      <v-col class="col-2">
+      <v-col cols="2">
         <label for="last-log-date-radio">Last logged-in</label>
         <v-radio-group
           v-model="radios"
@@ -159,7 +159,7 @@
           <v-radio label="After" value="After"></v-radio>
         </v-radio-group>
       </v-col>
-      <v-col class="col-4">
+      <v-col cols="4">
         <label for="last-log-date">Date</label>
         <v-menu
           :close-on-content-click="false"
@@ -198,7 +198,7 @@
       <h2>User Roles</h2>
 
       <v-row no-gutters>
-        <v-col class="col-5 col">
+        <v-col cols="5">
           <label for="select-client">Application</label>
           <v-autocomplete
             id="select-client"
@@ -222,13 +222,13 @@
       ></v-skeleton-loader>
       <div v-if="selectedClientId" v-show="rolesLoaded">
         <v-row no-gutters>
-          <v-col class="col-12">
+          <v-col cols="12">
             <v-row no-gutters>
-              <v-col class="col-12">
+              <v-col cols="12">
                 <label>Roles</label>
               </v-col>
               <v-col
-                class="col-6"
+                cols="6"
                 v-for="col in numberOfClientRoleColumns"
                 :key="col"
               >
@@ -275,11 +275,11 @@
     </v-card>
 
     <v-row class="right-gutters" v-if="this.advancedSearchSelected">
-      <v-col class="col-6" style="margin-bottom: 30px">
+      <v-col cols="6" style="margin-bottom: 30px">
         <v-btn
           id="adv-search-button"
           class="bg-primary"
-          size="medium"
+          size="default"
           @click="searchUser(advancedSearchParams)"
         >
           Search Users
@@ -288,7 +288,7 @@
         <v-btn
           id="clear-search-button"
           class="BC-Gov-SecondaryButton"
-          size="medium"
+          size="default"
           @click="clearSearchCriteria"
         >
           Clear Search
@@ -297,7 +297,7 @@
     </v-row>
 
     <v-row no-gutters>
-      <v-col class="col-12">
+      <v-col cols="12">
         <v-data-table
           id="users-table"
           class="base-table select-table"
@@ -933,5 +933,8 @@
   #clear-search-button-basic {
     margin-top: 25px;
     margin-left: 20px;
+  }
+  .v-toolbar {
+    background: #ffffff;
   }
 </style>

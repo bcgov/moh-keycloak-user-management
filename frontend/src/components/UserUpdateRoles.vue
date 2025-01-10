@@ -15,7 +15,8 @@
             <template v-slot:activator="{}">
               <v-btn
                 v-if="hasRoleForManageUserRoles"
-                color="primary"
+                class="bg-primary"
+                size="default"
                 @click="addRoles()"
               >
                 Add User Role
@@ -38,7 +39,7 @@
                 </label>
                 <v-icon style="float: right" @click="close()">mdi-close</v-icon>
                 <v-row>
-                  <v-col class="col-7">
+                  <v-col cols="7">
                     <v-autocomplete
                       id="select-client"
                       variant="outlined"
@@ -46,10 +47,12 @@
                       :items="isEdit ? [selectedClient] : clientWithoutRoles"
                       item-title="clientId"
                       return-object
+                      persistent-placeholder
                       placeholder="Select an Application"
                       v-model="selectedClient"
                       @update:model-value="getUserClientRoles()"
                       :disabled="isEdit"
+                      min-width="270"
                     ></v-autocomplete>
                   </v-col>
                 </v-row>
@@ -68,7 +71,7 @@
                   >
                     <v-row>
                       <!-- shows all possible roles -->
-                      <v-col class="col-8">
+                      <v-col cols="8">
                         <!-- header -->
                         <v-row>
                           <label>Roles</label>
@@ -94,35 +97,38 @@
                                 "
                               >
                                 <!-- role tooltip -->
-                                <span
-                                  slot="label"
-                                  class="tooltip"
-                                  :id="'role-' + roleArrayPosition(col, item)"
-                                >
-                                  {{
-                                    clientRoles[roleArrayPosition(col, item)]
-                                      .name
-                                  }}
+                                <template v-slot:label>
                                   <span
-                                    v-show="
-                                      clientRoles[roleArrayPosition(col, item)]
-                                        .description
-                                    "
-                                    class="tooltiptext"
+                                    class="tooltip"
+                                    :id="'role-' + roleArrayPosition(col, item)"
                                   >
                                     {{
                                       clientRoles[roleArrayPosition(col, item)]
-                                        .description
+                                        .name
                                     }}
+                                    <span
+                                      v-show="
+                                        clientRoles[
+                                          roleArrayPosition(col, item)
+                                        ].description
+                                      "
+                                      class="tooltiptext"
+                                    >
+                                      {{
+                                        clientRoles[
+                                          roleArrayPosition(col, item)
+                                        ].description
+                                      }}
+                                    </span>
                                   </span>
-                                </span>
+                                </template>
                               </v-checkbox>
                             </span>
                           </v-col>
                         </v-row>
                       </v-col>
                       <!-- effective roles -->
-                      <v-col class="col-4" no-gutters>
+                      <v-col cols="4" no-gutters>
                         <v-row>
                           <label>
                             Effective Roles
@@ -158,15 +164,17 @@
                               :key="role.name"
                             >
                               <!-- effective role tooltip -->
-                              <span slot="label" class="tooltip">
-                                {{ role.name }}
-                                <span
-                                  v-show="role.description"
-                                  class="tooltiptext"
-                                >
-                                  {{ role.description }}
+                              <template v-slot:label>
+                                <span class="tooltip">
+                                  {{ role.name }}
+                                  <span
+                                    v-show="role.description"
+                                    class="tooltiptext"
+                                  >
+                                    {{ role.description }}
+                                  </span>
                                 </span>
-                              </span>
+                              </template>
                             </v-checkbox>
                           </v-col>
                         </v-row>
@@ -180,7 +188,7 @@
                   v-if="hasRoleForManageUserRoles"
                   id="save-user-roles"
                   class="bg-primary"
-                  size="medium"
+                  size="default"
                   v-on:click="updateUserClientRoles()"
                 >
                   Save User Roles
@@ -247,9 +255,9 @@
         dialog: false,
         dialogTitle: "",
         headers: [
-          { text: "Application", value: "clientRepresentation.clientId" },
-          { text: "Role", value: "roleArray" },
-          { text: "Last Log In", value: "lastLogin" },
+          { title: "Application", value: "clientRepresentation.clientId" },
+          { title: "Role", value: "roleArray" },
+          { title: "Last Log In", value: "lastLogin" },
         ],
         clientWithoutRoles: [],
         selectedClient: null,
@@ -269,7 +277,7 @@
       this.loadUserRoles();
       if (this.hasRoleForManageUserRoles) {
         this.headers.push({
-          text: "Actions",
+          title: "Actions",
           value: "actions",
           sortable: false,
         });
@@ -502,7 +510,7 @@
 </script>
 
 <style>
-  .updateRolesDialog {
+  .v-dialog > .v-overlay__content.updateRolesDialog {
     margin: 24px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -567,5 +575,8 @@
   .v-label:hover .tooltip .tooltiptext {
     visibility: visible;
     opacity: 1;
+  }
+  .v-toolbar {
+    background: #ffffff;
   }
 </style>

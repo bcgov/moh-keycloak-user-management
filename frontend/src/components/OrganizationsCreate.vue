@@ -39,7 +39,7 @@
       <v-btn
         id="submit-button"
         class="bg-primary"
-        size="medium"
+        size="default"
         @click="validateOrganization"
       >
         Create Organization
