@@ -4,6 +4,7 @@
     <v-row no-gutters>
       <v-col class="col-4">
         <v-checkbox
+          density="compact"
           hide-details="auto"
           v-for="(group, index) in allGroups"
           :id="'group-' + index"

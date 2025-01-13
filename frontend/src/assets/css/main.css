@@ -97,7 +97,6 @@ table > thead > tr > th > div {
 }
 
 .v-data-table__th,
-.search-label,
 .help-icon {
   color: rgba(0, 0, 0, 0.6);
 }
@@ -108,4 +107,8 @@ table > thead > tr > th > div {
 
 .v-card .v-card-title {
   padding: 16px 24px 10px;
+}
+
+.v-card .v-card-actions {
+  padding: 24px 24px;
 }

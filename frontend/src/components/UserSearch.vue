@@ -4,11 +4,13 @@
     <!-- Basic Search -->
     <v-row no-gutters v-if="!this.advancedSearchSelected">
       <v-col cols="6">
-        <label for="user-search" class="search-label">
+        <label for="user-search">
           Search
           <v-tooltip location="right">
             <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" size="x-small">mdi-help-circle</v-icon>
+              <v-icon v-bind="props" size="x-small" class="help-icon">
+                mdi-help-circle
+              </v-icon>
             </template>
             <span>Search by username, email, or name</span>
           </v-tooltip>
@@ -179,6 +181,7 @@
           </template>
           <v-date-picker
             v-model="lastLogDate"
+            :hide-header="true"
             @input="menuDate = false"
             :max="maxDateInput"
             :min="minDateInput"
@@ -543,7 +546,7 @@
         advancedSearchSelected: false,
         newTab: false,
         radios: "",
-        lastLogDate: "",
+        lastLogDate: null,
         rolesLoaded: false,
         usersSelectedForBulkRemoval: [],
         bulkRemoveAccessDialog: false,
@@ -895,6 +898,15 @@
         } else {
           this.usersSelectedForBulkRemoval = [...this.searchResults];
         }
+      },
+      onDatePickerInput(value) {
+        if (value) {
+          const date = new Date(value);
+          this.lastLogDate = formatDate(date);
+        } else {
+          this.lastLogDate = "";
+        }
+        this.menuDate = false;
       },
     },
   };

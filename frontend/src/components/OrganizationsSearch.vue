@@ -3,11 +3,13 @@
     <!-- Basic Search -->
     <v-row no-gutters>
       <v-col class="col-6">
-        <label for="organization-search" class="search-label">
+        <label for="organization-search">
           Search
           <v-tooltip location="right">
             <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" size="x-small">mdi-help-circle</v-icon>
+              <v-icon v-bind="props" size="x-small" class="help-icon">
+                mdi-help-circle
+              </v-icon>
             </template>
             <span>Search by organization name or ID</span>
           </v-tooltip>
