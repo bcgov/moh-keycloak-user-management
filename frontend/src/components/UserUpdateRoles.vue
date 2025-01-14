@@ -1,6 +1,7 @@
 <template>
   <v-card border class="subgroup">
     <v-data-table
+      density="compact"
       :headers="headers"
       :items="ClientsWithEffectiveRoles"
       :loading="!rolesLoaded"
@@ -86,6 +87,7 @@
                             <span v-for="item in itemsInColumn" :key="item">
                               <v-checkbox
                                 density="compact"
+                                color="primary"
                                 :disabled="!hasRoleForManageUserRoles"
                                 v-if="item * col <= clientRoles.length"
                                 class="roles-checkbox"
@@ -137,7 +139,11 @@
                             <!-- tooltip for effective roles -->
                             <v-tooltip location="right">
                               <template v-slot:activator="{ props }">
-                                <v-icon v-bind="props" size="small">
+                                <v-icon
+                                  v-bind="props"
+                                  size="small"
+                                  class="help-icon"
+                                >
                                   mdi-help-circle
                                 </v-icon>
                               </template>
@@ -155,6 +161,7 @@
                         <v-row style="flex-direction: column">
                           <v-col>
                             <v-checkbox
+                              density="compact"
                               class="roles-checkbox"
                               style="word-break: break-all"
                               hide-details="auto"
@@ -534,8 +541,8 @@
   }
 
   .roles-checkbox {
-    margin: 0 0 12px 0;
-    padding: 8px 0 0 0;
+    margin: 0;
+    padding: 0;
   }
   /* Tooltip text */
   .tooltip .tooltiptext {
@@ -587,5 +594,9 @@
   .role-list {
     margin: 0;
     padding-left: 15px;
+  }
+  .v-btn {
+    text-transform: none;
+    font-weight: 600;
   }
 </style>

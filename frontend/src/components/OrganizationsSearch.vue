@@ -36,6 +36,7 @@
     </v-row>
     <!-- table -->
     <v-data-table
+      density="compact"
       id="organizations-table"
       class="base-table select-table"
       :headers="headers"
@@ -199,5 +200,9 @@
     min-width: 450px;
     width: 900px;
     z-index: inherit;
+  }
+  .v-btn {
+    text-transform: none;
+    font-weight: 600;
   }
 </style>

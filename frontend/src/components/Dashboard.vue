@@ -12,7 +12,7 @@
             :items="activeUserCount"
             :headers="headerActiveUserCount"
             hide-default-footer
-            dense
+            density="compact"
             no-data-text=""
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
@@ -113,9 +113,8 @@
           <v-btn
             v-for="format in lineChartFormats"
             :key="format"
-            class="btn"
-            v-bind:class="getLineChartBtnClass(format)"
-            v-bind:title="getLineChartBtnTitle(format)"
+            :color="getLineChartBtnClass(format)"
+            :title="getLineChartBtnTitle(format)"
             @click="loadActiveTotalUser(format)"
             size="small"
             rounded

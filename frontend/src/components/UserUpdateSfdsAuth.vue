@@ -1,5 +1,6 @@
 <template>
   <v-data-table
+    density="compact"
     id="sfds-authorizations-table"
     :headers="sfdsTableHeaders"
     :items="filteredSfdsAuthorizations"

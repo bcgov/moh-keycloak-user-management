@@ -26,3 +26,8 @@
     },
   };
 </script>
+<style scoped>
+  .v-alert {
+    margin-bottom: 16px;
+  }
+</style>

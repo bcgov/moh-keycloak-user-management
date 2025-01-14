@@ -4,6 +4,7 @@
     <v-row no-gutters>
       <v-col class="col-4">
         <v-checkbox
+          color="primary"
           density="compact"
           hide-details="auto"
           v-for="(group, index) in allGroups"

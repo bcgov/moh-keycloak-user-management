@@ -83,4 +83,8 @@
   .v-skeleton-loader__button {
     margin-left: 16px;
   }
+  .v-btn {
+    text-transform: none;
+    font-weight: 600;
+  }
 </style>

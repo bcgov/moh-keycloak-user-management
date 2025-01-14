@@ -235,6 +235,7 @@
                     density="compact"
                     v-if="item * col <= clientRoles.length"
                     class="roles-checkbox"
+                    color="primary"
                     hide-details="auto"
                     v-model="selectedRoles"
                     :value="clientRoles[roleArrayPosition(col, item)]"
@@ -298,6 +299,7 @@
     <v-row no-gutters>
       <v-col cols="12">
         <v-data-table
+          density="compact"
           id="users-table"
           class="base-table select-table"
           :headers="headers"
@@ -348,7 +350,7 @@
                   'lastLogDate',
                 ]"
               >
-                <v-btn id="csv-button" class="bg-primary" size="small">
+                <v-btn id="csv-button" class="bg-primary" size="default">
                   Download results
                 </v-btn>
               </download-csv>
@@ -364,7 +366,7 @@
                     <v-btn
                       id="remove-access-button"
                       class="bg-error"
-                      size="small"
+                      size="default"
                       v-bind="props"
                       :disabled="
                         usersSelectedForBulkRemoval.length === 0 ||
@@ -954,5 +956,12 @@
   }
   .v-toolbar {
     background: #ffffff;
+  }
+  .v-btn {
+    text-transform: none;
+    font-weight: 600;
+  }
+  .v-row {
+    margin: 0;
   }
 </style>

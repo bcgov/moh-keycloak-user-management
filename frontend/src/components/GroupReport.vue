@@ -10,6 +10,7 @@
     <v-card-text v-for="group in userGroups" :key="group.id" v-else>
       <h2 class="group-name">{{ group.name }}</h2>
       <v-data-table
+        density="compact"
         :headers="groupHeaders"
         :items="group.members"
         class="elevation-1 no-data-table-hover"
