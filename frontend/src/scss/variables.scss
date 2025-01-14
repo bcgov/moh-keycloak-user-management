@@ -1,23 +1,5 @@
 $body-font-family: BCSans, "Segoe UI", Roboto, "Helvetica Neue", Arial,
   sans-serif;
-
-$font-size-root: 16px;
-$material-light: (
-  "background": #f1f1f1,
+@use "vuetify" with (
+  $body-font-family: $body-font-family
 );
-$btn-font-sizes: (
-  "small": 1rem,
-);
-$btn-font-weight: 600;
-$btn-letter-spacing: 0.04em;
-$btn-text-transform: none;
-$btn-hover-opacity: 0.2;
-
-$text-field-padding: 10px;
-$text-field-outlined-fieldset-border-width: 2px;
-
-$data-table-regular-header-font-size: 16px;
-$data-table-regular-row-height: 40px;
-
-$dialog-card-actions-padding: 24px 24px;
-$card-text-font-size: 1rem;
