@@ -3,7 +3,7 @@
     <v-card-title>
       <span class="text-h5">Edit User Payee</span>
     </v-card-title>
-    <v-card-text>
+    <v-card-text class="payee-input-group">
       <label dense for="payee">Payee</label>
       <v-text-field
         class="payee-text-field"
@@ -17,7 +17,9 @@
 
     <v-card-actions>
       <v-btn class="bg-primary" @click="save()">Save Payee</v-btn>
-      <v-btn variant="outlined" class="text-primary" @click="close()">Cancel</v-btn>
+      <v-btn variant="outlined" class="text-primary" @click="close()">
+        Cancel
+      </v-btn>
     </v-card-actions>
   </v-card>
   <v-card class="payee-card payee-error" v-else>Error loading Payee</v-card>
@@ -55,7 +57,7 @@
 
 <style scoped>
   .payee-card {
-    padding: 15px;
+    padding: 15px 15px 15px 0px;
   }
   .payee-error {
     color: #ff5252;
@@ -64,5 +66,8 @@
   }
   .payee-text-field {
     width: 200px;
+  }
+  .payee-input-group {
+    margin-left: 10px;
   }
 </style>
