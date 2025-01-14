@@ -145,50 +145,32 @@
           @keyup.enter="searchUser(advancedSearchParams)"
         ></v-autocomplete>
       </v-col>
-      <v-col cols="2">
+      <v-col cols="2" class="last-log-radio-group">
         <label for="last-log-date-radio">Last logged-in</label>
         <v-radio-group v-model="radios" density="compact" style="margin: 0px">
           <v-radio
+            color="primary"
             id="last-log-date-radio"
             label="Before"
             value="Before"
           ></v-radio>
-          <v-radio label="After" value="After"></v-radio>
+          <v-radio color="primary" label="After" value="After"></v-radio>
         </v-radio-group>
       </v-col>
       <v-col cols="4">
         <label for="last-log-date">Date</label>
-        <v-menu
-          :close-on-content-click="false"
-          :offset="40"
-          transition="scale-transition"
+        <v-date-input
+          :disabled="!(radios == 'Before' || radios == 'After')"
+          color="primary"
+          density="compact"
+          id="last-log-date"
+          variant="outlined"
+          v-model="lastLogDate"
+          :max="maxDateInput"
+          :min="minDateInput"
           min-width="auto"
-        >
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              v-model.trim="lastLogDate"
-              id="last-log-date"
-              v-bind="props"
-              hint="YYYY-MM-DD format"
-              prepend-inner-icon="mdi-calendar"
-              :disabled="!(radios == 'Before' || radios == 'After')"
-              variant="outlined"
-              density="compact"
-              clearable
-              readonly
-              @keyup.enter="searchUser(advancedSearchParams)"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            v-model="lastLogDate"
-            :hide-header="true"
-            @input="menuDate = false"
-            :max="maxDateInput"
-            :min="minDateInput"
-            scrollable
-            elevation="10"
-          ></v-date-picker>
-        </v-menu>
+          elevation="10"
+        ></v-date-input>
       </v-col>
     </v-row>
 
@@ -519,11 +501,15 @@
 <script>
   import ClientsRepository from "@/api/ClientsRepository";
   import UsersRepository from "@/api/UsersRepository";
+  import { VDateInput } from "vuetify/labs/VDateInput";
 
   const options = { dateStyle: "short" };
   const formatDate = new Intl.DateTimeFormat("en-CA", options).format;
 
   export default {
+    components: {
+      VDateInput,
+    },
     name: "UserSearch",
     data() {
       return {
@@ -576,13 +562,13 @@
           params = this.addQueryParameter(
             params,
             "lastLogBefore",
-            this.lastLogDate
+            formatDate(this.lastLogDate)
           );
         } else if (this.radios == "After" && this.lastLogDate) {
           params = this.addQueryParameter(
             params,
             "lastLogAfter",
-            this.lastLogDate
+            formatDate(this.lastLogDate)
           );
         }
         if (this.selectedClientId) {
@@ -901,15 +887,6 @@
           this.usersSelectedForBulkRemoval = [...this.searchResults];
         }
       },
-      onDatePickerInput(value) {
-        if (value) {
-          const date = new Date(value);
-          this.lastLogDate = formatDate(date);
-        } else {
-          this.lastLogDate = "";
-        }
-        this.menuDate = false;
-      },
     },
   };
 </script>
@@ -963,5 +940,8 @@
   }
   .v-row {
     margin: 0;
+  }
+  .last-log-radio-group {
+    margin-right: -12px;
   }
 </style>
