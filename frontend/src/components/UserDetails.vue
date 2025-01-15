@@ -258,7 +258,7 @@
         ],
         organizations: this.$organizations.map((item) => {
           item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
-          item.text = `${item.organizationId} - ${item.name}`;
+          item.title = `${item.organizationId} - ${item.name}`;
           return item;
         }),
         emailRules: [
