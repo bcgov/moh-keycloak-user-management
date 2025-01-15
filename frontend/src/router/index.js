@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import Dashboard from "../components/Dashboard.vue";
 import GroupReport from "../components/GroupReport.vue";
 import OrganizationsCreate from "../components/OrganizationsCreate.vue";
@@ -11,6 +11,8 @@ import AccessDenied from "../views/AccessDenied.vue";
 import NotFound from "../views/NotFound.vue";
 import Organizations from "../views/Organizations.vue";
 import Users from "../views/Users.vue";
+
+let initialLoad = true;
 
 const routes = [
   { path: "/", redirect: "/users" },
@@ -95,7 +97,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 
@@ -108,6 +110,25 @@ const checkAccess = (requiredRoles) => {
 };
 
 router.beforeEach((to, from, next) => {
+  //workaround for Keycloak response fragment not being removed from Vue router
+  //removes the "state", "session_state", "code" from path and redirects to the same route
+  //https://github.com/keycloak/keycloak/issues/14742
+  if (initialLoad && to.path) {
+    const keycloakResponseParams = ["state", "session_state", "code"];
+    const params = to.path;
+    const paramsArray = params.split("&");
+
+    const cleanedParamsArray = paramsArray.filter(
+      (param) =>
+        !keycloakResponseParams.some((key) => param.startsWith(key + "="))
+    );
+
+    const cleanedPath = cleanedParamsArray.join("&");
+    initialLoad = false;
+    next({ path: cleanedPath, replace: true });
+    return;
+  }
+
   if (to.meta?.requiredRole) {
     if (!checkAccess(to.meta?.requiredRole) && to.name !== "AccessDenied") {
       next({ name: "AccessDenied" });
@@ -122,3 +143,5 @@ router.beforeEach((to, from, next) => {
 });
 
 export default router;
+
+//users&state=6b30cce8-6c74-4910-8ca8-51225581665d&session_state=b740c379-c3b2-4429-bfa7-b9cb2fc89f6e&code=674351e7-a419-45e4-8d90-c09bd05997b9.b740c379-c3b2-4429-bfa7-b9cb2fc89f6e.0ac8e30e-28cb-4545-bd7f-dc4a195661b2

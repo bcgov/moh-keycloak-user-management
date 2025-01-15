@@ -9,6 +9,7 @@ let initOptions = {
   flow: "standard",
   onLoad: "login-required",
   pkceMethod: "S256",
+  checkLoginIframe: false,
 };
 
 // For some reason idpHint cannot be specified in the Keycloak constructor or init options.
