@@ -381,7 +381,7 @@
 
                     <v-card-text>
                       <v-list>
-                        <v-list-subheader>
+                        <v-list-subheader class="list-subheader">
                           {{ getSelectedClientName(selectedClientId) }}
                           <v-spacer></v-spacer>
                           <v-progress-circular
@@ -395,47 +395,42 @@
                           v-for="(user, i) in usersSelectedForBulkRemoval"
                           :key="i"
                         >
-                          <template>
+                          <template v-slot:prepend>
                             <template v-if="bulkRemovalResponseIsPresent()">
-                              <v-tooltip location="bottom">
+                              <v-tooltip
+                                :text="
+                                  getBulkRemovalListItemDetails(user.id)
+                                    .tooltipText
+                                "
+                                location="bottom"
+                              >
                                 <template v-slot:activator="{ props }">
-                                  <v-avatar v-bind="props">
-                                    <v-icon
-                                      :class="
-                                        getBulkRemovalListItemDetails(user.id)
-                                          .iconClass
-                                      "
-                                      theme="dark"
-                                    >
-                                      {{
-                                        getBulkRemovalListItemDetails(user.id)
-                                          .icon
-                                      }}
-                                    </v-icon>
-                                  </v-avatar>
+                                  <v-icon
+                                    size="large"
+                                    v-bind="props"
+                                    :color="
+                                      getBulkRemovalListItemDetails(user.id)
+                                        .iconColor
+                                    "
+                                    :icon="
+                                      getBulkRemovalListItemDetails(user.id)
+                                        .icon
+                                    "
+                                  ></v-icon>
                                 </template>
-                                <span>
-                                  {{
-                                    getBulkRemovalListItemDetails(user.id)
-                                      .tooltipText
-                                  }}
-                                </span>
                               </v-tooltip>
                             </template>
                             <template v-else>
-                              <v-avatar>
-                                <v-icon
-                                  :class="
-                                    getBulkRemovalListItemDetails(user.id)
-                                      .iconClass
-                                  "
-                                  theme="dark"
-                                >
-                                  {{
-                                    getBulkRemovalListItemDetails(user.id).icon
-                                  }}
-                                </v-icon>
-                              </v-avatar>
+                              <v-icon
+                                size="large"
+                                :color="
+                                  getBulkRemovalListItemDetails(user.id)
+                                    .iconColor
+                                "
+                                :icon="
+                                  getBulkRemovalListItemDetails(user.id).icon
+                                "
+                              ></v-icon>
                             </template>
                           </template>
 
@@ -855,13 +850,13 @@
           if (details.statusCode === "NO_CONTENT") {
             this.bulkRemovalListItemDetails[details.userId] = {
               icon: "mdi-check-circle",
-              iconClass: "green lighten-1",
+              iconColor: "green-darken-2",
               tooltipText: "Access removed successfully",
             };
           } else {
             this.bulkRemovalListItemDetails[details.userId] = {
               icon: "mdi-alert-circle",
-              iconClass: "red lighten-1",
+              iconColor: "red-darken-2",
               tooltipText: `Could not remove access: ${details.body.error}`,
             };
           }
@@ -876,7 +871,7 @@
         } else {
           return {
             icon: "mdi-account",
-            iconClass: "grey lighten-1",
+            iconColor: "gray-darken-2",
           };
         }
       },
@@ -943,5 +938,10 @@
   }
   .last-log-radio-group {
     margin-right: -12px;
+  }
+  .list-subheader {
+    font-size: large;
+    font-weight: 600;
+    margin-bottom: 10px;
   }
 </style>
