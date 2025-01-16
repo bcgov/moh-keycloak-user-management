@@ -109,8 +109,8 @@
       return {
         dialog: false,
         headers: [
-          { title: "ID", value: "organizationId", class: "table-header" },
-          { title: "Name", value: "name", class: "table-header" },
+          { title: "ID", value: "organizationId", class: "table-header", sortable: true },
+          { title: "Name", value: "name", class: "table-header", sortable: true },
           // { text: "Actions", value: "actions", class: "table-header"} disabled until further talks about org edit
         ],
         organizations: this.$organizations,

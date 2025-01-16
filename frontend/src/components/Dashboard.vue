@@ -149,12 +149,13 @@
     data() {
       return {
         headerActiveUserCount: [
-          { title: "Realm", value: "REALM" },
-          { title: "Client", value: "CLIENT", groupable: false },
+          { title: "Realm", value: "REALM", sortable: true },
+          { title: "Client", value: "CLIENT", groupable: false, sortable: true },
           {
             title: "Active User Count",
             value: "ACTIVE_USER_COUNT",
             groupable: false,
+            sortable: true
           },
         ],
         headerUniqueUserCountByIDP: [

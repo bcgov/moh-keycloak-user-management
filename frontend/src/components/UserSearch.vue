@@ -301,6 +301,7 @@
                 :indeterminate="someUsersSelected"
                 :model-value="allUsersSelected"
                 @click="toggleAllUsers"
+                class="header-checkbox"
               ></v-checkbox>
             </template>
           </template>
@@ -582,10 +583,30 @@
       },
       headers() {
         let hdrs = [
-          { title: "Username", value: "username", class: "table-header" },
-          { title: "First name", value: "firstName", class: "table-header" },
-          { title: "Last name", value: "lastName", class: "table-header" },
-          { title: "Email", value: "email", class: "table-header" },
+          {
+            title: "Username",
+            value: "username",
+            class: "table-header",
+            sortable: true,
+          },
+          {
+            title: "First name",
+            value: "firstName",
+            class: "table-header",
+            sortable: true,
+          },
+          {
+            title: "Last name",
+            value: "lastName",
+            class: "table-header",
+            sortable: true,
+          },
+          {
+            title: "Email",
+            value: "email",
+            class: "table-header",
+            sortable: true,
+          },
         ];
         let showLogins =
           this.radios != null &&
@@ -599,10 +620,16 @@
             title: "Last Log Date",
             value: "lastLogDate",
             class: "table-header",
+            sortable: true,
           });
         }
         if (showRoles) {
-          hdrs.push({ title: "Role", value: "role", class: "table-header" });
+          hdrs.push({
+            title: "Role",
+            value: "role",
+            class: "table-header",
+            sortable: true,
+          });
         }
         return hdrs;
       },
@@ -943,5 +970,8 @@
     font-size: large;
     font-weight: 600;
     margin-bottom: 10px;
+  }
+  .header-checkbox >>> .v-input__details {
+    display: none;
   }
 </style>
