@@ -143,5 +143,3 @@ router.beforeEach((to, from, next) => {
 });
 
 export default router;
-
-//users&state=6b30cce8-6c74-4910-8ca8-51225581665d&session_state=b740c379-c3b2-4429-bfa7-b9cb2fc89f6e&code=674351e7-a419-45e4-8d90-c09bd05997b9.b740c379-c3b2-4429-bfa7-b9cb2fc89f6e.0ac8e30e-28cb-4545-bd7f-dc4a195661b2
