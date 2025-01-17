@@ -8,7 +8,7 @@ const VALID_ORGANIZATION_ID = "87654321";
 const INVALID_ORGANIZATION_ID = "1234test";
 const EXISTING_ORGANIZATION_ID = "00000010";
 const API_RESPONSES = {
-  notFound: "No matching records found",
+  notFound: "No data available",
   idRequired: "ID is required",
   idConstraintNotSatisfied: "ID must be made of 8 numerical characters",
   nameRequired: "Organization Name is required",
@@ -37,7 +37,7 @@ test("Test Unsuccessful Organization Search", async (t) => {
     .click(Organization.organizationInput)
     .typeText(Organization.organizationInput, INVALID_ORGANIZATION_ID)
     .expect(Organization.getNoResultsCount())
-    .eql(1)
+    .eql(1) //eql 1 because we're counting row that displays no data found
     .expect(Organization.getNoResultsMessage())
     .eql(API_RESPONSES.notFound);
 });

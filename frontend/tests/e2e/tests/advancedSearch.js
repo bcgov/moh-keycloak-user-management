@@ -46,11 +46,10 @@ test("Test adv search no results", async (t) => {
     .click(AdvancedSearchForm.advSearchLink)
     .typeText(AdvancedSearchForm.lastnameInput, "thisuser")
     .typeText(AdvancedSearchForm.firstnameInput, "doesnotexist")
-    .typeText(AdvancedSearchForm.organizationInput, "00000010")
     .pressKey("enter")
     .click(AdvancedSearchForm.advSearchButton)
     .expect(AdvancedSearchForm.getNoResultsCount())
-    .eql(1);
+    .eql(1); //eql 1 because we're counting row that displays no data found
 });
 
 test("Test adv search by Role", async (t) => {
