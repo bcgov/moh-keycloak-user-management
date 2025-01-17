@@ -12,8 +12,6 @@ import NotFound from "../views/NotFound.vue";
 import Organizations from "../views/Organizations.vue";
 import Users from "../views/Users.vue";
 
-let initialLoad = true;
-
 const routes = [
   { path: "/", redirect: "/users" },
   {
@@ -110,25 +108,6 @@ const checkAccess = (requiredRoles) => {
 };
 
 router.beforeEach((to, from, next) => {
-  //workaround for Keycloak response fragment not being removed from Vue router
-  //removes the "state", "session_state", "code" from path and redirects to the same route
-  //https://github.com/keycloak/keycloak/issues/14742
-  if (initialLoad && to.path) {
-    const keycloakResponseParams = ["state", "session_state", "code"];
-    const params = to.path;
-    const paramsArray = params.split("&");
-
-    const cleanedParamsArray = paramsArray.filter(
-      (param) =>
-        !keycloakResponseParams.some((key) => param.startsWith(key + "="))
-    );
-
-    const cleanedPath = cleanedParamsArray.join("&");
-    initialLoad = false;
-    next({ path: cleanedPath, replace: true });
-    return;
-  }
-
   if (to.meta?.requiredRole) {
     if (!checkAccess(to.meta?.requiredRole) && to.name !== "AccessDenied") {
       next({ name: "AccessDenied" });

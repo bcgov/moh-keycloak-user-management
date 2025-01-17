@@ -6,7 +6,7 @@ import OrganizationsRepository from "./api/OrganizationsRepository";
 import App from "./App.vue";
 import keycloak from "./keycloak";
 import vuetify from "./plugins/vuetify";
-import router from "./router";
+// import router from "./router";
 import store from "./store";
 
 const app = createApp(App);
@@ -24,7 +24,8 @@ keycloak.onAuthSuccess = async function () {
   } catch (err) {
     console.error(err);
   } finally {
-    app.use(vuetify).use(router).use(store).mount("#app");
+    const router = await import("./router");
+    app.use(vuetify).use(router.default).use(store).mount("#app");
   }
 };
 
