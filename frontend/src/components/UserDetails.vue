@@ -405,9 +405,10 @@
             console.log(e);
           });
       },
-      updateUser: function () {
+      updateUser: async function () {
         // Validate the User Details
-        if (!this.$refs.form.validate()) {
+        const { valid: isFormValid } = await this.$refs.form.validate();
+        if (!isFormValid) {
           this.$store.commit("alert/setAlert", {
             message: "Please correct errors before submitting",
             type: "error",

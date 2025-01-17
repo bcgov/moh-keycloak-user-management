@@ -61,8 +61,10 @@
       };
     },
     methods: {
-      validateOrganization: function () {
-        if (!this.$refs.form.validate()) {
+      validateOrganization: async function () {
+        const { valid: isFormValid } = await this.$refs.form.validate();
+        if (!isFormValid) {
+          console.log("My variable:", isFormValid);
           this.$store.commit("alert/setAlert", {
             message: "Please correct errors before submitting",
             type: "error",

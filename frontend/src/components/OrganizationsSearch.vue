@@ -109,8 +109,18 @@
       return {
         dialog: false,
         headers: [
-          { title: "ID", value: "organizationId", class: "table-header", sortable: true },
-          { title: "Name", value: "name", class: "table-header", sortable: true },
+          {
+            title: "ID",
+            value: "organizationId",
+            class: "table-header",
+            sortable: true,
+          },
+          {
+            title: "Name",
+            value: "name",
+            class: "table-header",
+            sortable: true,
+          },
           // { text: "Actions", value: "actions", class: "table-header"} disabled until further talks about org edit
         ],
         organizations: this.$organizations,
@@ -145,8 +155,9 @@
         this.organizationToEdit = { organizationId: "", name: "" };
         this.organizations = this.$organizations;
       },
-      validateOrganizationToBeSaved: function () {
-        if (!this.$refs.form.validate()) {
+      validateOrganizationToBeSaved: async function () {
+        const { valid: isFormValid } = await this.$refs.form.validate();
+        if (!isFormValid) {
           this.$store.commit("alert/setAlert", {
             message: "Please correct errors before submitting",
             type: "error",

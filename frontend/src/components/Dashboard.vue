@@ -123,6 +123,7 @@
           </v-btn>
         </div>
         <LineChart
+          id="line-chart"
           :lineChartData="totalUserCount"
           v-if="!totalUserCountLoadingStatus"
         />
@@ -150,12 +151,17 @@
       return {
         headerActiveUserCount: [
           { title: "Realm", value: "REALM", sortable: true },
-          { title: "Client", value: "CLIENT", groupable: false, sortable: true },
+          {
+            title: "Client",
+            value: "CLIENT",
+            groupable: false,
+            sortable: true,
+          },
           {
             title: "Active User Count",
             value: "ACTIVE_USER_COUNT",
             groupable: false,
-            sortable: true
+            sortable: true,
           },
         ],
         headerUniqueUserCountByIDP: [
