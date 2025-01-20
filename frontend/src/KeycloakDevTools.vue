@@ -9,7 +9,9 @@
       <h2>Token Information</h2>
       <v-btn size="small" v-on:click="loadUserInfo">Get User Info</v-btn>
       <v-btn size="small" v-on:click="showToken">Show Token</v-btn>
-      <v-btn size="small" v-on:click="showRefreshToken">Show Refresh Token</v-btn>
+      <v-btn size="small" v-on:click="showRefreshToken">
+        Show Refresh Token
+      </v-btn>
       <v-btn size="small" v-on:click="showIdToken">Show ID Token</v-btn>
       <v-btn size="small" v-on:click="showExpires">Show Expires</v-btn>
       <v-btn size="small" v-on:click="showDetails">Show Details</v-btn>
