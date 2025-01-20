@@ -12,12 +12,7 @@
 
         <v-dialog v-model="editDialog" max-width="840px">
           <template v-slot:activator="{ props }">
-            <v-btn
-              id="new-sfds-auth-btn"
-              color="primary"
-              darkclass="mb-2"
-              v-bind="props"
-            >
+            <v-btn id="new-sfds-auth-btn" class="bg-primary" v-bind="props">
               Add Mailbox Authorization
             </v-btn>
           </template>
@@ -514,5 +509,8 @@
   }
   .v-toolbar {
     background: #ffffff;
+  }
+  #sfds-authorizations-table {
+    border-top: none;
   }
 </style>
