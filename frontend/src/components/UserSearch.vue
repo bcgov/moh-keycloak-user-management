@@ -306,7 +306,6 @@
             </template>
           </template>
           <!-- https://stackoverflow.com/questions/61394522/add-hyperlink-in-v-data-table-vuetify -->
-          <!-- :footer-props="footerProps" -->
           <template #item.username="{ item }">
             <a
               target="_blank"
@@ -971,7 +970,7 @@
     font-weight: 600;
     margin-bottom: 10px;
   }
-  .header-checkbox >>> .v-input__details {
+  .header-checkbox :deep(.v-input__details) {
     display: none;
   }
 </style>

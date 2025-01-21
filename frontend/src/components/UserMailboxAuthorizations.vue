@@ -42,7 +42,6 @@
       };
     },
     async created() {
-      // this.$root.$refs.UserMailboxAuthorizations = this;
       await this.getMailboxClients();
     },
     methods: {

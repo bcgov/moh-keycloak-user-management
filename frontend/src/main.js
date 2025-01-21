@@ -6,7 +6,6 @@ import OrganizationsRepository from "./api/OrganizationsRepository";
 import App from "./App.vue";
 import keycloak from "./keycloak";
 import vuetify from "./plugins/vuetify";
-// import router from "./router";
 import store from "./store";
 
 const app = createApp(App);

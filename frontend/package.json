@@ -68,8 +68,7 @@
           "allowModifiers": true
         }
       ],
-      "vue/multi-word-component-names": "off",
-      "vue/no-deprecated-slot-attribute": "off"
+      "vue/multi-word-component-names": "off"
     },
     "overrides": [
       {

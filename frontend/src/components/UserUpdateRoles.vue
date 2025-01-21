@@ -480,7 +480,6 @@
             });
           })
           .finally(() => {
-            console.log(this.$parent.getMailboxClients);
             this.$parent.getMailboxClients();
             window.scrollTo(0, 0);
           });
