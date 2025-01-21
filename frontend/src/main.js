@@ -23,6 +23,12 @@ keycloak.onAuthSuccess = async function () {
   } catch (err) {
     console.error(err);
   } finally {
+    //Importing Vue Router dynamically to resolve the following issue:
+    //The module init for vue-router is capturing a value from window.location and using it later for routing before the caller executes app.use(router), removing the caller's ability to control the flow.
+    //This leads to Keycloak response fragment (to be precise the state, session_state and code parameters) being appended to the application URL
+    //This breaks the navigation inside that application and leaks authorization information.
+    //More detail can be found at:
+    //https://github.com/keycloak/keycloak/issues/14742
     const router = await import("./router");
     app.use(vuetify).use(router.default).use(store).mount("#app");
   }

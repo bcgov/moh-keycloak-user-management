@@ -443,6 +443,8 @@
       getTooltipUsername: function (identityProvider) {
         return `username${identityProvider.alias.bold()}`;
       },
+      // The IDP alias in keycloak doesn't always match what's known by users
+      // Formatted to match standard naming conventions
       formatIdp: function (idp) {
         let formattedIdentityProviders = {
           bceid_business: "BCeID Business",
