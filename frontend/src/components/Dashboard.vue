@@ -12,27 +12,31 @@
             :items="activeUserCount"
             :headers="headerActiveUserCount"
             hide-default-footer
-            dense
+            density="compact"
             no-data-text=""
             :loading="activeUserCountLoadingStatus"
             :items-per-page="-1"
           >
             <template #item.REALM="{ item }">
               <v-tooltip
-                bottom
+                location="bottom"
                 :disabled="!item.REALM_DESCRIPTION"
                 max-width="300px"
               >
-                <template v-slot:activator="{ on }">
-                  <span v-on="on">{{ item.REALM }}</span>
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props">{{ item.REALM }}</span>
                 </template>
                 <span>{{ item.REALM_DESCRIPTION }}</span>
               </v-tooltip>
             </template>
             <template #item.CLIENT="{ item }">
-              <v-tooltip bottom :disabled="!item.DESCRIPTION" max-width="300px">
-                <template v-slot:activator="{ on }">
-                  <span v-on="on">{{ item.CLIENT }}</span>
+              <v-tooltip
+                location="bottom"
+                :disabled="!item.DESCRIPTION"
+                max-width="300px"
+              >
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props">{{ item.CLIENT }}</span>
                 </template>
                 <span>{{ item.DESCRIPTION }}</span>
               </v-tooltip>
@@ -44,9 +48,11 @@
         <div class="tile">
           <div class="heading">
             <p>Total Number of Users</p>
-            <v-tooltip right max-width="300px">
-              <template v-slot:activator="{ on }">
-                <v-icon v-on="on" small>mdi-help-circle</v-icon>
+            <v-tooltip location="right" max-width="300px">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" class="help-icon" size="x-small">
+                  mdi-help-circle
+                </v-icon>
               </template>
               <p class="tooltip">
                 Total Unique User Count by IDP + MHSU Realms that do not use an
@@ -107,17 +113,17 @@
           <v-btn
             v-for="format in lineChartFormats"
             :key="format"
-            class="btn"
-            v-bind:class="getLineChartBtnClass(format)"
-            v-bind:title="getLineChartBtnTitle(format)"
+            :color="getLineChartBtnClass(format)"
+            :title="getLineChartBtnTitle(format)"
             @click="loadActiveTotalUser(format)"
-            small
+            size="small"
             rounded
           >
             {{ format }}
           </v-btn>
         </div>
         <LineChart
+          id="line-chart"
           :lineChartData="totalUserCount"
           v-if="!totalUserCountLoadingStatus"
         />
@@ -144,21 +150,27 @@
     data() {
       return {
         headerActiveUserCount: [
-          { text: "Realm", value: "REALM" },
-          { text: "Client", value: "CLIENT", groupable: false },
+          { title: "Realm", value: "REALM", sortable: true },
           {
-            text: "Active User Count",
+            title: "Client",
+            value: "CLIENT",
+            groupable: false,
+            sortable: true,
+          },
+          {
+            title: "Active User Count",
             value: "ACTIVE_USER_COUNT",
             groupable: false,
+            sortable: true,
           },
         ],
         headerUniqueUserCountByIDP: [
-          { text: "IDP", value: "IDP" },
-          { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
+          { title: "IDP", value: "IDP" },
+          { title: "Unique User Count", value: "UNIQUE_USER_COUNT" },
         ],
         headerUniqueUserCountByRealm: [
-          { text: "Realm", value: "REALM" },
-          { text: "Unique User Count", value: "UNIQUE_USER_COUNT" },
+          { title: "Realm", value: "REALM" },
+          { title: "Unique User Count", value: "UNIQUE_USER_COUNT" },
         ],
         totalNumberOfUsers: "",
         activeUserCount: [],

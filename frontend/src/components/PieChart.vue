@@ -1,22 +1,22 @@
 <template>
   <div class="pieChart" style="background-color: white">
-    <Pie :chart-options="chartOptions" :chart-data="chartData" />
+    <Pie :options="chartOptions" :data="chartData" />
   </div>
 </template>
 
 <script>
-  import { Pie } from "vue-chartjs/legacy";
-  import ChartDataLabels from "chartjs-plugin-datalabels";
   import {
-    Chart as ChartJS,
-    Title,
-    Tooltip,
-    Legend,
+    ArcElement,
     BarElement,
     CategoryScale,
-    ArcElement,
+    Chart as ChartJS,
+    Legend,
     LinearScale,
+    Title,
+    Tooltip,
   } from "chart.js";
+  import ChartDataLabels from "chartjs-plugin-datalabels";
+  import { Pie } from "vue-chartjs";
 
   ChartJS.register(
     ChartDataLabels,

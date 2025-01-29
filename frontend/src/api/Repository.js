@@ -1,6 +1,6 @@
 import axios from "axios";
 import keycloak from "../keycloak";
-import Vue from "vue";
+import app from "../main";
 
 /* This needs to be a function instead of just exporting axios.create as default
 because the Keycloak Access Token will be periodically updated. */
@@ -21,7 +21,7 @@ function kcRequest() {
 
 function umsRequest() {
   function createAxios() {
-    const baseURL = Vue.prototype.$config.service_url;
+    const baseURL = app.config.globalProperties.$config.service_url;
     return axios.create({
       baseURL: baseURL,
       headers: { Authorization: "Bearer " + keycloak.token },
@@ -36,7 +36,7 @@ function umsRequest() {
 
 function sfdsRequest() {
   function createAxios() {
-    const baseURL = Vue.prototype.$config.sfds_url;
+    const baseURL = app.config.globalProperties.$config.sfds_url;
     return axios.create({
       baseURL: baseURL,
     });
@@ -48,4 +48,4 @@ function sfdsRequest() {
   return keycloak.updateToken(0).then(createAxios);
 }
 
-export { kcRequest, umsRequest, sfdsRequest };
+export { kcRequest, sfdsRequest, umsRequest };

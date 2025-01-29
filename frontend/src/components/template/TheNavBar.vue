@@ -13,7 +13,7 @@
               : 'inactive'
           "
         >
-          <router-link @click.native="resetAlert" :to="{ name: 'UserSearch' }">
+          <router-link @click="resetAlert" :to="{ name: 'UserSearch' }">
             User Search
           </router-link>
         </li>
@@ -21,7 +21,7 @@
           v-if="dashboardPermission"
           :class="$route.name == 'Dashboard' ? 'active' : 'inactive'"
         >
-          <router-link @click.native="resetAlert" :to="{ name: 'Dashboard' }">
+          <router-link @click="resetAlert" :to="{ name: 'Dashboard' }">
             Dashboard
           </router-link>
         </li>
@@ -30,7 +30,7 @@
           :class="$route.name == 'Organizations' ? 'active' : 'inactive'"
         >
           <router-link
-            @click.native="resetAlert"
+            @click="resetAlert"
             :to="{ name: 'OrganizationsSearch' }"
           >
             Organizations
@@ -40,7 +40,7 @@
           v-if="userSearchPermission"
           :class="$route.name == 'GroupReport' ? 'active' : 'inactive'"
         >
-          <router-link @click.native="resetAlert" :to="{ name: 'GroupReport' }">
+          <router-link @click="resetAlert" :to="{ name: 'GroupReport' }">
             Group Report
           </router-link>
         </li>

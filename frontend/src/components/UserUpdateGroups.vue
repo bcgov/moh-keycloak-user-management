@@ -1,9 +1,11 @@
 <template>
-  <v-card outlined class="subgroup" :disabled="!adminUser">
+  <v-card border class="subgroup" :disabled="!adminUser">
     <h2>User Groups</h2>
     <v-row no-gutters>
       <v-col class="col-4">
         <v-checkbox
+          color="primary"
+          density="compact"
           hide-details="auto"
           v-for="(group, index) in allGroups"
           :id="'group-' + index"
@@ -14,9 +16,9 @@
           :disabled="isCheckboxDisabled(group.name)"
         >
           <template v-slot:label>
-            <v-tooltip right max-width="300px">
-              <template v-slot:activator="{ on }">
-                <span v-on="on">{{ group.name }}</span>
+            <v-tooltip location="right" max-width="300px">
+              <template v-slot:activator="{ props }">
+                <span v-bind="props">{{ group.name }}</span>
               </template>
               <span class="white-space-fix">{{ group.description }}</span>
             </v-tooltip>
@@ -27,8 +29,8 @@
     <div class="my-6">
       <v-btn
         id="save-user-groups"
-        class="primary"
-        medium
+        class="bg-primary"
+        size="default"
         v-on:click="updateUserGroups()"
         v-if="adminUser && allGroups.length > 0"
       >
@@ -164,7 +166,7 @@
               message: "User Groups updated successfully",
               type: "success",
             });
-            this.$root.$refs.UserUpdateRoles.loadUserRoles();
+            this.$parent.loadUserRoles();
           })
           .catch((error) => {
             this.$store.commit("alert/setAlert", {

@@ -18,11 +18,11 @@ class Organization {
   }
 
   getNoResultsCount() {
-    return Selector("tbody > tr.v-data-table__empty-wrapper").count;
+    return Selector("tbody > tr.v-data-table-rows-no-data").count;
   }
 
   getNoResultsMessage() {
-    return Selector("tr.v-data-table__empty-wrapper > td").textContent;
+    return Selector("tbody > tr > td").textContent;
   }
 
   getInputErrorMessage() {

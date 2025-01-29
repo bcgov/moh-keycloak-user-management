@@ -1,10 +1,10 @@
 <!--suppress XmlInvalidId -->
 <template>
   <div id="user">
-    <v-card outlined class="subgroup">
+    <v-card border class="subgroup">
       <h2>User Details</h2>
       <v-row no-gutters>
-        <v-col class="col-7">
+        <v-col cols="7">
           <v-form ref="form">
             <label
               for="user-name"
@@ -13,9 +13,9 @@
             >
               Username
             </label>
-            <v-tooltip right v-if="!userId">
-              <template v-slot:activator="{ on }">
-                <v-icon id="user-name-tooltip-icon" v-on="on" small>
+            <v-tooltip location="right" v-if="!userId">
+              <template v-slot:activator="{ props }">
+                <v-icon id="user-name-tooltip-icon" v-bind="props" size="small">
                   mdi-help-circle
                 </v-icon>
               </template>
@@ -49,9 +49,9 @@
               </span>
             </v-tooltip>
             <v-text-field
-              dense
+              density="compact"
               :disabled="!!userId || !editUserDetailsPermission"
-              outlined
+              variant="outlined"
               id="user-name"
               v-model.trim="user.username"
               required
@@ -66,8 +66,8 @@
               First Name
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="first-name"
               v-model.trim="user.firstName"
@@ -83,8 +83,8 @@
               Last Name
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="last-name"
               v-model.trim="user.lastName"
@@ -100,8 +100,8 @@
               Email Address
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="email"
               v-model.trim="user.email"
@@ -114,8 +114,8 @@
               Telephone Number
             </label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               :disabled="!editUserDetailsPermission"
               id="phone"
               v-model.trim="user.attributes.phone"
@@ -129,16 +129,16 @@
               :disabled="!editUserDetailsPermission"
               v-model="user.attributes.org_details"
               :items="organizations"
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
             ></v-autocomplete>
 
             <label :disabled="!editUserDetailsPermission" for="notes">
               Notes
             </label>
             <v-textarea
-              outlined
-              dense
+              variant="outlined"
+              density="compact"
               id="notes"
               :disabled="!editUserDetailsPermission"
               v-model="user.attributes.access_team_notes"
@@ -147,7 +147,7 @@
           </v-form>
         </v-col>
         <v-col
-          class="col-4"
+          cols="4"
           style="
             margin-left: 30px;
             padding-left: 20px;
@@ -159,23 +159,24 @@
           <ul id="linked-idps" style="margin-top: 5px; list-style: square">
             <li v-for="identity in user.federatedIdentities" :key="identity.id">
               <span>
-                {{ identity.identityProvider | formatIdentityProvider }} [{{
+                {{ formatIdp(identity.identityProvider) }} [{{
                   identity.userName
                 }}]
               </span>
-              <v-tooltip right>
-                <template v-slot:activator="{ on, attrs }">
+              <v-tooltip location="right">
+                <template v-slot:activator="{ props }">
                   <v-btn
+                    class="idp-link-button"
                     icon
-                    v-bind="attrs"
-                    v-on="on"
+                    size="small"
+                    v-bind="props"
                     @click="
                       openResetIdentityProviderLinkDialog(
                         identity.identityProvider
                       )
                     "
                   >
-                    <v-icon small style="vertical-align: middle">
+                    <v-icon size="small" style="vertical-align: middle">
                       mdi-link-variant-off
                     </v-icon>
                   </v-btn>
@@ -189,8 +190,8 @@
       <v-btn
         id="submit-button"
         v-if="editUserDetailsPermission"
-        class="primary"
-        medium
+        class="bg-primary"
+        size="default"
         @click="updateUser"
       >
         {{ updateOrRegister }}
@@ -199,15 +200,13 @@
     <v-dialog v-model="dialog" content-class="resetUserIdentityLinksDialog">
       <v-card>
         <v-card-title>
-          <span class="headline">
-            Identity Provider Link Reset Confirmation
-          </span>
+          <span class="text-h5">Identity Provider Link Reset Confirmation</span>
         </v-card-title>
         <v-card-text>
           <br />
           Are you sure you want to reset the
-          {{ this.selectedIdentityProvider | formatIdentityProvider }} linked
-          identity for this user?
+          {{ formatIdp(this.selectedIdentityProvider) }} linked identity for
+          this user?
           <br />
           <br />
           Resetting a linked identity will retain all existing roles and details
@@ -215,12 +214,12 @@
           Keycloak login event.
         </v-card-text>
         <v-card-actions>
-          <v-btn class="primary" @click="resetIdentityProviderLink">
+          <v-btn class="bg-primary" @click="resetIdentityProviderLink">
             Reset Identity Provider Link
           </v-btn>
           <v-btn
-            outlined
-            class="primary--text"
+            variant="outlined"
+            class="text-primary"
             @click="closeResetIdentityProviderLinkDialog"
           >
             Cancel
@@ -259,7 +258,7 @@
         ],
         organizations: this.$organizations.map((item) => {
           item.value = `{"id":"${item.organizationId}","name":"${item.name}"}`;
-          item.text = `${item.organizationId} - ${item.name}`;
+          item.title = `${item.organizationId} - ${item.name}`;
           return item;
         }),
         emailRules: [
@@ -284,9 +283,6 @@
       };
     },
     async created() {
-      //Create global ref to allow role update from UserUpdateRoles
-      this.$root.$refs.UserDetails = this;
-      // TODO error handling
       this.$store.commit("user/resetState");
       if (this.userId) {
         await this.getUser();
@@ -409,9 +405,10 @@
             console.log(e);
           });
       },
-      updateUser: function () {
+      updateUser: async function () {
         // Validate the User Details
-        if (!this.$refs.form.validate()) {
+        const { valid: isFormValid } = await this.$refs.form.validate();
+        if (!isFormValid) {
           this.$store.commit("alert/setAlert", {
             message: "Please correct errors before submitting",
             type: "error",
@@ -446,11 +443,9 @@
       getTooltipUsername: function (identityProvider) {
         return `username${identityProvider.alias.bold()}`;
       },
-    },
-    filters: {
       // The IDP alias in keycloak doesn't always match what's known by users
       // Formatted to match standard naming conventions
-      formatIdentityProvider: function (idp) {
+      formatIdp: function (idp) {
         let formattedIdentityProviders = {
           bceid_business: "BCeID Business",
           bcprovider_aad: "BC Provider",
@@ -470,6 +465,7 @@
       },
     },
   };
+
   function mapBcscToClientName(federatedIdentityString) {
     const bcscMapping = {
       bcsc: "PIDP",
@@ -513,5 +509,8 @@
   }
   .tooltip-note {
     padding-left: 20px;
+  }
+  .idp-link-button {
+    box-shadow: none;
   }
 </style>

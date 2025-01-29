@@ -1,5 +1,6 @@
 <template>
   <v-data-table
+    density="compact"
     id="sfds-authorizations-table"
     :headers="sfdsTableHeaders"
     :items="filteredSfdsAuthorizations"
@@ -10,27 +11,21 @@
         <v-spacer></v-spacer>
 
         <v-dialog v-model="editDialog" max-width="840px">
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              id="new-sfds-auth-btn"
-              color="primary"
-              darkclass="mb-2"
-              v-bind="attrs"
-              v-on="on"
-            >
+          <template v-slot:activator="{ props }">
+            <v-btn id="new-sfds-auth-btn" class="bg-primary" v-bind="props">
               Add Mailbox Authorization
             </v-btn>
           </template>
           <v-card>
             <v-card-title>
-              <span class="headline">{{ dialogTitle }}</span>
+              <span class="text-h5">{{ dialogTitle }}</span>
             </v-card-title>
             <v-card-text>
               <v-alert
                 id="sfds-auth-alert"
                 v-model="alertStatus"
                 :type="alertType"
-                dismissible
+                closable
               >
                 {{ alertMessage }}
               </v-alert>
@@ -45,12 +40,12 @@
                         id="sfds-mailboxes"
                         v-model="currentSfdsAuthorization.m"
                         :items="sfdsMailboxes"
-                        item-text="label"
+                        item-title="label"
                         item-value="id"
                         required
                         :rules="mailboxRules"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                       ></v-autocomplete>
                     </v-col>
                     <v-col class="col-4">
@@ -66,15 +61,15 @@
                         class="sfds-uses"
                         v-model="currentSfdsAuthorization.u"
                         :items="filteredSfdsUses"
-                        item-text="label"
+                        item-title="label"
                         item-value="id"
                         required
                         :rules="[
                           (v) => !!v || 'At least one use is required',
                           (v) => v.length > 0 || 'At least one use is required',
                         ]"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         multiple
                         chips
                       ></v-autocomplete>
@@ -89,8 +84,8 @@
                         :items="sfdsPermissions"
                         required
                         :rules="[(v) => !!v || 'A permission is required']"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                       ></v-select>
                     </v-col>
                   </v-row>
@@ -100,12 +95,16 @@
             <v-card-actions>
               <v-btn
                 id="save-sfds-auth-btn"
-                class="primary"
+                class="bg-primary"
                 @click="saveSfdsAuthorization"
               >
                 Save Mailbox Authorization
               </v-btn>
-              <v-btn outlined class="primary--text" @click="closeDialog">
+              <v-btn
+                variant="outlined"
+                class="text-primary"
+                @click="closeDialog"
+              >
                 Cancel
               </v-btn>
             </v-card-actions>
@@ -114,15 +113,15 @@
 
         <v-dialog v-model="deleteDialog" max-width="650px">
           <v-card>
-            <v-card-title class="headline">
+            <v-card-title class="text-h5">
               Are you sure you want to delete this authorization?
             </v-card-title>
-            <v-card-text class="black--text">
+            <v-card-text class="text-black">
               <v-alert
                 id="sfds-delete-auth-alert"
                 v-model="alertStatus"
                 :type="alertType"
-                dismissible
+                closable
               >
                 {{ alertMessage }}
               </v-alert>
@@ -138,12 +137,16 @@
             <v-card-actions>
               <v-btn
                 id="confirm-delete-sfds-btn"
-                class="red white--text"
+                class="bg-red text-white"
                 @click="deleteItemConfirm"
               >
                 Delete
               </v-btn>
-              <v-btn outlined class="primary--text" @click="closeDialog">
+              <v-btn
+                variant="outlined"
+                class="text-primary"
+                @click="closeDialog"
+              >
                 Cancel
               </v-btn>
             </v-card-actions>
@@ -153,8 +156,14 @@
     </template>
 
     <template v-slot:item.actions="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-      <v-icon :id="item.m + '-delete-btn'" small @click="deleteItem(item)">
+      <v-icon size="small" class="mr-2" @click="editItem(item)">
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        :id="item.m + '-delete-btn'"
+        size="small"
+        @click="deleteItem(item)"
+      >
         mdi-delete
       </v-icon>
     </template>
@@ -171,10 +180,10 @@
     data() {
       return {
         sfdsTableHeaders: [
-          { text: "Mailbox", value: "m" },
-          { text: "Uses", value: "u", width: "60%", class: "break" },
-          { text: "Permission", value: "p" },
-          { text: "Actions", value: "actions", sortable: false },
+          { title: "Mailbox", value: "m" },
+          { title: "Uses", value: "u", width: "60%", class: "break" },
+          { title: "Permission", value: "p" },
+          { title: "Actions", value: "actions", sortable: false },
         ],
         sfdsAuthorizations: [],
         sfdsAuthorizationsToSet: [],
@@ -497,5 +506,11 @@
   }
   .break {
     word-break: break-all;
+  }
+  .v-toolbar {
+    background: #ffffff;
+  }
+  #sfds-authorizations-table {
+    border-top: none;
   }
 </style>

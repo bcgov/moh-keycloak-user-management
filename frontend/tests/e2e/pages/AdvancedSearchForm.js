@@ -11,7 +11,7 @@ class AdvancedSearchForm {
     this.selectClient = Selector("#select-client");
     this.advSearchButton = Selector("#adv-search-button");
     this.bulkRemoveButton = Selector("#remove-access-button");
-    this.selectAllCheckbox = Selector('thead input[role="checkbox"]');
+    this.selectAllCheckbox = Selector('thead input[type="checkbox"]');
   }
 
   getRoleCheckbox(roleName) {
@@ -22,9 +22,8 @@ class AdvancedSearchForm {
   }
 
   getNoResultsCount() {
-    return Selector("#users-table").find(
-      "tbody > tr.v-data-table__empty-wrapper"
-    ).count;
+    return Selector("#users-table").find("tbody > tr.v-data-table-rows-no-data")
+      .count;
   }
 
   getResultsCount() {
@@ -32,7 +31,7 @@ class AdvancedSearchForm {
   }
 
   getDropdownResult(name) {
-    return Selector("div.v-list-item__title").withText(name);
+    return Selector("div.v-list-item-title").withText(name);
   }
 }
 

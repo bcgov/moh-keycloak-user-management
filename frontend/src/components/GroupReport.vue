@@ -10,11 +10,13 @@
     <v-card-text v-for="group in userGroups" :key="group.id" v-else>
       <h2 class="group-name">{{ group.name }}</h2>
       <v-data-table
+        density="compact"
         :headers="groupHeaders"
         :items="group.members"
         class="elevation-1 no-data-table-hover"
-        :items-per-page="15"
+        :hide-default-footer="true"
         v-on:click:row="selectUser"
+        :item-value="(item) => item"
       >
         <template v-slot:item.username="{ item }">
           <a
@@ -24,7 +26,7 @@
           >
             {{ item.username }}
           </a>
-          <v-icon small>mdi-open-in-new</v-icon>
+          <v-icon size="small">mdi-open-in-new</v-icon>
         </template>
         <template v-slot:item.firstName="{ item }">
           <span>{{ item.firstName }}</span>
@@ -35,25 +37,32 @@
         <template v-slot:item.email="{ item }">
           <span>{{ item.email }}</span>
         </template>
+        <template v-slot:bottom>
+          <v-data-table-footer
+            items-per-page="15"
+            items-per-page-text=""
+          ></v-data-table-footer>
+        </template>
       </v-data-table>
     </v-card-text>
   </div>
 </template>
 
 <script>
-  import UsersRepository from "@/api/UsersRepository";
   import GroupsRepository from "@/api/GroupsRepository";
+  import UsersRepository from "@/api/UsersRepository";
+  import { reactive } from "vue";
 
   export default {
     name: "GroupReport",
     data() {
       return {
-        userGroups: [],
+        userGroups: reactive([]),
         groupHeaders: [
-          { text: "Username", value: "username" },
-          { text: "First Name", value: "firstName" },
-          { text: "Last Name", value: "lastName" },
-          { text: "Email", value: "email" },
+          { title: "Username", value: "username", sortable: true },
+          { title: "First Name", value: "firstName", sortable: true },
+          { title: "Last Name", value: "lastName", sortable: true },
+          { title: "Email", value: "email", sortable: true },
         ],
       };
     },
@@ -78,7 +87,7 @@
             const groupMembers = await GroupsRepository.getGroupMembers(
               group.id
             );
-            this.$set(group, "members", groupMembers.data);
+            group.members = groupMembers.data;
           }
         } catch (error) {
           this.handleError("Failed to load group members", error);
@@ -87,7 +96,8 @@
       openNewTab() {
         this.newTab = true;
       },
-      selectUser: function (user) {
+      selectUser: function (click, row) {
+        const user = row.item;
         if (this.newTab) {
           this.newTab = false;
           return;

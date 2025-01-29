@@ -1,8 +1,8 @@
 <template>
-  <footer class="primary">
+  <footer class="bg-primary">
     <div class="container">
       <v-row no-gutters>
-        <v-col class="col-3">
+        <v-col cols="3">
           <ul>
             <li>
               <a
@@ -22,7 +22,7 @@
             </li>
           </ul>
         </v-col>
-        <v-col class="col-3">
+        <v-col cols="3">
           <ul>
             <li>
               <a

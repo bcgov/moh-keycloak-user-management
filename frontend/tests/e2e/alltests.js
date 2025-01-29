@@ -36,7 +36,7 @@ test("Test update user", async (t) => {
     .typeText("#user-search", "testcafe")
     .click("#search-button")
     .click(Selector("td").withText(TEST_CAFE_USERNAME))
-    .typeText("#org-details", random_value, { replace: true })
+    .typeText("#notes", random_value, { replace: true })
     .click("#submit-button")
     .expect(Selector("html").textContent)
     .contains("User updated");
@@ -52,7 +52,7 @@ test("Test update user role", async (t) => {
         .find("td")
         .withText(CLIENT_TO_TEST)
         .sibling("td")
-        .find("button")
+        .find("i")
     )
     .click("#role-0")
     .click("#save-user-roles")

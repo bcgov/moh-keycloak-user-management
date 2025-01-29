@@ -1,15 +1,15 @@
 <template>
   <div id="organization">
     <h1>Create New Organization</h1>
-    <v-card outlined class="subgroup">
+    <v-card border class="subgroup">
       <h2>Organization Details</h2>
       <v-row no-gutters>
         <v-col class="col-7">
           <v-form ref="form">
             <label for="id" class="required">Organization ID</label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               id="id"
               v-model.trim="organization.organizationId"
               required
@@ -23,8 +23,8 @@
 
             <label for="name" class="required">Organization Name</label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               id="name"
               v-model.trim="organization.name"
               required
@@ -38,8 +38,8 @@
       </v-row>
       <v-btn
         id="submit-button"
-        class="primary"
-        medium
+        class="bg-primary"
+        size="default"
         @click="validateOrganization"
       >
         Create Organization
@@ -61,8 +61,9 @@
       };
     },
     methods: {
-      validateOrganization: function () {
-        if (!this.$refs.form.validate()) {
+      validateOrganization: async function () {
+        const { valid: isFormValid } = await this.$refs.form.validate();
+        if (!isFormValid) {
           this.$store.commit("alert/setAlert", {
             message: "Please correct errors before submitting",
             type: "error",

@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="clientsWithRoles.length > 0" outlined class="subgroup">
+  <v-card v-if="clientsWithRoles.length > 0" border class="subgroup">
     <h2 class="sfds-authorizations-header">Mailbox Authorizations</h2>
 
     <div class="nav-tabs" style="width: 100%">
@@ -23,9 +23,9 @@
 </template>
 
 <script>
+  import ClientsRepository from "@/api/ClientsRepository";
   import UserUpdateSfdsAuth from "@/components/UserUpdateSfdsAuth";
   import UsersRepository from "../api/UsersRepository";
-  import ClientsRepository from "@/api/ClientsRepository";
 
   export default {
     name: "UserMailboxAuthorizations",
@@ -42,7 +42,6 @@
       };
     },
     async created() {
-      this.$root.$refs.UserMailboxAuthorizations = this;
       await this.getMailboxClients();
     },
     methods: {

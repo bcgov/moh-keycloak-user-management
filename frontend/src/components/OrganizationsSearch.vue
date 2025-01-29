@@ -5,9 +5,11 @@
       <v-col class="col-6">
         <label for="organization-search">
           Search
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <v-icon v-on="on" small>mdi-help-circle</v-icon>
+          <v-tooltip location="right">
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" size="x-small" class="help-icon">
+                mdi-help-circle
+              </v-icon>
             </template>
             <span>Search by organization name or ID</span>
           </v-tooltip>
@@ -15,8 +17,8 @@
 
         <v-text-field
           id="organization-search"
-          outlined
-          dense
+          variant="outlined"
+          density="compact"
           v-model.trim="organizationSearchInput"
           placeholder="Organization ID"
         />
@@ -24,9 +26,9 @@
       <v-col class="col-6">
         <v-btn
           id="create-organization-button"
-          class="success"
-          medium
-          @click.native="goToCreateOrganization"
+          class="bg-success"
+          size="default"
+          @click="goToCreateOrganization"
         >
           Create New organization
         </v-btn>
@@ -34,6 +36,7 @@
     </v-row>
     <!-- table -->
     <v-data-table
+      density="compact"
       id="organizations-table"
       class="base-table select-table"
       :headers="headers"
@@ -44,7 +47,7 @@
       loading-text="Searching for organizations"
     >
       <template #item.actions="{ item }">
-        <v-icon small @click="openEditOrganizationDialog(item)">
+        <v-icon size="small" @click="openEditOrganizationDialog(item)">
           mdi-pencil
         </v-icon>
       </template>
@@ -53,23 +56,23 @@
     <v-dialog content-class="updateOrganizationDialog" v-model="dialog">
       <v-card>
         <v-card-title>
-          <span style="float: left" class="headline">Edit organization</span>
+          <span style="float: left" class="text-h5">Edit organization</span>
         </v-card-title>
         <v-card-text>
           <v-form ref="form">
             <label for="id" class="required">Organization ID</label>
             <v-text-field
               disabled
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               id="ID"
               v-model.trim="organizationToEdit.organizationId"
             ></v-text-field>
 
             <label for="name" class="required">Organization Name</label>
             <v-text-field
-              dense
-              outlined
+              density="compact"
+              variant="outlined"
               id="name"
               v-model.trim="organizationToEdit.name"
               required
@@ -83,13 +86,15 @@
         <v-card-actions>
           <v-btn
             id="save-organization"
-            class="primary"
-            medium
+            class="bg-primary"
+            size="default"
             v-on:click="validateOrganizationToBeSaved()"
           >
             Save Changes
           </v-btn>
-          <v-btn outlined class="primary--text" @click="close()">Cancel</v-btn>
+          <v-btn variant="outlined" class="text-primary" @click="close()">
+            Cancel
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -104,8 +109,18 @@
       return {
         dialog: false,
         headers: [
-          { text: "ID", value: "organizationId", class: "table-header" },
-          { text: "Name", value: "name", class: "table-header" },
+          {
+            title: "ID",
+            value: "organizationId",
+            class: "table-header",
+            sortable: true,
+          },
+          {
+            title: "Name",
+            value: "name",
+            class: "table-header",
+            sortable: true,
+          },
           // { text: "Actions", value: "actions", class: "table-header"} disabled until further talks about org edit
         ],
         organizations: this.$organizations,
@@ -140,8 +155,9 @@
         this.organizationToEdit = { organizationId: "", name: "" };
         this.organizations = this.$organizations;
       },
-      validateOrganizationToBeSaved: function () {
-        if (!this.$refs.form.validate()) {
+      validateOrganizationToBeSaved: async function () {
+        const { valid: isFormValid } = await this.$refs.form.validate();
+        if (!isFormValid) {
           this.$store.commit("alert/setAlert", {
             message: "Please correct errors before submitting",
             type: "error",
@@ -195,5 +211,9 @@
     min-width: 450px;
     width: 900px;
     z-index: inherit;
+  }
+  .v-btn {
+    text-transform: none;
+    font-weight: 600;
   }
 </style>

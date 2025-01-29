@@ -15,36 +15,36 @@
   "dependencies": {
     "@bcgov/bc-sans": "^1.0.1",
     "axios": "^1.6.2",
-    "chart.js": "^3.9.1",
+    "chart.js": "^4.4.7",
     "chartjs-plugin-datalabels": "^2.1.0",
     "core-js": "^3.10.1",
     "keycloak-js": "^20.0.0",
-    "vue": "^2.6.12",
-    "vue-chartjs": "^4.1.1",
-    "vue-json-csv": "^1.2.12",
-    "vue-router": "^3.5.1",
-    "vuetify": "^2.4.9",
-    "vuex": "^3.6.2"
+    "vue": "^3.5.12",
+    "vue-chartjs": "^5.3.2",
+    "vue-json-csv": "^2.1.0",
+    "vue-router": "^4.4.5",
+    "vuetify": "^3.7.3",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.25.9",
     "@vue/cli-plugin-babel": "~5.0.8",
     "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-plugin-router": "~5.0.8",
     "@vue/cli-plugin-unit-jest": "~5.0.8",
     "@vue/cli-plugin-vuex": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
-    "@vue/test-utils": "^1.1.4",
-    "babel-eslint": "^10.1.0",
-    "eslint": "7.5.0",
+    "@vue/compiler-sfc": "^3.5.12",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^8.57.1",
     "eslint-plugin-testcafe": "^0.2.1",
-    "eslint-plugin-vue": "^7.20.0",
+    "eslint-plugin-vue": "^9.31.0",
+    "eslint-plugin-vuetify": "^2.5.1",
     "prettier": "2.8.7",
-    "sass": "^1.69.5",
-    "sass-loader": "^8.0.0",
-    "testcafe": "^1.14.0",
-    "vue-cli-plugin-vuetify": "^2.3.1",
-    "vue-template-compiler": "^2.6.12",
-    "vuetify-loader": "^1.7.2"
+    "sass": "^1.83.1",
+    "sass-loader": "^16.0.4",
+    "testcafe": "^1.20.0",
+    "webpack-plugin-vuetify": "^3.0.3"
   },
   "eslintConfig": {
     "root": true,
@@ -52,12 +52,14 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/vue3-essential",
       "eslint:recommended",
-      "plugin:testcafe/recommended"
+      "plugin:testcafe/recommended",
+      "plugin:vue/base",
+      "plugin:vuetify/base"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser"
     },
     "rules": {
       "vue/valid-v-slot": [
@@ -65,7 +67,8 @@
         {
           "allowModifiers": true
         }
-      ]
+      ],
+      "vue/multi-word-component-names": "off"
     },
     "overrides": [
       {
