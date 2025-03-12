@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
-    "test:e2e": "testcafe chrome tests/e2e",
+    "test:e2e": "testcafe chrome tests/e2e --hostname localhost",
     "lint": "vue-cli-service lint",
     "test": "npm run test:unit",
     "format:check": "prettier -c .",
