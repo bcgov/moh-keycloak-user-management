@@ -55,6 +55,10 @@ public class UserService {
         return mapResultsToDTO(searchResults, roleIdNameMap, loginEventsMap, briefRepresentation);
     }
 
+    public List<ApplicationRealmUser> getFederatedApplicationRealmUsers(String federatedUserId){
+        return userRepository.findFederatedApplicationRealmUsers(federatedUserId);
+    }
+
     private List<UserDTO> mapResultsToDTO(List<UserEntity> searchResults, Map<String, String> roleIdNameMap, Map<String, Object> loginEventsMap, boolean briefRepresentation) {
         return searchResults.stream().map(user -> UserDTOMapper.convertToDTO(user, roleIdNameMap, briefRepresentation, loginEventsMap.get(user.getId()))).collect(Collectors.toList());
     }

@@ -5,6 +5,7 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
 import ca.bc.gov.hlth.mohums.model.UserPayee;
+import ca.bc.gov.hlth.mohums.userSearch.user.ApplicationRealmUser;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
@@ -266,7 +267,17 @@ public class UsersController {
 
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
     public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
-        return keycloakApiService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
+        //find all federated identities, that have given federated user id
+        //return a pair of realm_id, user_id
+        List<ApplicationRealmUser> applicationRealmUsers = userService.getFederatedApplicationRealmUsers(userIdIdpRealm);
+        if (applicationRealmUsers.isEmpty()){
+            return new ResponseEntity<>("Could not find federated identities with the given user ID", HttpStatus.NOT_FOUND);
+        }
+
+
+        //for each pair reset identity provider links
+        //delete user from the idp realm
+        return keycloakApiService.removeUserIdentityProviderLink(applicationRealmUsers, identityProvider, userIdIdpRealm);
     }
 
     @GetMapping("/users/{userId}/payee")
