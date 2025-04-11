@@ -108,7 +108,7 @@ public class MoHUmsIntegrationTests {
         List<Object> clients = getAll("clients");
 
         List<String> prohibitedKeys = List.of("secret", "password", "key", "credentials");
-        
+
         Assertions.assertThat(clients).isNotEmpty();
         Assertions.assertThat(clients.stream()
                 .map(client -> (LinkedHashMap<String, Object>) client)

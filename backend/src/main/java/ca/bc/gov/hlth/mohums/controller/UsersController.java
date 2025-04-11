@@ -265,18 +265,22 @@ public class UsersController {
                 keycloakApiService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
     }
 
+    /**
+     * This endpoint removes linked identities from a given user in all application realms (i.e. moh_applications and moh_citizen)
+     * The method:
+     *  - searches for all users in all application realms that have are linked with a given user from the IDP realm
+     *  - removes those idp links
+     *  - removes the user account from idp realm
+     *
+     *  Commonly used for troubleshooting 'your account already exists error'
+     */
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
     public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
-        //find all federated identities, that have given federated user id
-        //return a pair of realm_id, user_id
         List<ApplicationRealmUser> applicationRealmUsers = userService.getFederatedApplicationRealmUsers(userIdIdpRealm);
         if (applicationRealmUsers.isEmpty()){
             return new ResponseEntity<>("Could not find federated identities with the given user ID", HttpStatus.NOT_FOUND);
         }
 
-
-        //for each pair reset identity provider links
-        //delete user from the idp realm
         return keycloakApiService.removeUserIdentityProviderLink(applicationRealmUsers, identityProvider, userIdIdpRealm);
     }
 
