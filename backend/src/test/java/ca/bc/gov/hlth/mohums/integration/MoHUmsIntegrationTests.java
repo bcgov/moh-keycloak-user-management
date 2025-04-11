@@ -107,10 +107,12 @@ public class MoHUmsIntegrationTests {
     public void clientsAuthorized() throws Exception {
         List<Object> clients = getAll("clients");
 
+        List<String> prohibitedKeys = List.of("secret", "password", "key", "credentials");
+
         Assertions.assertThat(clients).isNotEmpty();
         Assertions.assertThat(clients.stream()
                 .map(client -> (LinkedHashMap<String, Object>) client)
-                .noneMatch(client -> client.containsKey("secret"))).isTrue();
+                .noneMatch(client -> prohibitedKeys.stream().anyMatch(client::containsKey))).isTrue();
     }
 
     @Test
@@ -477,9 +479,10 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .put()
                 // umstest user
+                // partial updates are no longer supported in Keycloak - passing email, firstName and lastName, so they are not wiped out
                 .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}}")
+                .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}, \"email\":\"test@ums.com\",\"lastName\":\"test\",\"firstName\":\"ums\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
