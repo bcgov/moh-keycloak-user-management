@@ -1,5 +1,6 @@
 package ca.bc.gov.hlth.mohums.userSearch;
 
+import ca.bc.gov.hlth.mohums.userSearch.user.ApplicationRealmUser;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserEntity;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserRepository;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSpecifications;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -165,6 +167,20 @@ public class UserRepositoryTest {
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.stream().noneMatch(user -> user.getUsername().contains("service-account"))).isTrue();
+    }
+
+    /**
+     * federatedUserId -> umstest-federated-identity from idir realm
+     * test searches for all users in application realms that are linked with the federatedUserId
+     */
+    @Test
+    public void testFindFederatedIdentities() {
+        String federatedUserId = "3e5446d5-f4f0-409e-a41e-7e9c4ccfb14b";
+        List<ApplicationRealmUser> result = userRepository.findFederatedApplicationRealmUsers(federatedUserId);
+        assertEquals(2, result.size());
+        for (ApplicationRealmUser user : result) {
+            assertTrue(Arrays.asList("moh_applications", "moh_citizen").contains(user.getRealmName()));
+        }
     }
 
     @ParameterizedTest
