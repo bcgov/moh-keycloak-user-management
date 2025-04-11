@@ -203,18 +203,14 @@ public class KeycloakApiService {
 
         for (ApplicationRealmUser applicationRealmUser : applicationRealmUsers) {
             String userId = applicationRealmUser.getUserId();
-            String applicationRealm = applicationRealmUser.getRealmId();
-            if(applicationRealm.equals("davidscoolnewrealm")){
-                applicationRealm = "moh_citizen";
-            }
+            String applicationRealm = applicationRealmUser.getRealmName();
             if (identityProvider.startsWith("bcsc")) {
                 LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
                 ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
-                String finalApplicationRealm = applicationRealm;
                 federatedIdentities.forEach(fi -> {
                     String idpAlias = fi.get("identityProvider");
                     if (idpAlias.startsWith("bcsc")) {
-                        ResponseEntity<Object> response = deleteUserIdentityProviderLink(finalApplicationRealm, userId, idpAlias);
+                        ResponseEntity<Object> response = deleteUserIdentityProviderLink(applicationRealm, userId, idpAlias);
                         deleteIDPLinkResponses.add(response);
                     }
                 });

@@ -13,6 +13,6 @@ public interface UserRepository extends JpaRepository<UserEntity, String>, JpaSp
     @Query("SELECT u FROM UserEntity u WHERE u.realmId = 'moh_applications' AND u.username NOT LIKE 'service-account-%' AND u.id IN :userIdList")
     List<UserEntity> findMohApplicationsUsersByIdList(@Param("userIdList") List<String> userIdList);
 
-    @Query(value="SELECT fi.realm_id AS realmId, fi.user_id AS userId FROM KEYCLOAK.FEDERATED_IDENTITY fi WHERE fi.FEDERATED_USER_ID = ?1", nativeQuery = true)
+    @Query(value="SELECT r.NAME AS realmName, fi.user_id AS userId FROM KEYCLOAK.FEDERATED_IDENTITY fi JOIN KEYCLOAK.REALM r ON r.ID = fi.REALM_ID WHERE fi.FEDERATED_USER_ID = ?1", nativeQuery = true)
     List<ApplicationRealmUser> findFederatedApplicationRealmUsers(String federatedUserId);
 }
