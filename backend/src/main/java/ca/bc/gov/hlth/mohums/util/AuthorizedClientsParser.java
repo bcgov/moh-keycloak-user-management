@@ -20,6 +20,11 @@ public class AuthorizedClientsParser {
         JSONArray roles = parseRoles(token);
         return parseClients(roles);
     }
+    
+    public List<String> parseToEdit(String token) {
+        JSONArray roles = parseRoles(token);
+        return parseClientsToEdit(roles);
+    }
 
     private JSONArray parseRoles(String token) {
 
@@ -40,7 +45,26 @@ public class AuthorizedClientsParser {
         return roles;
     }
 
-    private List<String> parseClients(JSONArray roles) {
+	private List<String> parseClients(JSONArray roles) {
+
+		List<String> clients = new ArrayList<>();
+
+		roles.forEach(role -> {
+			String[] parts = ((String) role).split("view-client-");
+			if (parts.length == 2) {
+				clients.add(parts[1].toLowerCase());
+			} else {
+				parts = ((String) role).split("read-only-client-");
+				if (parts.length == 2) {
+					clients.add(parts[1].toLowerCase());
+				}
+			}
+		});
+
+		return clients;
+	}
+    
+    private List<String> parseClientsToEdit(JSONArray roles) {
 
         List<String> clients = new ArrayList<>();
 
