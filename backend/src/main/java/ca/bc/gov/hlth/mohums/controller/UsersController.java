@@ -5,6 +5,7 @@ import ca.bc.gov.hlth.mohums.exceptions.HttpUnauthorizedException;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
 import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
 import ca.bc.gov.hlth.mohums.model.UserPayee;
+import ca.bc.gov.hlth.mohums.userSearch.user.ApplicationRealmUser;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserSearchParameters;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserService;
@@ -264,9 +265,23 @@ public class UsersController {
                 keycloakApiService.removeUserGroups(userId, groupId) : ResponseEntity.status(HttpStatus.FORBIDDEN).body("Remove user from group - permission denied");
     }
 
+    /**
+     * This endpoint removes linked identities from a given user in all application realms (i.e. moh_applications and moh_citizen)
+     * The method:
+     *  - searches for all users in all application realms that have are linked with a given user from the IDP realm
+     *  - removes those idp links
+     *  - removes the user account from idp realm
+     *
+     *  Commonly used for troubleshooting 'your account already exists error'
+     */
     @DeleteMapping("/users/{userId}/federated-identity/{identityProvider}")
     public ResponseEntity<Object> removeUserIdentityProviderLinks(@PathVariable String userId, @PathVariable String identityProvider, @RequestBody String userIdIdpRealm) {
-        return keycloakApiService.removeUserIdentityProviderLink(userId, identityProvider, userIdIdpRealm);
+        List<ApplicationRealmUser> applicationRealmUsers = userService.getFederatedApplicationRealmUsers(userIdIdpRealm);
+        if (applicationRealmUsers.isEmpty()){
+            return new ResponseEntity<>("Could not find federated identities with the given user ID", HttpStatus.NOT_FOUND);
+        }
+
+        return keycloakApiService.removeUserIdentityProviderLink(applicationRealmUsers, identityProvider, userIdIdpRealm);
     }
 
     @GetMapping("/users/{userId}/payee")

@@ -1,9 +1,7 @@
 package ca.bc.gov.hlth.mohums.webclient;
 
-import ca.bc.gov.hlth.mohums.model.BulkRemovalRequest;
-import ca.bc.gov.hlth.mohums.model.BulkRemovalResponse;
-import ca.bc.gov.hlth.mohums.model.Group;
-import ca.bc.gov.hlth.mohums.model.GroupDescriptionGenerator;
+import ca.bc.gov.hlth.mohums.model.*;
+import ca.bc.gov.hlth.mohums.userSearch.user.ApplicationRealmUser;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -199,23 +197,30 @@ public class KeycloakApiService {
     }
 
     @SuppressWarnings("unchecked")
-    public ResponseEntity<Object> removeUserIdentityProviderLink(String userId, String identityProvider, String userIdIdpRealm) {
+    public ResponseEntity<Object> removeUserIdentityProviderLink(List<ApplicationRealmUser> applicationRealmUsers, String identityProvider, String userIdIdpRealm) {
 
         ArrayList<ResponseEntity<Object>> deleteIDPLinkResponses = new ArrayList<>();
-        if (identityProvider.startsWith("bcsc")) {
-            LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
-            ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
-            federatedIdentities.forEach(fi -> {
-                String idpAlias = fi.get("identityProvider");
-                if (idpAlias.startsWith("bcsc")) {
-                    ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, idpAlias);
-                    deleteIDPLinkResponses.add(response);
-                }
-            });
-        } else {
-            ResponseEntity<Object> response = deleteUserIdentityProviderLink(userId, identityProvider);
-            deleteIDPLinkResponses.add(response);
+
+        for (ApplicationRealmUser applicationRealmUser : applicationRealmUsers) {
+            String userId = applicationRealmUser.getUserId();
+            String applicationRealm = applicationRealmUser.getRealmName();
+            if (identityProvider.startsWith("bcsc")) {
+                LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) getUser(userId).getBody();
+                ArrayList<LinkedHashMap<String, String>> federatedIdentities = (ArrayList<LinkedHashMap<String, String>>) user.get("federatedIdentities");
+                federatedIdentities.forEach(fi -> {
+                    String idpAlias = fi.get("identityProvider");
+                    if (idpAlias.startsWith("bcsc")) {
+                        ResponseEntity<Object> response = deleteUserIdentityProviderLink(applicationRealm, userId, idpAlias);
+                        deleteIDPLinkResponses.add(response);
+                    }
+                });
+            } else {
+                ResponseEntity<Object> response = deleteUserIdentityProviderLink(applicationRealm, userId, identityProvider);
+                deleteIDPLinkResponses.add(response);
+            }
         }
+
+
 
         if (identityProviderLinkDeletedSuccessfully(deleteIDPLinkResponses)) {
             // Some BCSC users can have an IDP alias that does not match the "bcsc" IDP realm (e.g. "bcsc_mspdirect") 
@@ -236,9 +241,9 @@ public class KeycloakApiService {
         return keycloakMasterExternalApiCaller.delete(path);
     }
 
-    private ResponseEntity<Object> deleteUserIdentityProviderLink(String userId, String identityProviderAlias) {
-        String path = USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProviderAlias;
-        return keycloakMohExternalApiCaller.delete(path);
+    private ResponseEntity<Object> deleteUserIdentityProviderLink(String realm, String userId, String identityProviderAlias) {
+        String path =  "/" + realm + USERS_PATH + "/" + userId + IDENTITY_PROVIDER_LINKS_PATH + "/" + identityProviderAlias;
+        return keycloakMasterExternalApiCaller.delete(path);
     }
 
     private boolean identityProviderLinkDeletedSuccessfully(List<ResponseEntity<Object>> deleteIdentityProviderLinkResponses) {
