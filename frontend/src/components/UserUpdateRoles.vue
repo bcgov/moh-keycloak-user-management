@@ -241,8 +241,13 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-icon size="small" @click="editRoles(item.clientRepresentation)"  
-                :disabled = "!hasRoleToEditApplicationRoles(item.clientRepresentation.clientId)">
+        <v-icon
+          size="small"
+          @click="editRoles(item.clientRepresentation)"
+          :disabled="
+            !hasRoleToEditApplicationRoles(item.clientRepresentation.clientId)
+          "
+        >
           mdi-pencil
         </v-icon>
       </template>
@@ -252,8 +257,8 @@
 
 <script>
   import ClientsRepository from "@/api/ClientsRepository";
-import UsersRepository from "@/api/UsersRepository";
-import UserPayee from "@/components/UserPayee.vue";
+  import UsersRepository from "@/api/UsersRepository";
+  import UserPayee from "@/components/UserPayee.vue";
 
   const LAST_LOGIN_NOT_RECORDED = -1;
   export default {
@@ -315,13 +320,12 @@ import UserPayee from "@/components/UserPayee.vue";
       },
     },
     methods: {
-      
       hasRoleToEditApplicationRoles: function (clientId) {
         const umsClientId = "USER-MANAGEMENT-SERVICE";
         const editRolePrefix = "view-client-";
         return this.$keycloak.tokenParsed.resource_access[
           umsClientId
-        ].roles.includes(editRolePrefix+clientId.toLowerCase());
+        ].roles.includes(editRolePrefix + clientId.toLowerCase());
       },
       addRoles: function () {
         this.dialogTitle = "Add User Role";
@@ -372,7 +376,6 @@ import UserPayee from "@/components/UserPayee.vue";
           )
             .then((rolesArray) => {
               rolesArray.forEach((clientRoles) => {
-                
                 if (clientRoles.data.length > 0) {
                   let lastLoginStr =
                     lastLoginMap[clientRoles.clientRepresentation.clientId] ||
@@ -389,9 +392,15 @@ import UserPayee from "@/components/UserPayee.vue";
                     lastLogin: lastLoginStr,
                   });
                 } else {
-                  if(this.hasRoleToEditApplicationRoles(clientRoles.clientRepresentation.clientId)){
-                      clientsNoRolesAssigned.push(clientRoles.clientRepresentation);
-                    }
+                  if (
+                    this.hasRoleToEditApplicationRoles(
+                      clientRoles.clientRepresentation.clientId
+                    )
+                  ) {
+                    clientsNoRolesAssigned.push(
+                      clientRoles.clientRepresentation
+                    );
+                  }
                 }
               });
             })
@@ -490,7 +499,7 @@ import UserPayee from "@/components/UserPayee.vue";
             if (error?.response?.data) {
               errorDescription += `. ${error.response.data}`;
             }
-            console.log(errorDescription)
+            console.log(errorDescription);
             this.$store.commit("alert/setAlert", {
               message: "Error updating roles: " + error,
               type: "error",
@@ -550,9 +559,11 @@ import UserPayee from "@/components/UserPayee.vue";
   .row {
     margin: 0px;
   }
+
   .v-input {
     max-width: fit-content;
   }
+
   .popup {
     padding: 30px;
   }
@@ -561,6 +572,7 @@ import UserPayee from "@/components/UserPayee.vue";
     margin: 0;
     padding: 0;
   }
+
   /* Tooltip text */
   .tooltip .tooltiptext {
     visibility: hidden;
@@ -602,16 +614,20 @@ import UserPayee from "@/components/UserPayee.vue";
     visibility: visible;
     opacity: 1;
   }
+
   .v-toolbar {
     background: #ffffff;
   }
+
   #user-table {
     border-top: none;
   }
+
   .role-list {
     margin: 0;
     padding-left: 15px;
   }
+
   .v-btn {
     text-transform: none;
     font-weight: 600;
