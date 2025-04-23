@@ -362,7 +362,7 @@ public class UsersController {
      */
     boolean isAuthorizedToViewClient(String token, String clientGuid) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parse(token);
+        List<String> authorizedClients = acp.parseToReadOnly(token);
 
         LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) keycloakApiService.getClient(clientGuid).getBody();
         // TODO If the client doesn't exist return a 401 (should this be a 404 which is the actual KC response)
@@ -374,19 +374,17 @@ public class UsersController {
 
     }
     
-    boolean isAuthorizedToEditClient(String token, String clientGuid) {
-        AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parseToEdit(token);
+	boolean isAuthorizedToEditClient(String token, String clientGuid) {
+		AuthorizedClientsParser acp = new AuthorizedClientsParser();
+		List<String> authorizedClients = acp.parseToEdit(token);
+		LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) keycloakApiService.getClient(clientGuid).getBody();
+		if (client.get("clientId") != null) {
+			return authorizedClients.contains(client.get("clientId").toLowerCase());
+		} else {
+			return false;
+		}
 
-        LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) keycloakApiService.getClient(clientGuid).getBody();
-        // TODO If the client doesn't exist return a 401 (should this be a 404 which is the actual KC response)
-        if (client.get("clientId") != null) {
-            return authorizedClients.contains(client.get("clientId").toLowerCase());
-        } else {
-            return false;
-        }
-
-    }
+	}
 
 
     private MultiValueMap<String, String> buildQueryEventActiveParam(int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo) {

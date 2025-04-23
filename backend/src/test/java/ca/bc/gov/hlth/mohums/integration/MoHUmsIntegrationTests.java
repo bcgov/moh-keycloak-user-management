@@ -3,6 +3,7 @@ package ca.bc.gov.hlth.mohums.integration;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -71,6 +73,12 @@ public class MoHUmsIntegrationTests {
     private IntegrationTestsUtils integrationTestsUtils;
 
     private String jwt;
+    
+    private static final String PLR_ID = "/dc7b9502-3ffa-4ff8-be2e-ebfebe650590";
+    private static final String RESOURCE = "/users";
+    private static final String CLIENTROLEMAPPINGS = "/role-mappings/clients";
+    private static final String UMS_USER = "/c35d48ea-3df9-4758-a27b-94e4cab1ba44";
+    
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
@@ -531,6 +539,42 @@ public class MoHUmsIntegrationTests {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
+    
+    
+	@Test
+	public void addUserClientRole_ReadOnly() {
+		webTestClient.post().uri(RESOURCE + UMS_USER + CLIENTROLEMAPPINGS + PLR_ID)
+				.contentType(MediaType.APPLICATION_JSON)
+				  .bodyValue("[\n" + "    {\n" +
+				  "        \"id\": \"3cc11287-1a22-43bd-b874-2461a5ee7b0a\",\n" +
+				  "        \"name\": \"CONSUMER\",\n" + "        \"composite\": false,\n" +
+				  "        \"clientRole\": true,\n" +
+				  "        \"containerId\": \"dc7b9502-3ffa-4ff8-be2e-ebfebe650590\"\n" +
+				  "    }\n" + "]")
+				 
+				.header("Authorization", "Bearer " + jwt)
+				.exchange()
+				.expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+	
+	@Test
+	public void deleteUserClientRole_ReadOnly() {
+		webTestClient.method(HttpMethod.DELETE)
+		.uri(RESOURCE + UMS_USER + CLIENTROLEMAPPINGS + PLR_ID)
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue("[\n"
+                        + "    {\n"
+                        + "        \"id\": \"3cc11287-1a22-43bd-b874-2461a5ee7b0a\",\n"
+                        + "        \"name\": \"CONSUMER\",\n"
+                        + "        \"composite\": false,\n"
+                        + "        \"clientRole\": true,\n"
+                        + "        \"containerId\": \"dc7b9502-3ffa-4ff8-be2e-ebfebe650590\"\n"
+                        + "    }\n"
+                        + "]")
+				.header("Authorization", "Bearer " + jwt)
+				.exchange()
+				.expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
 
     @Test
     public void getUserGroups() throws Exception {
