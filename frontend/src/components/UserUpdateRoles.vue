@@ -241,7 +241,8 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-icon size="small" @click="editRoles(item.clientRepresentation)">
+        <v-icon size="small" @click="editRoles(item.clientRepresentation)"  
+                :disabled = "!hasRoleToEditApplicationRoles(item.clientRepresentation.clientId)">
           mdi-pencil
         </v-icon>
       </template>
@@ -251,8 +252,8 @@
 
 <script>
   import ClientsRepository from "@/api/ClientsRepository";
-  import UsersRepository from "@/api/UsersRepository";
-  import UserPayee from "@/components/UserPayee.vue";
+import UsersRepository from "@/api/UsersRepository";
+import UserPayee from "@/components/UserPayee.vue";
 
   const LAST_LOGIN_NOT_RECORDED = -1;
   export default {
@@ -314,6 +315,14 @@
       },
     },
     methods: {
+      
+      hasRoleToEditApplicationRoles: function (clientId) {
+        const umsClientId = "USER-MANAGEMENT-SERVICE";
+        const editRolePrefix = "view-client-";
+        return this.$keycloak.tokenParsed.resource_access[
+          umsClientId
+        ].roles.includes(editRolePrefix+clientId.toLowerCase());
+      },
       addRoles: function () {
         this.dialogTitle = "Add User Role";
         this.selectedClient = null;
@@ -363,6 +372,7 @@
           )
             .then((rolesArray) => {
               rolesArray.forEach((clientRoles) => {
+                
                 if (clientRoles.data.length > 0) {
                   let lastLoginStr =
                     lastLoginMap[clientRoles.clientRepresentation.clientId] ||
@@ -379,7 +389,9 @@
                     lastLogin: lastLoginStr,
                   });
                 } else {
-                  clientsNoRolesAssigned.push(clientRoles.clientRepresentation);
+                  if(this.hasRoleToEditApplicationRoles(clientRoles.clientRepresentation.clientId)){
+                      clientsNoRolesAssigned.push(clientRoles.clientRepresentation);
+                    }
                 }
               });
             })
@@ -474,10 +486,16 @@
             this.loadUserRoles();
           })
           .catch((error) => {
+            let errorDescription = error?.message || error;
+            if (error?.response?.data) {
+              errorDescription += `. ${error.response.data}`;
+            }
+            console.log(errorDescription)
             this.$store.commit("alert/setAlert", {
               message: "Error updating roles: " + error,
               type: "error",
             });
+            this.close();
           })
           .finally(() => {
             this.$parent.getMailboxClients();
