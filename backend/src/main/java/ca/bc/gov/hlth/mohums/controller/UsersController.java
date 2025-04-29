@@ -168,7 +168,7 @@ public class UsersController {
             @PathVariable String userId,
             @PathVariable String clientGuid,
             @RequestBody Object body) {
-        if (isAuthorizedToViewClient(token, clientGuid)) {
+        if (isAuthorizedToEditClient(token, clientGuid)) {
             return keycloakApiService.addUserClientRole(userId, clientGuid, body);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
@@ -181,7 +181,7 @@ public class UsersController {
             @PathVariable String userId,
             @PathVariable String clientGuid,
             @RequestBody Object body) {
-        if (isAuthorizedToViewClient(token, clientGuid)) {
+        if (isAuthorizedToEditClient(token, clientGuid)) {
             return keycloakApiService.deleteUserClientRole(userId, clientGuid, body);
         } else {
             throw new HttpUnauthorizedException("Token does not have a valid role to update user details for this client");
@@ -209,7 +209,7 @@ public class UsersController {
             @RequestHeader("Authorization") String token,
             @PathVariable String clientGuid,
             @RequestBody BulkRemovalRequest removalRequest) {
-        if (isAuthorizedToViewClient(token, clientGuid)) {
+        if (isAuthorizedToEditClient(token, clientGuid)) {
             Optional<String> removalRequestValidationError = bulkRemovalRequestValidator.validateBulkRemovalRequest(removalRequest);
             removalRequestValidationError.ifPresent(message -> {
                 throw new BulkRemovalRequestException(message);
@@ -362,7 +362,7 @@ public class UsersController {
      */
     boolean isAuthorizedToViewClient(String token, String clientGuid) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parse(token);
+        List<String> authorizedClients = acp.parseToReadOnly(token);
 
         LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) keycloakApiService.getClient(clientGuid).getBody();
         // TODO If the client doesn't exist return a 401 (should this be a 404 which is the actual KC response)
@@ -373,6 +373,19 @@ public class UsersController {
         }
 
     }
+    
+	boolean isAuthorizedToEditClient(String token, String clientGuid) {
+		AuthorizedClientsParser acp = new AuthorizedClientsParser();
+		List<String> authorizedClients = acp.parseToEdit(token);
+		LinkedHashMap<String, String> client = (LinkedHashMap<String, String>) keycloakApiService.getClient(clientGuid).getBody();
+		if (client.get("clientId") != null) {
+			return authorizedClients.contains(client.get("clientId").toLowerCase());
+		} else {
+			return false;
+		}
+
+	}
+
 
     private MultiValueMap<String, String> buildQueryEventActiveParam(int start, int nbElementMax, Optional<String> dateFrom, Optional<String> dateTo) {
 
