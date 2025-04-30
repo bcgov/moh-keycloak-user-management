@@ -15,10 +15,17 @@ import java.util.List;
 public class AuthorizedClientsParser {
 
     private final Logger logger = LoggerFactory.getLogger(AuthorizedClientsParser.class);
+    private static final String VIEW_CLIENT_PREFIX = "view-client-";
+    private static final String READ_ONLY_CLIENT_PREFIX = "read-only-client-";
 
-    public List<String> parse(String token) {
+    public List<String> parseToReadOnly(String token) {
         JSONArray roles = parseRoles(token);
         return parseClients(roles);
+    }
+    
+    public List<String> parseToEdit(String token) {
+        JSONArray roles = parseRoles(token);
+        return parseClientsToEdit(roles);
     }
 
     private JSONArray parseRoles(String token) {
@@ -40,19 +47,33 @@ public class AuthorizedClientsParser {
         return roles;
     }
 
-    private List<String> parseClients(JSONArray roles) {
+	 
+	private List<String> parseClientsToEdit(JSONArray roles) {
+		List<String> clients = new ArrayList<>();
 
-        List<String> clients = new ArrayList<>();
+		roles.forEach(roleObj -> {
+			String role = (String) roleObj;
+			if (role.startsWith(VIEW_CLIENT_PREFIX)) {
+				clients.add(role.substring(VIEW_CLIENT_PREFIX.length()).toLowerCase());
+			}
+		});
+		return clients;
+	}
+ 
+	
+	private List<String> parseClients(JSONArray roles) {
+		List<String> clients = new ArrayList<>();
 
-        roles.forEach(role -> {
-            String[] parts = ((String) role).split("view-client-");
-            if (parts.length == 2) {
-                clients.add(parts[1].toLowerCase());
-            }
-        });
-
-        return clients;
-    }
+		roles.forEach(roleObj -> {
+			String role = (String) roleObj;
+			if (role.startsWith(VIEW_CLIENT_PREFIX)) {
+				clients.add(role.substring(VIEW_CLIENT_PREFIX.length()).toLowerCase());
+			} else if (role.startsWith(READ_ONLY_CLIENT_PREFIX)) {
+				clients.add(role.substring(READ_ONLY_CLIENT_PREFIX.length()).toLowerCase());
+			}
+		});
+		return clients;
+	}
 
     public static String decodeBase64(String stringToDecode) {
 

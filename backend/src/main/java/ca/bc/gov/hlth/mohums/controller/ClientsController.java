@@ -29,7 +29,7 @@ public class ClientsController {
     @GetMapping("/clients")
     public ResponseEntity<List<Object>> getClients(@RequestHeader("Authorization") String token) {
         AuthorizedClientsParser acp = new AuthorizedClientsParser();
-        List<String> authorizedClients = acp.parse(token);
+        List<String> authorizedClients = acp.parseToReadOnly(token);
         ResponseEntity<List<Object>> clients = keycloakApiService.getClients();
         return ResponseEntity.status(clients.getStatusCode())
                 .headers(clients.getHeaders())

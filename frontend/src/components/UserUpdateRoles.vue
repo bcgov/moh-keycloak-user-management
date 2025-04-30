@@ -241,7 +241,13 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-icon size="small" @click="editRoles(item.clientRepresentation)">
+        <v-icon
+          size="small"
+          @click="editRoles(item.clientRepresentation)"
+          :disabled="
+            !hasRoleToEditApplicationRoles(item.clientRepresentation.clientId)
+          "
+        >
           mdi-pencil
         </v-icon>
       </template>
@@ -314,6 +320,13 @@
       },
     },
     methods: {
+      hasRoleToEditApplicationRoles: function (clientId) {
+        const umsClientId = "USER-MANAGEMENT-SERVICE";
+        const editRolePrefix = "view-client-";
+        return this.$keycloak.tokenParsed.resource_access[
+          umsClientId
+        ].roles.includes(editRolePrefix + clientId.toLowerCase());
+      },
       addRoles: function () {
         this.dialogTitle = "Add User Role";
         this.selectedClient = null;
@@ -379,7 +392,15 @@
                     lastLogin: lastLoginStr,
                   });
                 } else {
-                  clientsNoRolesAssigned.push(clientRoles.clientRepresentation);
+                  if (
+                    this.hasRoleToEditApplicationRoles(
+                      clientRoles.clientRepresentation.clientId
+                    )
+                  ) {
+                    clientsNoRolesAssigned.push(
+                      clientRoles.clientRepresentation
+                    );
+                  }
                 }
               });
             })
@@ -474,10 +495,16 @@
             this.loadUserRoles();
           })
           .catch((error) => {
+            let errorDescription = error?.message || error;
+            if (error?.response?.data) {
+              errorDescription += `. ${error.response.data}`;
+            }
+            console.log(errorDescription);
             this.$store.commit("alert/setAlert", {
               message: "Error updating roles: " + error,
               type: "error",
             });
+            this.close();
           })
           .finally(() => {
             this.$parent.getMailboxClients();
@@ -532,9 +559,11 @@
   .row {
     margin: 0px;
   }
+
   .v-input {
     max-width: fit-content;
   }
+
   .popup {
     padding: 30px;
   }
@@ -543,6 +572,7 @@
     margin: 0;
     padding: 0;
   }
+
   /* Tooltip text */
   .tooltip .tooltiptext {
     visibility: hidden;
@@ -584,16 +614,20 @@
     visibility: visible;
     opacity: 1;
   }
+
   .v-toolbar {
     background: #ffffff;
   }
+
   #user-table {
     border-top: none;
   }
+
   .role-list {
     margin: 0;
     padding-left: 15px;
   }
+
   .v-btn {
     text-transform: none;
     font-weight: 600;

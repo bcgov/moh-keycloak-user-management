@@ -13,7 +13,7 @@ class UsersControllerTest {
     private final UsersController u = new UsersController(null, null, vanityHostname, null);
 
     private static final String vanityHostname = "http://localhost";
-
+    
     @Test
     void testNull() {
         Assertions.assertThrows(NullPointerException.class, () -> u.convertLocationHeader(null));
