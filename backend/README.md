@@ -14,7 +14,7 @@ It provides the following design benefits over using the Keycloak REST API direc
 Tested with:
 * Java 11
 * Maven 3.6.1
-* Keycloak 15.0.2
+* Keycloak 26.1.2
 
 # Configuration
 
