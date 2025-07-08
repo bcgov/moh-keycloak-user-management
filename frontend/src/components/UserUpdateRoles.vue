@@ -359,7 +359,7 @@
 
         ClientsRepository.get().then((allClients) => {
           Promise.all(
-              allClients.data.map((client) => {
+            allClients.data.map((client) => {
               return UsersRepository.getUserEffectiveClientRoles(
                 this.userId,
                 client.id
