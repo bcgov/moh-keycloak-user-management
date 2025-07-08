@@ -104,9 +104,7 @@
         });
         // Keycloak "Groups" API returns a different object structure than users/groups
         // We need them to match for the checkboxes to map
-        const allGroups = GroupsRepository.modifyGroupDescriptions(
-          userGroupResponses[1].data
-        );
+        const allGroups = userGroupResponses[1].data;
         const searchedUserGroups = userGroupResponses[0].data.map(
           ({ id, name, path }) => ({
             id,

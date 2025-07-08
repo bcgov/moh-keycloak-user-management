@@ -354,17 +354,12 @@
         let clientsNoRolesAssigned = [];
 
         UsersRepository.getUserLogins(this.userId).then((lastLogins) => {
-          lastLoginMap = UsersRepository.mapLastLoginsClientAliases(
-            lastLogins.data
-          );
+          lastLoginMap = lastLogins.data;
         });
 
         ClientsRepository.get().then((allClients) => {
-          const allClientsWithAliases = ClientsRepository.assignClientAliases(
-            allClients.data
-          );
           Promise.all(
-            allClientsWithAliases.map((client) => {
+            allClients.data.map((client) => {
               return UsersRepository.getUserEffectiveClientRoles(
                 this.userId,
                 client.id
