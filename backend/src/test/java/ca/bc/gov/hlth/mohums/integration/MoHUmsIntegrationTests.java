@@ -77,7 +77,7 @@ public class MoHUmsIntegrationTests {
     private static final String PLR_ID = "/dc7b9502-3ffa-4ff8-be2e-ebfebe650590";
     private static final String RESOURCE = "/users";
     private static final String CLIENTROLEMAPPINGS = "/role-mappings/clients";
-    private static final String UMS_USER = "/c35d48ea-3df9-4758-a27b-94e4cab1ba44";
+    private static final String UMS_USER = "/86252d61-da89-47c1-af3a-0ea16698b1b7";
     
 
     @BeforeAll
@@ -411,7 +411,7 @@ public class MoHUmsIntegrationTests {
                                 .path("/users")
                                 .queryParam("first", 0)
                                 .queryParam("max", 2000)
-                                .queryParam("firstName", "Filip")
+                                .queryParam("firstName", "David")
                                 .queryParam("lastLogAfter",
                                         LocalDate.now().minusMonths(1).format(DateTimeFormatter.ISO_DATE))
                                 .build()
@@ -488,7 +488,7 @@ public class MoHUmsIntegrationTests {
                 .put()
                 // umstest user
                 // partial updates are no longer supported in Keycloak - passing email, firstName and lastName, so they are not wiped out
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}, \"email\":\"test@ums.com\",\"lastName\":\"test\",\"firstName\":\"ums\"}")
                 .header("Authorization", "Bearer " + jwt)
@@ -502,7 +502,7 @@ public class MoHUmsIntegrationTests {
                 .post()
                 // umstest user
                 // UMS-INTEGRATION-TESTS client
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
@@ -524,7 +524,7 @@ public class MoHUmsIntegrationTests {
                 .method(HttpMethod.DELETE)
                 // umstest user
                 // UMS-INTEGRATION-TESTS client
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("[\n"
                         + "    {\n"
@@ -581,7 +581,7 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .get()
                 // umstest user
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
@@ -593,7 +593,7 @@ public class MoHUmsIntegrationTests {
                 .put()
                 // umstest user
                 // CGI QA group
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -606,7 +606,7 @@ public class MoHUmsIntegrationTests {
                 .method(HttpMethod.DELETE)
                 // umstest user
                 // CGI QA group
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -707,7 +707,7 @@ public class MoHUmsIntegrationTests {
                 .get()
                 // umstest user
                 // 1b2ce61a-1235-4a0e-8334-1ac557151757 is the realm-management client, which is not in the list of USER-MANAGEMENT-SERVICE roles.
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
@@ -719,7 +719,7 @@ public class MoHUmsIntegrationTests {
                 .get()
                 // umstest user
                 // 24447cb4-f3b1-455b-89d9-26c081025fb9 is UMS-INTEGRATION-TESTS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-ums-integration-tests"
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
@@ -893,7 +893,7 @@ public class MoHUmsIntegrationTests {
                 .baseUrl(baseUrlIdirRealm)
                 .build()
                 .get()
-                .uri("users/ee1e2f18-0a1a-4aaa-92c5-6ad645f3c839")//umstest
+                .uri("users/ef7100b7-cf87-4946-a056-e405e010833d")//umstest
                 .header("Authorization", "Bearer " + access_token)
                 .exchange()
                 .expectStatus().isOk()
@@ -911,7 +911,7 @@ public class MoHUmsIntegrationTests {
         //umstest user
         LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) webTestClient
                 .get()
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -931,7 +931,7 @@ public class MoHUmsIntegrationTests {
         //check delete response status
         webTestClient
                 .method(HttpMethod.DELETE)
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/federated-identity/bcsc")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7/federated-identity/bcsc")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue(bcscRealmUserId)
                 .exchange()
@@ -940,7 +940,7 @@ public class MoHUmsIntegrationTests {
         //check that no bcsc links exist
         LinkedHashMap<String, Object> userWithoutBcscLinks = (LinkedHashMap<String, Object>) webTestClient
                 .get()
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()

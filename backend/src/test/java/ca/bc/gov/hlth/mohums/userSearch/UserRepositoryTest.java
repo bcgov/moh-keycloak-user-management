@@ -37,7 +37,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testFindByIdSuccessful() {
-        String umsTestUserId = "c35d48ea-3df9-4758-a27b-94e4cab1ba44";
+        String umsTestUserId = "86252d61-da89-47c1-af3a-0ea16698b1b7";
         UserEntity found = userRepository.findMohApplicationsUsersByIdList(List.of(umsTestUserId)).get(0);
 
         assertEquals(found.getId(), umsTestUserId);
