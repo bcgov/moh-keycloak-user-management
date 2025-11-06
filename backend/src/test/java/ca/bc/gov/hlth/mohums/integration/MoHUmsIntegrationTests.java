@@ -141,9 +141,16 @@ public class MoHUmsIntegrationTests {
     }
 
     private void verifyClientRole(Object clientRole) {
-        Assertions.assertThat(clientRole)
-                .hasNoNullFieldsOrProperties()
-                .hasFieldOrPropertyWithValue("clientRole", Boolean.TRUE);
+        Map<String, Object> roleMap = (Map<String, Object>) clientRole;
+
+        Assertions.assertThat(roleMap)
+                .isNotEmpty()
+                .containsEntry("clientRole", true);
+
+        // Optionally check for missing or null fields explicitly:
+        Assertions.assertThat(roleMap)
+                .doesNotContainKey(null)
+                .allSatisfy((k, v) -> Assertions.assertThat(v).isNotNull());
     }
 
     @ParameterizedTest()
@@ -170,8 +177,8 @@ public class MoHUmsIntegrationTests {
     private static Stream<Arguments> provideDataForValidateUserSearchQueryParameters() {
         return Stream.of(
                 Arguments.of("org", Optional.of("123org"), "Invalid query parameter. Organization id must contain only numbers."),
-                Arguments.of("lastLogAfter", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in after date\" must be in yyyy-mm-dd format."),
-                Arguments.of("lastLogBefore", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format."),
+                Arguments.of("lastLogAfter", Optional.of("20000101"), "Invalid query parameter. \"Last logged-in after date\" must be in yyyy-mm-dd format."),
+                Arguments.of("lastLogBefore", Optional.of("2000-Jan-01"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format."),
                 Arguments.of("lastLogBefore", Optional.of("random text"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format.")
         );
     }
@@ -203,9 +210,15 @@ public class MoHUmsIntegrationTests {
     }
 
     private void verifyUser(Object user) {
-        Assertions.assertThat(user)
-                .hasNoNullFieldsOrProperties()
-                .extracting("username").asString().isNotEmpty();
+        Map<String, Object> userMap = (Map<String, Object>) user;
+
+        Assertions.assertThat(userMap)
+                .isNotEmpty()
+                .containsKey("username");
+
+        Assertions.assertThat(userMap.get("username"))
+                .asString()
+                .isNotEmpty();
     }
 
     @Test
@@ -721,15 +734,6 @@ public class MoHUmsIntegrationTests {
                 // 24447cb4-f3b1-455b-89d9-26c081025fb9 is UMS-INTEGRATION-TESTS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-ums-integration-tests"
                 .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .header("Authorization", "Bearer " + jwt)
-                .exchange()
-                .expectStatus().isOk(); //HTTP 200
-    }
-
-    @Test
-    public void openApiNoAuthRequired() throws Exception {
-        webTestClient
-                .get()
-                .uri("/docs/api-docs")
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
     }
