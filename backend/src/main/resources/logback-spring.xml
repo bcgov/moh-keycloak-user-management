@@ -10,7 +10,7 @@
         </filter>
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
-                %d{ISO8601} %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+                %d{ISO8601} %highlight(%-5level) [%blue(%t)] %yellow(%C{1}): %msg%n%throwable
             </Pattern>
         </layout>
     </appender>
@@ -23,7 +23,7 @@
         <file>${LOGS}/ums.log</file>
         <encoder
                 class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+            <Pattern>%d %p %C{1} [%t] %m%n</Pattern>
         </encoder>
 
         <rollingPolicy
@@ -46,7 +46,7 @@
         <file>${LOGS}/audit.log</file>
          <encoder
                 class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+            <Pattern>%d %p %C{1} [%t] %m%n</Pattern>
         </encoder>
         <rollingPolicy
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
