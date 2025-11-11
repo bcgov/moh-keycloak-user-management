@@ -1,5 +1,9 @@
 package ca.bc.gov.hlth.mohums.security;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,10 +15,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -109,6 +116,23 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Component
+    public class TrailingSlashFilter extends OncePerRequestFilter {
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain)
+                throws ServletException, IOException {
+            String uri = request.getRequestURI();
+            if (uri.length() > 1 && uri.endsWith("/")) {
+                request.getRequestDispatcher(uri.substring(0, uri.length() - 1))
+                        .forward(request, response);
+                return;
+            }
+            filterChain.doFilter(request, response);
+        }
     }
 
     @Bean
