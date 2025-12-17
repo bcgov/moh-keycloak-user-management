@@ -5,7 +5,7 @@
  */
 package ca.bc.gov.hlth.mohums.security;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import static ca.bc.gov.hlth.mohums.util.AuthorizedClientsParser.decodeBase64;

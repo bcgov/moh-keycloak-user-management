@@ -3,7 +3,6 @@ package ca.bc.gov.hlth.mohums.integration;
 import ca.bc.gov.hlth.mohums.userSearch.user.UserDTO;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
 
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -38,6 +37,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -77,7 +77,7 @@ public class MoHUmsIntegrationTests {
     private static final String PLR_ID = "/dc7b9502-3ffa-4ff8-be2e-ebfebe650590";
     private static final String RESOURCE = "/users";
     private static final String CLIENTROLEMAPPINGS = "/role-mappings/clients";
-    private static final String UMS_USER = "/c35d48ea-3df9-4758-a27b-94e4cab1ba44";
+    private static final String UMS_USER = "/86252d61-da89-47c1-af3a-0ea16698b1b7";
     
 
     @BeforeAll
@@ -93,7 +93,7 @@ public class MoHUmsIntegrationTests {
 
 
     @Test
-    public void groupsAuthorizedWithDescriptionsCheck() throws Exception {
+    public void groupsAuthorizedWithDescriptionsCheck() {
         List<Object> groups = webTestClient
                 .get()
                 .uri("/groups")
@@ -112,7 +112,7 @@ public class MoHUmsIntegrationTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void clientsAuthorized() throws Exception {
+    public void clientsAuthorized() {
         List<Object> clients = getAll("clients");
 
         List<String> prohibitedKeys = List.of("secret", "password", "key", "credentials");
@@ -124,7 +124,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getClientRoles() throws Exception {
+    public void getClientRoles() {
         Map<String, ?> client = (Map<String, ?>) getAll("clients").get(0);
         List<Object> clientRoles = webTestClient
                 .get()
@@ -141,11 +141,19 @@ public class MoHUmsIntegrationTests {
     }
 
     private void verifyClientRole(Object clientRole) {
-        Assertions.assertThat(clientRole)
-                .hasNoNullFieldsOrProperties()
-                .hasFieldOrPropertyWithValue("clientRole", Boolean.TRUE);
+        Map<String, Object> roleMap = (Map<String, Object>) clientRole;
+
+        Assertions.assertThat(roleMap)
+                .isNotEmpty()
+                .containsEntry("clientRole", true);
+
+        // Optionally check for missing or null fields explicitly:
+        Assertions.assertThat(roleMap)
+                .doesNotContainKey(null)
+                .allSatisfy((k, v) -> Assertions.assertThat(v).isNotNull());
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     @ParameterizedTest()
     @MethodSource("provideDataForValidateUserSearchQueryParameters")
     public void validateUserSearchQueryParameters(String paramName, Optional<String> paramValue, String expectedResponse) {
@@ -170,14 +178,14 @@ public class MoHUmsIntegrationTests {
     private static Stream<Arguments> provideDataForValidateUserSearchQueryParameters() {
         return Stream.of(
                 Arguments.of("org", Optional.of("123org"), "Invalid query parameter. Organization id must contain only numbers."),
-                Arguments.of("lastLogAfter", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in after date\" must be in yyyy-mm-dd format."),
-                Arguments.of("lastLogBefore", Optional.of("2000-01-01"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format."),
+                Arguments.of("lastLogAfter", Optional.of("20000101"), "Invalid query parameter. \"Last logged-in after date\" must be in yyyy-mm-dd format."),
+                Arguments.of("lastLogBefore", Optional.of("2000-Jan-01"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format."),
                 Arguments.of("lastLogBefore", Optional.of("random text"), "Invalid query parameter. \"Last logged-in before date\" must be in yyyy-mm-dd format.")
         );
     }
 
     @Test
-    public void getUsersInRole() throws Exception {
+    public void getUsersInRole() {
 
         String clientId = "24447cb4-f3b1-455b-89d9-26c081025fb9"; //UMS-INTEGRATION-TESTS
         String selectedRole = "getUsersInRole_TEST_ROLE";
@@ -203,13 +211,19 @@ public class MoHUmsIntegrationTests {
     }
 
     private void verifyUser(Object user) {
-        Assertions.assertThat(user)
-                .hasNoNullFieldsOrProperties()
-                .extracting("username").asString().isNotEmpty();
+        Map<String, Object> userMap = (Map<String, Object>) user;
+
+        Assertions.assertThat(userMap)
+                .isNotEmpty()
+                .containsKey("username");
+
+        Assertions.assertThat(userMap.get("username"))
+                .asString()
+                .isNotEmpty();
     }
 
     @Test
-    public void usersAuthorized() throws Exception {
+    public void usersAuthorized() {
         List<Object> allUsers = getAll("users");
 
         Assertions.assertThat(allUsers).isNotEmpty()
@@ -285,7 +299,7 @@ public class MoHUmsIntegrationTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void searchByOrganization() throws Exception {
+    public void searchByOrganization() {
         final List<Object> allUsers = getAll("users");
         final List<String> allUsersIds = allUsers.stream().map(user -> (LinkedHashMap<String, Object>) user).map(user -> user.get("id").toString()).collect(Collectors.toList());
 
@@ -308,7 +322,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void searchByEmailAndOrganization() throws Exception {
+    public void searchByEmailAndOrganization() {
         // Given a test user with Org. ID present...
         webTestClient
                 .post()
@@ -360,7 +374,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void searchByNonExistingOrganization() throws Exception {
+    public void searchByNonExistingOrganization() {
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -374,7 +388,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void searchUsersByLastLogBefore() throws Exception {
+    public void searchUsersByLastLogBefore() {
         final List<Object> allUsers = getAll("users");
 
         final List<Object> filteredUsers = webTestClient
@@ -401,7 +415,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void searchUsersByNameAndLastLogAfter() throws Exception {
+    public void searchUsersByNameAndLastLogAfter() {
         final List<Object> allUsers = getAll("users");
 
         final List<Object> filteredUsers = webTestClient
@@ -411,7 +425,7 @@ public class MoHUmsIntegrationTests {
                                 .path("/users")
                                 .queryParam("first", 0)
                                 .queryParam("max", 2000)
-                                .queryParam("firstName", "Filip")
+                                .queryParam("firstName", "David")
                                 .queryParam("lastLogAfter",
                                         LocalDate.now().minusMonths(1).format(DateTimeFormatter.ISO_DATE))
                                 .build()
@@ -461,7 +475,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void lookupUserAuthorized() throws Exception {
+    public void lookupUserAuthorized() {
         webTestClient
                 .get()
                 .uri("/users/abcd-efgh-1234-5678")
@@ -471,24 +485,24 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void addUser() throws Exception {
-        WebTestClient.ResponseSpec created = webTestClient
+    public void addUser() {
+        webTestClient
                 .post()
                 .uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"enabled\":true,\"attributes\":{},\"username\":\"bingo\",\"emailVerified\":\"\"}")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT); //HTTP 409 (Conflict); user already exists
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
 
     @Test
-    public void updateUser() throws Exception {
+    public void updateUser() {
         webTestClient
                 .put()
                 // umstest user
                 // partial updates are no longer supported in Keycloak - passing email, firstName and lastName, so they are not wiped out
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"attributes\": { \"test_att\": [\"abcd12\"]}, \"email\":\"test@ums.com\",\"lastName\":\"test\",\"firstName\":\"ums\"}")
                 .header("Authorization", "Bearer " + jwt)
@@ -496,26 +510,30 @@ public class MoHUmsIntegrationTests {
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
 
-    @Test
-    public void addUserClientRole() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "/users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9",
+            "/users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9/"
+    })
+    public void addUserClientRole_handlesTrailingSlash(String uri) {
         webTestClient
                 .post()
-                // umstest user
-                // UMS-INTEGRATION-TESTS client
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
+                .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("[\n"
-                        + "    {\n"
-                        + "        \"id\": \"e5625153-1cd0-48f7-b305-78339520740a\",\n"
-                        + "        \"name\": \"TEST_ROLE\",\n"
-                        + "        \"composite\": false,\n"
-                        + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"24447cb4-f3b1-455b-89d9-26c081025fb9\"\n"
-                        + "    }\n"
-                        + "]")
+                .bodyValue("""
+            [
+                {
+                    "id": "e5625153-1cd0-48f7-b305-78339520740a",
+                    "name": "TEST_ROLE",
+                    "composite": false,
+                    "clientRole": true,
+                    "containerId": "24447cb4-f3b1-455b-89d9-26c081025fb9"
+                }
+            ]
+        """)
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
+                .expectStatus().isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test
@@ -524,17 +542,18 @@ public class MoHUmsIntegrationTests {
                 .method(HttpMethod.DELETE)
                 // umstest user
                 // UMS-INTEGRATION-TESTS client
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("[\n"
-                        + "    {\n"
-                        + "        \"id\": \"e5625153-1cd0-48f7-b305-78339520740a\",\n"
-                        + "        \"name\": \"TEST_ROLE\",\n"
-                        + "        \"composite\": false,\n"
-                        + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"24447cb4-f3b1-455b-89d9-26c081025fb9\"\n"
-                        + "    }\n"
-                        + "]")
+                .bodyValue("""
+                        [
+                            {
+                                "id": "e5625153-1cd0-48f7-b305-78339520740a",
+                                "name": "TEST_ROLE",
+                                "composite": false,
+                                "clientRole": true,
+                                "containerId": "24447cb4-f3b1-455b-89d9-26c081025fb9"
+                            }
+                        ]""")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
@@ -545,12 +564,16 @@ public class MoHUmsIntegrationTests {
 	public void addUserClientRole_ReadOnly() {
 		webTestClient.post().uri(RESOURCE + UMS_USER + CLIENTROLEMAPPINGS + PLR_ID)
 				.contentType(MediaType.APPLICATION_JSON)
-				  .bodyValue("[\n" + "    {\n" +
-				  "        \"id\": \"3cc11287-1a22-43bd-b874-2461a5ee7b0a\",\n" +
-				  "        \"name\": \"CONSUMER\",\n" + "        \"composite\": false,\n" +
-				  "        \"clientRole\": true,\n" +
-				  "        \"containerId\": \"dc7b9502-3ffa-4ff8-be2e-ebfebe650590\"\n" +
-				  "    }\n" + "]")
+				  .bodyValue("""
+                          [
+                              {
+                                  "id": "3cc11287-1a22-43bd-b874-2461a5ee7b0a",
+                                  "name": "CONSUMER",
+                                  "composite": false,
+                                  "clientRole": true,
+                                  "containerId": "dc7b9502-3ffa-4ff8-be2e-ebfebe650590"
+                              }
+                          ]""")
 				 
 				.header("Authorization", "Bearer " + jwt)
 				.exchange()
@@ -562,38 +585,39 @@ public class MoHUmsIntegrationTests {
 		webTestClient.method(HttpMethod.DELETE)
 		.uri(RESOURCE + UMS_USER + CLIENTROLEMAPPINGS + PLR_ID)
 				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue("[\n"
-                        + "    {\n"
-                        + "        \"id\": \"3cc11287-1a22-43bd-b874-2461a5ee7b0a\",\n"
-                        + "        \"name\": \"CONSUMER\",\n"
-                        + "        \"composite\": false,\n"
-                        + "        \"clientRole\": true,\n"
-                        + "        \"containerId\": \"dc7b9502-3ffa-4ff8-be2e-ebfebe650590\"\n"
-                        + "    }\n"
-                        + "]")
+				.bodyValue("""
+                        [
+                            {
+                                "id": "3cc11287-1a22-43bd-b874-2461a5ee7b0a",
+                                "name": "CONSUMER",
+                                "composite": false,
+                                "clientRole": true,
+                                "containerId": "dc7b9502-3ffa-4ff8-be2e-ebfebe650590"
+                            }
+                        ]""")
 				.header("Authorization", "Bearer " + jwt)
 				.exchange()
 				.expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
 	}
 
     @Test
-    public void getUserGroups() throws Exception {
+    public void getUserGroups() {
         webTestClient
                 .get()
                 // umstest user
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
     }
 
     @Test
-    public void addUserGroups() throws Exception {
+    public void addUserGroups() {
         webTestClient
                 .put()
                 // umstest user
                 // CGI QA group
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -601,12 +625,12 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void removeUserGroups() throws Exception {
+    public void removeUserGroups() {
         webTestClient
                 .method(HttpMethod.DELETE)
                 // umstest user
                 // CGI QA group
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -614,7 +638,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getEvents_smokeTest() throws Exception {
+    public void getEvents_smokeTest() {
         webTestClient
                 .get()
                 .uri("events")
@@ -624,7 +648,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getEvents_hasResults() throws Exception {
+    public void getEvents_hasResults() {
         List<Object> responseBody = webTestClient
                 .get()
                 .uri("events")
@@ -641,7 +665,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getEvents_queryLogin_hasOnlyLoginEvents() throws Exception {
+    public void getEvents_queryLogin_hasOnlyLoginEvents() {
         List<Object> responseBody = webTestClient
                 .get()
                 .uri("events?type=LOGIN")
@@ -658,7 +682,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getAdminEvents_smokeTest() throws Exception {
+    public void getAdminEvents_smokeTest() {
         webTestClient
                 .get()
                 .uri("admin-events")
@@ -668,7 +692,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getAdminEvents_hasResults() throws Exception {
+    public void getAdminEvents_hasResults() {
         List<Object> responseBody = webTestClient
                 .get()
                 .uri("admin-events")
@@ -685,7 +709,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getAdminEvents_queryLogin_hasOnlyLoginEvents() throws Exception {
+    public void getAdminEvents_queryLogin_hasOnlyLoginEvents() {
         List<Object> responseBody = webTestClient
                 .get()
                 .uri("admin-events?resourceTypes=USER&resourceTypes=CLIENT_ROLE_MAPPING")
@@ -702,40 +726,31 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void assignedUserClientRoleMappingUnauthorized() throws Exception {
+    public void assignedUserClientRoleMappingUnauthorized() {
         webTestClient
                 .get()
                 // umstest user
                 // 1b2ce61a-1235-4a0e-8334-1ac557151757 is the realm-management client, which is not in the list of USER-MANAGEMENT-SERVICE roles.
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/1b2ce61a-1235-4a0e-8334-1ac557151757")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isUnauthorized(); //HTTP 401
     }
 
     @Test
-    public void assignedUserClientRoleMappingAuthorized() throws Exception {
+    public void assignedUserClientRoleMappingAuthorized() {
         webTestClient
                 .get()
                 // umstest user
                 // 24447cb4-f3b1-455b-89d9-26c081025fb9 is UMS-INTEGRATION-TESTS, which is in the list of USER-MANAGEMENT-SERVICE roles, i.e. "view-client-ums-integration-tests"
-                .uri("users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/role-mappings/clients/24447cb4-f3b1-455b-89d9-26c081025fb9")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk(); //HTTP 200
     }
 
     @Test
-    public void openApiNoAuthRequired() throws Exception {
-        webTestClient
-                .get()
-                .uri("/docs/api-docs")
-                .exchange()
-                .expectStatus().isOk(); //HTTP 200
-    }
-
-    @Test
-    public void assignedUserClientRoleMappingNoJwtUnauthorized() throws Exception {
+    public void assignedUserClientRoleMappingNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/users/abcd-efgh-1234-5678/role-mappings/clients/1234-efgh-4567-lmno")
@@ -744,7 +759,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void availableUserClientRoleMappingNoJwtUnauthorized() throws Exception {
+    public void availableUserClientRoleMappingNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/users/abcd-efgh-1234-5678/role-mappings/clients/1234-efgh-4567-lmno/available")
@@ -753,7 +768,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void effectiveUserClientRoleMappingNoJwtUnauthorized() throws Exception {
+    public void effectiveUserClientRoleMappingNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/users/abcd-efgh-1234-5678/role-mappings/clients/1234-efgh-4567-lmno/composite")
@@ -762,7 +777,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void groupsNoJwtUnauthorized() throws Exception {
+    public void groupsNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/groups")
@@ -771,7 +786,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void usersNoJwtUnauthorized() throws Exception {
+    public void usersNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/users")
@@ -780,7 +795,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void lookupUserNoJwtUnauthorized() throws Exception {
+    public void lookupUserNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/users/abcd-efgh-1234-5678")
@@ -789,7 +804,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void clientsNoJwtUnauthorized() throws Exception {
+    public void clientsNoJwtUnauthorized() {
         webTestClient
                 .get()
                 .uri("/clients")
@@ -843,7 +858,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getMetrics_active_user_count_smokeTest() throws Exception {
+    public void getMetrics_active_user_count_smokeTest() {
         webTestClient
                 .get()
                 .uri("metrics/active-user-count")
@@ -853,7 +868,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getMetrics_total_number_of_users_smokeTest() throws Exception {
+    public void getMetrics_total_number_of_users_smokeTest() {
         webTestClient
                 .get()
                 .uri("metrics/total-number-of-users")
@@ -863,7 +878,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getMetrics_unique_user_count_by_idp_smokeTest() throws Exception {
+    public void getMetrics_unique_user_count_by_idp_smokeTest() {
         webTestClient
                 .get()
                 .uri("metrics/unique-user-count-by-idp")
@@ -873,7 +888,7 @@ public class MoHUmsIntegrationTests {
     }
 
     @Test
-    public void getMetrics_unique_user_count_by_realm_smokeTest() throws Exception {
+    public void getMetrics_unique_user_count_by_realm_smokeTest() {
         webTestClient
                 .get()
                 .uri("metrics/unique-user-count-by-realm")
@@ -893,7 +908,7 @@ public class MoHUmsIntegrationTests {
                 .baseUrl(baseUrlIdirRealm)
                 .build()
                 .get()
-                .uri("users/ee1e2f18-0a1a-4aaa-92c5-6ad645f3c839")//umstest
+                .uri("users/ef7100b7-cf87-4946-a056-e405e010833d")//umstest
                 .header("Authorization", "Bearer " + access_token)
                 .exchange()
                 .expectStatus().isOk()
@@ -911,7 +926,7 @@ public class MoHUmsIntegrationTests {
         //umstest user
         LinkedHashMap<String, Object> user = (LinkedHashMap<String, Object>) webTestClient
                 .get()
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -931,7 +946,7 @@ public class MoHUmsIntegrationTests {
         //check delete response status
         webTestClient
                 .method(HttpMethod.DELETE)
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44/federated-identity/bcsc")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7/federated-identity/bcsc")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue(bcscRealmUserId)
                 .exchange()
@@ -940,7 +955,7 @@ public class MoHUmsIntegrationTests {
         //check that no bcsc links exist
         LinkedHashMap<String, Object> userWithoutBcscLinks = (LinkedHashMap<String, Object>) webTestClient
                 .get()
-                .uri("/users/c35d48ea-3df9-4758-a27b-94e4cab1ba44")
+                .uri("/users/86252d61-da89-47c1-af3a-0ea16698b1b7")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()

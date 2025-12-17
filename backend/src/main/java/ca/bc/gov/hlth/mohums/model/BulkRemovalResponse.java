@@ -1,6 +1,6 @@
 package ca.bc.gov.hlth.mohums.model;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 public class BulkRemovalResponse {
     /**
@@ -9,13 +9,13 @@ public class BulkRemovalResponse {
      */
     private Object body;
     private int statusCodeValue;
-    private HttpStatus statusCode;
+    private HttpStatusCode statusCode;
     /**
      * userId is added to a response, so that it can be associated with a particular user
      */
     private String userId;
 
-    public BulkRemovalResponse(Object body, int statusCodeValue, HttpStatus statusCode, String userId) {
+    public BulkRemovalResponse(Object body, int statusCodeValue, HttpStatusCode statusCode, String userId) {
         this.body = body;
         this.statusCodeValue = statusCodeValue;
         this.statusCode = statusCode;
@@ -38,11 +38,11 @@ public class BulkRemovalResponse {
         this.statusCodeValue = statusCodeValue;
     }
 
-    public HttpStatus getStatusCode() {
+    public HttpStatusCode getStatusCode() {
         return statusCode;
     }
 
-    public void setStatusCode(HttpStatus statusCode) {
+    public void setStatusCode(HttpStatusCode statusCode) {
         this.statusCode = statusCode;
     }
 

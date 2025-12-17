@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +29,15 @@ public class EventServiceTest {
 
 
     private final String date = "2024-04-02";
-    private final long dateInMilliseconds = 1712037600000L;
+
+    private final long dateInMilliseconds = Instant.parse("2024-04-02T00:00:00Z").toEpochMilli();
 
     @Test
     public void testGetLastLoginEventsAfterGivenDate() {
         List<LastLogDate> lastLogDateList = getMockLastLogDateList();
-        Map<String, Object> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
+
+        Map<String, Object> expected = Map.of(
+                lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
                 lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin());
 
         Mockito.when(eventRepository.findMohApplicationsLastLoginEventsAfterGivenDate(dateInMilliseconds)).thenReturn(getMockLastLogDateList());
@@ -46,7 +50,9 @@ public class EventServiceTest {
     public void testGetLastLoginEventsBeforeGivenDate() {
         List<LastLogDate> lastLogDateList = getMockLastLogDateList();
         List<LastLogDate> usersWithoutLogins = getMockLastLogDateListWithNoDates();
-        Map<String, Object> expected = Map.of(lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
+
+        Map<String, Object> expected = Map.of(
+                lastLogDateList.get(0).getUserId(), lastLogDateList.get(0).getLastLogin(),
                 lastLogDateList.get(1).getUserId(), lastLogDateList.get(1).getLastLogin(),
                 usersWithoutLogins.get(0).getUserId(), usersWithoutLogins.get(0).getLastLogin(),
                 usersWithoutLogins.get(1).getUserId(), usersWithoutLogins.get(1).getLastLogin());

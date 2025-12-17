@@ -13,7 +13,7 @@ public class JwtTokenUtils {
     private static final String RESOURCE_ACCESS_CLAIM = "resource_access";
 
     public static List<String> getUserGroups(Jwt jwt) {
-        return jwt.containsClaim(GROUPS_CLAIM) ? (List<String>) jwt.getClaims().get(GROUPS_CLAIM) : List.of();
+        return jwt.hasClaim(GROUPS_CLAIM) ? (List<String>) jwt.getClaims().get(GROUPS_CLAIM) : List.of();
     }
 
     public static boolean containsRole(Jwt jwt, String role) {
@@ -34,7 +34,7 @@ public class JwtTokenUtils {
          }
        }*/
     public static List<String> getUserRoles(Jwt jwt){
-        if(jwt.containsClaim(RESOURCE_ACCESS_CLAIM)){
+        if(jwt.hasClaim(RESOURCE_ACCESS_CLAIM)){
             final Map<String, Object> resourceAccess = (Map<String, Object>) jwt.getClaims().get(RESOURCE_ACCESS_CLAIM);
             List rolesWithinResources = RESOURCES.stream()
                     .map(resourceAccess::get)

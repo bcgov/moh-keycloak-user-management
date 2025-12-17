@@ -1,6 +1,6 @@
 package ca.bc.gov.hlth.mohums.userSearch.user;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 
 /**

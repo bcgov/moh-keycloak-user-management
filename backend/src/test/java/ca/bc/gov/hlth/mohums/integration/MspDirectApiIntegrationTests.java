@@ -1,15 +1,9 @@
 package ca.bc.gov.hlth.mohums.integration;
 
-import java.io.IOException;
-import java.time.Duration;
-
+import ca.bc.gov.hlth.mohums.model.UserPayee;
+import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,13 +14,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import ca.bc.gov.hlth.mohums.model.UserPayee;
-import net.minidev.json.parser.ParseException;
+import java.io.IOException;
+import java.time.Duration;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled("Payee API is not available at 20251009.1121")
 public class MspDirectApiIntegrationTests {
 
     private static final String PAYEE_PATH = "/payee-mapping";

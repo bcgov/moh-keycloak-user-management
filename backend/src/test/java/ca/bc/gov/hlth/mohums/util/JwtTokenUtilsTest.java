@@ -21,7 +21,7 @@ class JwtTokenUtilsTest {
     @Test
     void getUserGroupsValid() {
         Map<String, Object> claims = Map.of("groups", List.of("group1"), "email", "email@gmail.com");
-        when(jwtMock.containsClaim(GROUPS_CLAIM)).thenReturn(true);
+        when(jwtMock.hasClaim(GROUPS_CLAIM)).thenReturn(true);
         when(jwtMock.getClaims()).thenReturn(claims);
         List<String> userGroups = JwtTokenUtils.getUserGroups(jwtMock);
         assertEquals( List.of("group1"), userGroups);
@@ -29,7 +29,7 @@ class JwtTokenUtilsTest {
 
     @Test
     void getUserGroupsInvalidNoGroupsClaims() {
-        when(jwtMock.containsClaim(GROUPS_CLAIM)).thenReturn(false);
+        when(jwtMock.hasClaim(GROUPS_CLAIM)).thenReturn(false);
         List<String> userGroups = JwtTokenUtils.getUserGroups(jwtMock);
         assertEquals(List.of(), userGroups);
     }
@@ -37,7 +37,7 @@ class JwtTokenUtilsTest {
     @Test
     void getUserGroupsInvalidEmptyGroupsClaims() {
         Map<String, Object> claims = Map.of("groups", List.of());
-        when(jwtMock.containsClaim(GROUPS_CLAIM)).thenReturn(true);
+        when(jwtMock.hasClaim(GROUPS_CLAIM)).thenReturn(true);
         when(jwtMock.getClaims()).thenReturn(claims);
         List<String> userGroups = JwtTokenUtils.getUserGroups(jwtMock);
         assertEquals( List.of(), userGroups);
@@ -46,7 +46,7 @@ class JwtTokenUtilsTest {
     @Test
     void getUserRolesValid() {
         Map<String, Object> claims = Map.of("resource_access", Map.of(API_CLIENT_NAME, Map.of(ROLES_CLAIM, List.of("role1", "role2"))));
-        when(jwtMock.containsClaim(RESOURCE_ACCESS_CLAIM)).thenReturn(true);
+        when(jwtMock.hasClaim(RESOURCE_ACCESS_CLAIM)).thenReturn(true);
         when(jwtMock.getClaims()).thenReturn(claims);
         List<String> userRoles = JwtTokenUtils.getUserRoles(jwtMock);
         assertEquals(List.of("role1", "role2"), userRoles);
@@ -54,7 +54,7 @@ class JwtTokenUtilsTest {
 
     @Test
     void getUserRolesInvalidNoResourceAccessClaim() {
-        when(jwtMock.containsClaim(RESOURCE_ACCESS_CLAIM)).thenReturn(false);
+        when(jwtMock.hasClaim(RESOURCE_ACCESS_CLAIM)).thenReturn(false);
         List<String> userRoles = JwtTokenUtils.getUserRoles(jwtMock);
         assertEquals(List.of(), userRoles);
     }
@@ -62,7 +62,7 @@ class JwtTokenUtilsTest {
     @Test
     void getUserRolesInvalidEmptyRoles() {
         Map<String, Object> claims = Map.of("resource_access", Map.of(API_CLIENT_NAME, Map.of(ROLES_CLAIM, List.of())));
-        when(jwtMock.containsClaim(RESOURCE_ACCESS_CLAIM)).thenReturn(true);
+        when(jwtMock.hasClaim(RESOURCE_ACCESS_CLAIM)).thenReturn(true);
         when(jwtMock.getClaims()).thenReturn(claims);
         List<String> userRoles = JwtTokenUtils.getUserRoles(jwtMock);
         assertEquals(List.of(), userRoles);
