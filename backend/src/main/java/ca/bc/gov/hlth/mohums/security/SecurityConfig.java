@@ -103,7 +103,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/users/**").hasRole(createUserRole)
                         .requestMatchers(HttpMethod.DELETE, "/users/{userId}/federated-identity/**")
                         .hasRole(viewUsersRole)
-                        .requestMatchers(HttpMethod.PUT, "/users/{userId}").hasRole(viewUsersRole)
+                        .requestMatchers(HttpMethod.PUT, "/users/{userId}").hasRole(manageUserDetailsRole)
                         .requestMatchers(HttpMethod.PUT, "/users/{userId}/groups/{groupId}")
                         .hasAnyRole(manageOwnGroupsRole, manageAllGroupsRole)
                         .requestMatchers(HttpMethod.DELETE, "/users/{userId}/groups/{groupId}")
