@@ -55,8 +55,7 @@
                 </v-icon>
               </template>
               <p class="tooltip">
-                Total Unique User Count by IDP + MHSU Realms that do not use an
-                IDP
+                Total count of unique, enabled users across application realms (moh_applications, moh_citizen, mhsu_foundry, bcer, bcerd). Service accounts are excluded.
               </p>
             </v-tooltip>
           </div>

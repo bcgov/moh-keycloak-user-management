@@ -82,6 +82,7 @@ public class MetricsController {
                 FROM keycloak.user_entity ue
                 JOIN keycloak.realm r ON ue.realm_id = r.id
                 WHERE ue.enabled = 1
+                  AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) IN (
                       'moh_applications',
                       'moh_citizen',
@@ -103,12 +104,14 @@ public class MetricsController {
                 JOIN keycloak.realm r
                     ON ue.realm_id = r.id
                 WHERE ue.enabled = 1
+                  AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) NOT IN (
                       'moh_applications',
                       'moh_citizen',
                       'mhsu_foundry',
                       'bcer',
                       'bcerd',
+                      'v2_pos',
                       'master'
                   )
                 GROUP BY r.name
@@ -127,6 +130,7 @@ public class MetricsController {
                 JOIN keycloak.realm r
                     ON ue.realm_id = r.id
                 WHERE ue.enabled = 1
+                  AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) IN (
                       'moh_applications',
                       'moh_citizen',
