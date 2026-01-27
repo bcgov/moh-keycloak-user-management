@@ -22,6 +22,7 @@ public class MetricsController {
     @Value("${spring.datasource.password}")
     private String password;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -76,49 +77,70 @@ public class MetricsController {
 
     @GetMapping("/metrics/total-number-of-users")
     public Object getTotalNumberOfUsers() throws SQLException {
-        String sql
-                = "SELECT COUNT(1) AS TOTAL_USER_COUNT"
-                + "  FROM ("
-                + "    SELECT DISTINCT id, realm_id"
-                + "      FROM keycloak.user_entity"
-                + "     WHERE (LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'fnha_aad','idir', 'mhsu_ehs', 'moh_idp', 'phsa'))"
-                + "        OR (realm_id = 'idir_aad' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'idir'))"
-                + "        OR (realm_id = 'mhsu_foundry' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'mhsu_ehs'))"
-                + "        OR (realm_id = 'phsa_aad' AND username NOT IN (SELECT username FROM keycloak.user_entity WHERE realm_id = 'phsa'))"
-                + "       AND enabled = 1"
-                + " )";
+        String sql = """
+                SELECT COUNT(DISTINCT ue.id) AS TOTAL_USER_COUNT
+                FROM keycloak.user_entity ue
+                JOIN keycloak.realm r ON ue.realm_id = r.id
+                WHERE ue.enabled = 1
+                  AND ue.service_account_client_link IS NULL
+                  AND LOWER(r.name) IN (
+                      'moh_applications',
+                      'moh_citizen',
+                      'mhsu_foundry',
+                      'bcer',
+                      'bcerd'
+                  )
+                """;
 
         return jdbcTemplate.queryForList(sql).get(0).get("TOTAL_USER_COUNT");
     }
 
     @GetMapping("/metrics/unique-user-count-by-idp")
     public List<Map<String, Object>> getUniqueUserCountByIDP() throws SQLException {
-        String sql
-                = "SELECT realm_id AS IDP, COUNT(1) AS UNIQUE_USER_COUNT"
-                + "  FROM ("
-                + "    SELECT DISTINCT id, realm_id"
-                + "      FROM keycloak.user_entity"
-                + "     WHERE LOWER(realm_id) IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'fnha_aad','idir', 'idir_aad', 'moh_idp', 'phsa', 'phsa_aad')"
-                + "       AND enabled = 1"
-                + " )"
-                + " GROUP BY realm_id"
-                + " ORDER BY realm_id ASC";
+        String sql = """
+                SELECT r.name AS IDP,
+                       COUNT(DISTINCT ue.id) AS UNIQUE_USER_COUNT
+                FROM keycloak.user_entity ue
+                JOIN keycloak.realm r
+                    ON ue.realm_id = r.id
+                WHERE ue.enabled = 1
+                  AND ue.service_account_client_link IS NULL
+                  AND LOWER(r.name) NOT IN (
+                      'moh_applications',
+                      'moh_citizen',
+                      'mhsu_foundry',
+                      'bcer',
+                      'bcerd',
+                      'v2_pos',
+                      'master'
+                  )
+                GROUP BY r.name
+                ORDER BY r.name ASC
+                """;
 
         return jdbcTemplate.queryForList(sql);
     }
 
     @GetMapping("/metrics/unique-user-count-by-realm")
     public List<Map<String, Object>> getUniqueUserCountByRealm() throws SQLException {
-        String sql
-                = "SELECT realm_id AS REALM, COUNT(1) AS UNIQUE_USER_COUNT"
-                + "  FROM ("
-                + "    SELECT DISTINCT id, realm_id"
-                + "      FROM keycloak.user_entity"
-                + "     WHERE LOWER(realm_id) NOT IN ('bceid_basic', 'bceid_business', 'bcprovider_aad', 'bcsc', 'fnha_aad','idir', 'idir_aad', 'master', 'moh_idp', 'phsa', 'phsa_aad')"
-                + "       AND enabled = 1"
-                + " )"
-                + " GROUP BY realm_id"
-                + " ORDER BY realm_id ASC";
+        String sql = """
+                SELECT r.name AS REALM,
+                       COUNT(DISTINCT ue.id) AS UNIQUE_USER_COUNT
+                FROM keycloak.user_entity ue
+                JOIN keycloak.realm r
+                    ON ue.realm_id = r.id
+                WHERE ue.enabled = 1
+                  AND ue.service_account_client_link IS NULL
+                  AND LOWER(r.name) IN (
+                      'moh_applications',
+                      'moh_citizen',
+                      'mhsu_foundry',
+                      'bcer',
+                      'bcerd'
+                  )
+                GROUP BY r.name
+                ORDER BY r.name ASC
+                """;
 
         return jdbcTemplate.queryForList(sql);
     }
