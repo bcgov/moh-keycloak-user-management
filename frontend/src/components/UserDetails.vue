@@ -11,7 +11,7 @@
               :disabled="!!userId || !editUserDetailsPermission"
               class="required"
             >
-              Username
+              Registration name
             </label>
             <v-tooltip location="right" v-if="!userId">
               <template v-slot:activator="{ props }">
@@ -20,7 +20,7 @@
                 </v-icon>
               </template>
               <span>
-                Username should include the corresponding prefix or suffix in
+                Registration name should include the corresponding prefix or suffix in
                 alignment with the id type.
                 <ul>
                   <li v-for="idp in identityProviders" :key="idp.name">
@@ -30,7 +30,7 @@
                       <template v-if="idp.domainNote">
                         <br />
                         <span class="tooltip-note">
-                          Note: The username will already contain an '@domain'
+                          Note: The registration name will already contain an '@domain'
                           that the '{{ idp.alias }}' will be appended to.
                           <br />
                           <span
@@ -38,8 +38,8 @@
                             v-if="idp.alias === '@phsa'"
                           >
                             This applies to all Health Authority users, for
-                            example: username@interiorhealth.ca@phsa or
-                            username@phsa.ca@phsa
+                            example: registration name@interiorhealth.ca@phsa or
+                            registration name@phsa.ca@phsa
                           </span>
                         </span>
                       </template>
@@ -55,7 +55,7 @@
               id="user-name"
               v-model.trim="user.username"
               required
-              :rules="[(v) => !!v || 'Username is required']"
+              :rules="[(v) => !!v || 'Registration name is required']"
             />
 
             <label
@@ -441,7 +441,7 @@
         }
       },
       getTooltipUsername: function (identityProvider) {
-        return `username${identityProvider.alias.bold()}`;
+        return `registration name${identityProvider.alias.bold()}`;
       },
       // The IDP alias in keycloak doesn't always match what's known by users
       // Formatted to match standard naming conventions
