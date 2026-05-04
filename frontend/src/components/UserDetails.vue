@@ -20,8 +20,8 @@
                 </v-icon>
               </template>
               <span>
-                Registration name should include the corresponding prefix or suffix in
-                alignment with the id type.
+                Registration name should include the corresponding prefix or
+                suffix in alignment with the id type.
                 <ul>
                   <li v-for="idp in identityProviders" :key="idp.name">
                     <template>
@@ -30,8 +30,9 @@
                       <template v-if="idp.domainNote">
                         <br />
                         <span class="tooltip-note">
-                          Note: The registration name will already contain an '@domain'
-                          that the '{{ idp.alias }}' will be appended to.
+                          Note: The registration name will already contain an
+                          '@domain' that the '{{ idp.alias }}' will be appended
+                          to.
                           <br />
                           <span
                             class="tooltip-note"

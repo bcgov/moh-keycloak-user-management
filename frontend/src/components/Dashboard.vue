@@ -55,7 +55,9 @@
                 </v-icon>
               </template>
               <p class="tooltip">
-                Total count of unique, enabled users across application realms (moh_applications, moh_citizen, mhsu_foundry, bcer, bcerd). Service accounts are excluded.
+                Total count of unique, enabled users across application realms
+                (moh_applications, moh_citizen, mhsu_foundry, bcer, bcerd).
+                Service accounts are excluded.
               </p>
             </v-tooltip>
           </div>
