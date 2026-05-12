@@ -12,7 +12,7 @@
                 mdi-help-circle
               </v-icon>
             </template>
-            <span>Search by username, email, or name</span>
+            <span>Search by registration name, email, or name</span>
           </v-tooltip>
         </label>
 
@@ -29,7 +29,7 @@
           variant="outlined"
           density="compact"
           v-model.trim="userSearchInput"
-          placeholder="Username, email, name"
+          placeholder="Registration name, email, name"
           @keyup.enter="
             searchUser('&search=' + encodeURIComponent(userSearchInput))
           "
@@ -112,7 +112,7 @@
         />
       </v-col>
       <v-col cols="6" class="col">
-        <label for="adv-search-username">Username</label>
+        <label for="adv-search-username">Registration name</label>
         <v-text-field
           id="adv-search-username"
           variant="outlined"
@@ -331,6 +331,9 @@
                   'role',
                   'lastLogDate',
                 ]"
+                :labels="{
+                  username: 'registration name',
+                }"
               >
                 <v-btn id="csv-button" class="bg-primary" size="default">
                   Download results
@@ -583,7 +586,7 @@
       headers() {
         let hdrs = [
           {
-            title: "Username",
+            title: "Registration name",
             value: "username",
             class: "table-header",
             sortable: true,
