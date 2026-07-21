@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.sql.*;
 
+import ca.bc.gov.hlth.mohums.service.MetricsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,37 +27,12 @@ public class MetricsController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private MetricsService metricsService;
+
     @GetMapping("/metrics/active-user-count")
     public List<Map<String, Object>> getActiveUserCount() throws SQLException {
-        String sql
-                = "SELECT realm_id AS REALM, client_id AS CLIENT, COUNT(1) AS ACTIVE_USER_COUNT, description AS DESCRIPTION"
-                + "  FROM ("
-                + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username, c.description"
-                + "      FROM keycloak.event_entity ee"
-                + "     INNER JOIN keycloak.user_entity ue ON ue.id = ee.user_id"
-                + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id AND c.realm_id = ee.realm_id"
-                + "     INNER JOIN keycloak.keycloak_role kcr ON kcr.client = c.id"
-                + "     INNER JOIN keycloak.user_role_mapping urm ON urm.user_id = ee.user_id AND urm.role_id = kcr.id"
-                + "     WHERE ee.type = 'LOGIN'"
-                + "       AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000"
-                + "       AND ue.enabled = 1"
-                + "     UNION"
-                + "    SELECT DISTINCT ue.realm_id, c.client_id, ue.username, c.description"
-                + "      FROM keycloak.event_entity ee"
-                + "     INNER JOIN keycloak.user_entity ue ON ue.id = ee.user_id"
-                + "     INNER JOIN keycloak.client c ON c.client_id = ee.client_id AND c.realm_id = ee.realm_id"
-                + "      LEFT OUTER JOIN keycloak.keycloak_role kcr ON kcr.client = c.id"
-                + "     WHERE ee.type = 'LOGIN'"
-                + "       AND ee.event_time > (SYSDATE-365-TO_DATE('1970-01-01','YYYY-MM-DD'))*24*60*60*1000"
-                + "       AND ue.enabled = 1"
-                + "       AND kcr.id IS NULL"
-                + " )"
-                + " WHERE NOT (client_id IN ('account', 'account-console', 'security-admin-console', 'JAVASCRIPT_CONSOLE', 'USER-MANAGEMENT-SERVICE', 'PRIME-WEBAPP-ENROLLMENT')"
-                + "          OR LOWER(client_id) LIKE '%realm%')"
-                + " GROUP BY realm_id, client_id, description"
-                + " ORDER BY realm_id ASC, client_id ASC";
-
-        return jdbcTemplate.queryForList(sql);
+        return metricsService.getActiveUserCount();
     }
 
     @GetMapping("/metrics/total-active-user-count")

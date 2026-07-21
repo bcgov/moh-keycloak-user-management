@@ -616,8 +616,8 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .put()
                 // umstest user
-                // CGI QA group
-                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                // UMS Integration Test Group
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/df577ef3-c8e7-41d6-ae11-c2bcfd43b201")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()
@@ -629,8 +629,8 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .method(HttpMethod.DELETE)
                 // umstest user
-                // CGI QA group
-                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                // UMS Integration Test Group
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/df577ef3-c8e7-41d6-ae11-c2bcfd43b201")
                 .header("Authorization", "Bearer " + jwt)
                 .bodyValue("{\"groupName\":\"CGI QA group\"}")
                 .exchange()

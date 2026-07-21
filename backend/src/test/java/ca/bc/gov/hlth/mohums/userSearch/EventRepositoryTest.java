@@ -38,6 +38,27 @@ public class EventRepositoryTest {
         assertTrue(results.stream().allMatch(lastLogDate -> (Long)lastLogDate.getLastLogin() > dateInMillis));
     }
 
+    /*
+     * NOTE:
+     * This test verifies that the query returns users with LOGIN events
+     * for the given client after the supplied timestamp.
+     *
+     * The query filters rows with:
+     *   ee.time > dateInMillis
+     * before grouping and calculating MAX(ee.time).
+     *
+     * Because of that, this assertion:
+     *
+     *   lastLogin > dateInMillis
+     *
+     * is mostly guaranteed by the WHERE clause itself.
+     *
+     * Also note:
+     * - These test cases depend on fixture/runtime data containing recent
+     *   USER-MANAGEMENT LOGIN events.
+     * - The test behaves more like a smoke/integration test than a strict
+     *   behavioral test with controlled data.
+     */
     @ParameterizedTest
     @MethodSource("provideLastLoginAfterDates")
     public void testLastLoginWithGivenClientAfterGivenDate(Long dateInMillis, boolean isResultEmpty){
