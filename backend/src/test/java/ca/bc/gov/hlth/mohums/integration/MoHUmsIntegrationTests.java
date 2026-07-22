@@ -249,7 +249,7 @@ public class MoHUmsIntegrationTests {
                 .returnResult()
                 .getResponseBody();
 
-        boolean nonEmptyResultSet = usersThatSatisfySearchCondition.size() > 0;
+        boolean nonEmptyResultSet = !usersThatSatisfySearchCondition.isEmpty();
         assertTrue(nonEmptyResultSet == shouldReturnResults && usersThatSatisfySearchCondition.stream().allMatch(user -> userContainsSearchParam(user, searchParam)));
 
 
@@ -301,7 +301,7 @@ public class MoHUmsIntegrationTests {
     @SuppressWarnings("unchecked")
     public void searchByOrganization() {
         final List<Object> allUsers = getAll("users");
-        final List<String> allUsersIds = allUsers.stream().map(user -> (LinkedHashMap<String, Object>) user).map(user -> user.get("id").toString()).collect(Collectors.toList());
+        final List<String> allUsersIds = allUsers.stream().map(user -> (LinkedHashMap<String, Object>) user).map(user -> user.get("id").toString()).toList();
 
         final List<UserDTO> usersWithOrg = webTestClient
                 .get()
@@ -616,10 +616,10 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .put()
                 // umstest user
-                // CGI QA group
-                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                // UMS Integration Test Group
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/20fc4fdb-a4da-49ed-b8b5-8403f1424cf6")
                 .header("Authorization", "Bearer " + jwt)
-                .bodyValue("{\"groupName\":\"CGI QA group\"}")
+                .bodyValue("{\"groupName\":\"UMS Integration Test Group\"}")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
@@ -629,10 +629,10 @@ public class MoHUmsIntegrationTests {
         webTestClient
                 .method(HttpMethod.DELETE)
                 // umstest user
-                // CGI QA group
-                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/1798203d-027f-4856-a445-8a90c1dc9756")
+                // UMS Integration Test Group
+                .uri("users/86252d61-da89-47c1-af3a-0ea16698b1b7/groups/20fc4fdb-a4da-49ed-b8b5-8403f1424cf6")
                 .header("Authorization", "Bearer " + jwt)
-                .bodyValue("{\"groupName\":\"CGI QA group\"}")
+                .bodyValue("{\"groupName\":\"UMS Integration Test Group\"}")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.NO_CONTENT); //HTTP 204 indicates success
     }
