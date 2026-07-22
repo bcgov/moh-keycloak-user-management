@@ -57,6 +57,7 @@ public class MetricsService {
         refreshMetrics();
     }
 
+    // 3600000ms = 1 hour
     @Scheduled(fixedRateString = "${metrics.cache-refresh-ms:${metrics.active-user-count.cache-refresh-ms:3600000}}")
     public void refreshMetrics() {
         if (!metricsRefreshLock.tryLock()) {
