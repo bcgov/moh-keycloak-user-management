@@ -7,9 +7,9 @@ fixture.disablePageCaching`Dashboard`.beforeEach(async (t) => {
   await t.useRole(dashboardUser);
 }).page`${SITE_UNDER_TEST}`;
 
-test("Test Total Number of Users", async (t) => {
+test("Test Total Active Users", async (t) => {
   await t
-    .expect(await Dashboard.getTotalNumberOfUsers())
+    .expect(await Dashboard.getTotalActiveUsers())
     .gt(0, { allowUnawaitedPromise: true });
 });
 

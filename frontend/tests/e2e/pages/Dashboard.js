@@ -11,7 +11,7 @@ class Dashboard {
     return Selector("td").find("span").withText("moh_applications").count;
   }
 
-  async getTotalNumberOfUsers() {
+  async getTotalActiveUsers() {
     const numberOfUsers = await Selector("p.single-stat").filterVisible()
       .textContent;
     return parseInt(numberOfUsers);

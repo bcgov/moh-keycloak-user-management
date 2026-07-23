@@ -47,7 +47,7 @@
       <div class="column">
         <div class="tile">
           <div class="heading">
-            <p>Total Number of Users</p>
+            <p>Total Active Users</p>
             <v-tooltip location="right" max-width="300px">
               <template v-slot:activator="{ props }">
                 <v-icon v-bind="props" class="help-icon" size="x-small">
@@ -55,9 +55,9 @@
                 </v-icon>
               </template>
               <p class="tooltip">
-                Total count of unique, enabled users across application realms
-                (moh_applications, moh_citizen, mhsu_foundry, bcer, bcerd).
-                Service accounts are excluded.
+                Total count of unique, enabled users with a login event within
+                365 days. Service accounts and Keycloak internal clients are
+                excluded.
               </p>
             </v-tooltip>
           </div>
@@ -199,7 +199,7 @@
     },
     methods: {
       getLineChartBtnClass(name) {
-        return this.totalUserCountSelectedFormat == name
+        return this.totalUserCountSelectedFormat === name
           ? "primary"
           : "secondary";
       },

@@ -73,7 +73,7 @@ class MetricsServiceTest {
                 return List.of(row("ACTIVE_USER_COUNT", 10));
             }
 
-            // Total enabled user count for application realms.
+            // Total active user count across non-internal clients.
             if (sql.contains("TOTAL_USER_COUNT")) {
                 return List.of(row("TOTAL_USER_COUNT", 20));
             }
@@ -101,4 +101,5 @@ class MetricsServiceTest {
         row.put(key, value);
         return row;
     }
+
 }
