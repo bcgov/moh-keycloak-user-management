@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("SqlRedundantOrderingDirection")
 @Service
 public class MetricsService {
 
@@ -102,6 +103,7 @@ public class MetricsService {
                 JOIN keycloak.user_entity ue
                   ON ue.id = ee.user_id
                  AND ue.enabled = 1
+                 AND ue.service_account_client_link IS NULL
                 JOIN keycloak.client c
                   ON c.client_id = ee.client_id
                  AND c.realm_id = ee.realm_id
@@ -147,17 +149,27 @@ public class MetricsService {
 
     private Object queryTotalNumberOfUsers() {
         String sql = """
-                SELECT COUNT(DISTINCT ue.id) AS TOTAL_USER_COUNT
-                FROM keycloak.user_entity ue
-                JOIN keycloak.realm r ON ue.realm_id = r.id
-                WHERE ue.enabled = 1
-                  AND ue.service_account_client_link IS NULL
-                  AND LOWER(r.name) IN (
-                      'moh_applications',
-                      'moh_citizen',
-                      'mhsu_foundry',
-                      'bcer',
-                      'bcerd'
+                SELECT COUNT(DISTINCT ee.user_id) AS TOTAL_USER_COUNT
+                FROM keycloak.event_entity ee
+                JOIN keycloak.user_entity ue
+                  ON ue.id = ee.user_id
+                 AND ue.enabled = 1
+                 AND ue.service_account_client_link IS NULL
+                JOIN keycloak.client c
+                  ON c.client_id = ee.client_id
+                 AND c.realm_id = ee.realm_id
+                WHERE ee.type = 'LOGIN'
+                  AND ee.event_time > (
+                      SYSDATE - 365 - DATE '1970-01-01'
+                  ) * 24 * 60 * 60 * 1000
+                  AND NOT (
+                         c.client_id IN (
+                             'account',
+                             'account-console',
+                             'security-admin-console',
+                             'JAVASCRIPT_CONSOLE'
+                         )
+                      OR LOWER(c.client_id) LIKE '%realm%'
                   )
                 """;
 
@@ -174,11 +186,14 @@ public class MetricsService {
                 WHERE ue.enabled = 1
                   AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) NOT IN (
+                      'lra',
                       'moh_applications',
                       'moh_citizen',
                       'mhsu_foundry',
                       'bcer',
                       'bcerd',
+                      'idir',
+                      'phsa',
                       'v2_pos',
                       'master'
                   )
