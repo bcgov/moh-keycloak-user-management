@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("SqlRedundantOrderingDirection")
 @Service
 public class MetricsService {
 
@@ -185,11 +186,14 @@ public class MetricsService {
                 WHERE ue.enabled = 1
                   AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) NOT IN (
+                      'lra',
                       'moh_applications',
                       'moh_citizen',
                       'mhsu_foundry',
                       'bcer',
                       'bcerd',
+                      'idir',
+                      'phsa',
                       'v2_pos',
                       'master'
                   )

@@ -38,7 +38,7 @@ class MetricsServiceTest {
         assertEquals(List.of(row("REALM", "moh_applications")), metricsService.getActiveUserCount());
         assertEquals(List.of(row("ACTIVE_USER_COUNT", 10)), metricsService.getTotalActiveUserCountYear());
         assertEquals(20, metricsService.getTotalNumberOfUsers());
-        assertEquals(List.of(row("IDP", "idir")), metricsService.getUniqueUserCountByIDP());
+        assertEquals(List.of(row("IDP", "idir_aad")), metricsService.getUniqueUserCountByIDP());
         assertEquals(List.of(row("REALM", "moh_citizen")), metricsService.getUniqueUserCountByRealm());
         assertThrows(UnsupportedOperationException.class,
                 () -> metricsService.getActiveUserCount().get(0).put("REALM", "changed"));
@@ -55,7 +55,7 @@ class MetricsServiceTest {
         assertEquals(List.of(row("REALM", "moh_applications")), metricsService.getActiveUserCount());
         assertEquals(List.of(row("ACTIVE_USER_COUNT", 10)), metricsService.getTotalActiveUserCountYear());
         assertEquals(20, metricsService.getTotalNumberOfUsers());
-        assertEquals(List.of(row("IDP", "idir")), metricsService.getUniqueUserCountByIDP());
+        assertEquals(List.of(row("IDP", "idir_aad")), metricsService.getUniqueUserCountByIDP());
         assertEquals(List.of(row("REALM", "moh_citizen")), metricsService.getUniqueUserCountByRealm());
     }
 
@@ -80,7 +80,7 @@ class MetricsServiceTest {
 
             // Unique enabled user count grouped by identity provider realm.
             if (sql.contains("AS IDP")) {
-                return List.of(row("IDP", "idir"));
+                return List.of(row("IDP", "idir_aad"));
             }
 
             // Unique enabled user count grouped by application realm.
