@@ -8,7 +8,7 @@ spring:
     url: ${keycloak_db_url}
     username: ${keycloak_db_username}
     password: ${keycloak_db_password}
-    driver-class-name: oracle.jdbc.OracleDriver
+    driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
     properties:

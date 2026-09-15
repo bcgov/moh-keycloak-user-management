@@ -2,7 +2,6 @@ package ca.bc.gov.hlth.mohums.integration;
 
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +41,8 @@ public class OrgApiIntegrationTests {
 
     private String jwt;
 
-    private String testOrgId = "99999999";
-    private String testOrgName = "Integration test org";
+    private final String testOrgId = "99999999";
+    private final String testOrgName = "Integration test org";
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
@@ -85,7 +84,7 @@ public class OrgApiIntegrationTests {
 
         Object organization = orgApiWebTestClient
                 .get()
-                .uri(String.format("/organizations/00001480"))
+                .uri("/organizations/00001480")
                 .header("Authorization", "Bearer " + jwt)
                 .exchange()
                 .expectStatus().isOk()
@@ -137,9 +136,8 @@ public class OrgApiIntegrationTests {
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
 
-    /* test ignored until further talks about editing organizations */
     @Test
-    @Ignore
+    @Disabled("test ignored until further talks about editing organizations")
     public void editOrganizationSuccess() {
         Assumptions.assumeTrue(isDevEnvironment());
 

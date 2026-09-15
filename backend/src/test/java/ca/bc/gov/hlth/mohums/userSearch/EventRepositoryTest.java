@@ -2,15 +2,14 @@ package ca.bc.gov.hlth.mohums.userSearch;
 
 import ca.bc.gov.hlth.mohums.userSearch.event.EventRepository;
 import ca.bc.gov.hlth.mohums.userSearch.event.LastLogDate;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles("test")
 public class EventRepositoryTest {
@@ -85,6 +83,7 @@ public class EventRepositoryTest {
 
     @ParameterizedTest
     @MethodSource("provideLastLoginBeforeDates")
+    @Disabled("Event data not available after Postgres migration. 20260915.1236")
     public void testLastLoginBeforeGivenDate(Long dateInMillis, boolean isResultEmpty){
         List<LastLogDate> results = eventRepository.findMohApplicationsLastLoginEventsBeforeGivenDate(dateInMillis);
 

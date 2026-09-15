@@ -64,7 +64,7 @@ class MetricsServiceTest {
             String sql = invocation.getArgument(0);
 
             // Active user count by realm and client.
-            if (sql.contains("ee.realm_id AS realm")) {
+            if (sql.contains("ee.realm_id AS \"REALM\"")) {
                 return List.of(row("REALM", "moh_applications"));
             }
 
@@ -79,12 +79,12 @@ class MetricsServiceTest {
             }
 
             // Unique enabled user count grouped by identity provider realm.
-            if (sql.contains("AS IDP")) {
+            if (sql.contains("AS \"IDP\"")) {
                 return List.of(row("IDP", "idir_aad"));
             }
 
             // Unique enabled user count grouped by application realm.
-            if (sql.contains("AS REALM")) {
+            if (sql.contains("AS \"REALM\"")) {
                 return List.of(row("REALM", "moh_citizen"));
             }
 
