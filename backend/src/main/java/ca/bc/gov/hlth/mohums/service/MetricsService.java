@@ -95,22 +95,20 @@ public class MetricsService {
     private List<Map<String, Object>> queryActiveUserCount() {
         String sql = """
                 SELECT
-                    ee.realm_id AS realm,
-                    ee.client_id AS client,
-                    COUNT(DISTINCT ee.user_id) AS active_user_count,
-                    c.description AS description
+                    ee.realm_id AS "REALM",
+                    ee.client_id AS "CLIENT",
+                    COUNT(DISTINCT ee.user_id) AS "ACTIVE_USER_COUNT",
+                    c.description AS "DESCRIPTION"
                 FROM keycloak.event_entity ee
                 JOIN keycloak.user_entity ue
                   ON ue.id = ee.user_id
-                 AND ue.enabled = 1
+                 AND ue.enabled = true
                  AND ue.service_account_client_link IS NULL
                 JOIN keycloak.client c
                   ON c.client_id = ee.client_id
                  AND c.realm_id = ee.realm_id
                 WHERE ee.type = 'LOGIN'
-                  AND ee.event_time > (
-                      SYSDATE - 365 - DATE '1970-01-01'
-                  ) * 24 * 60 * 60 * 1000
+                  AND ee.event_time > EXTRACT(EPOCH FROM (CURRENT_DATE - INTERVAL '365 days')) * 1000
                   AND NOT (
                          c.client_id IN (
                              'account',
@@ -134,34 +132,32 @@ public class MetricsService {
 
     private List<Map<String, Object>> queryTotalActiveUserCountYear() {
         String sql
-                = "SELECT EVENT_DATE, COUNT(1) AS ACTIVE_USER_COUNT"
+                = "SELECT \"EVENT_DATE\", COUNT(1) AS \"ACTIVE_USER_COUNT\""
                 + "  FROM ("
-                + "    SELECT TRUNC(FROM_TZ(CAST(to_date('19700101', 'YYYYMMDD') + NUMTODSINTERVAL(event_time/1000, 'SECOND') AS timestamp), 'UTC') AT TIME ZONE 'America/Vancouver') AS EVENT_DATE"
+                + "    SELECT DATE(to_timestamp(event_time / 1000.0) AT TIME ZONE 'America/Vancouver') AS \"EVENT_DATE\""
                 + "    FROM keycloak.event_entity"
                 + "    WHERE type = 'LOGIN'"
-                + "  )"
-                + " WHERE EVENT_DATE > ADD_MONTHS(CURRENT_DATE, -12)"
-                + " GROUP BY EVENT_DATE"
-                + " ORDER BY EVENT_DATE DESC";
+                + "  ) sub"
+                + " WHERE \"EVENT_DATE\" > CURRENT_DATE - INTERVAL '12 months'"
+                + " GROUP BY \"EVENT_DATE\""
+                + " ORDER BY \"EVENT_DATE\" DESC";
 
         return cacheRows(jdbcTemplate.queryForList(sql));
     }
 
     private Object queryTotalNumberOfUsers() {
         String sql = """
-                SELECT COUNT(DISTINCT ee.user_id) AS TOTAL_USER_COUNT
+                SELECT COUNT(DISTINCT ee.user_id) AS "TOTAL_USER_COUNT"
                 FROM keycloak.event_entity ee
                 JOIN keycloak.user_entity ue
                   ON ue.id = ee.user_id
-                 AND ue.enabled = 1
+                 AND ue.enabled = true
                  AND ue.service_account_client_link IS NULL
                 JOIN keycloak.client c
                   ON c.client_id = ee.client_id
                  AND c.realm_id = ee.realm_id
                 WHERE ee.type = 'LOGIN'
-                  AND ee.event_time > (
-                      SYSDATE - 365 - DATE '1970-01-01'
-                  ) * 24 * 60 * 60 * 1000
+                  AND ee.event_time > EXTRACT(EPOCH FROM (CURRENT_DATE - INTERVAL '365 days')) * 1000
                   AND NOT (
                          c.client_id IN (
                              'account',
@@ -178,12 +174,12 @@ public class MetricsService {
 
     private List<Map<String, Object>> queryUniqueUserCountByIDP() {
         String sql = """
-                SELECT r.name AS IDP,
-                       COUNT(DISTINCT ue.id) AS UNIQUE_USER_COUNT
+                SELECT r.name AS "IDP",
+                       COUNT(DISTINCT ue.id) AS "UNIQUE_USER_COUNT"
                 FROM keycloak.user_entity ue
                 JOIN keycloak.realm r
                     ON ue.realm_id = r.id
-                WHERE ue.enabled = 1
+                WHERE ue.enabled = true
                   AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) NOT IN (
                       'lra',
@@ -206,12 +202,12 @@ public class MetricsService {
 
     private List<Map<String, Object>> queryUniqueUserCountByRealm() {
         String sql = """
-                SELECT r.name AS REALM,
-                       COUNT(DISTINCT ue.id) AS UNIQUE_USER_COUNT
+                SELECT r.name AS "REALM",
+                       COUNT(DISTINCT ue.id) AS "UNIQUE_USER_COUNT"
                 FROM keycloak.user_entity ue
                 JOIN keycloak.realm r
                     ON ue.realm_id = r.id
-                WHERE ue.enabled = 1
+                WHERE ue.enabled = true
                   AND ue.service_account_client_link IS NULL
                   AND LOWER(r.name) IN (
                       'moh_applications',

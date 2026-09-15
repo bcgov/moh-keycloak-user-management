@@ -37,7 +37,7 @@ spring:
     url: ${keycloak_db_url}
     username: ${keycloak_db_username}
     password: ${keycloak_db_password}
-    driver-class-name: oracle.jdbc.OracleDriver
+    driver-class-name: org.postgresql.Driver
   security:
     oauth2:
       resourceserver:
@@ -60,9 +60,11 @@ spring:
               - openid
         provider:
           keycloak-moh:
+            # noinspection SpringBootApplicationYaml
             authorization-url: ${keycloak-moh.base-oauth-url}/protocol/openid-connect/auth
             token-uri: ${keycloak-moh.base-oauth-url}/protocol/openid-connect/token
           keycloak-master:
+            # noinspection SpringBootApplicationYaml
             authorization-url: ${keycloak-master.base-oauth-url}/protocol/openid-connect/auth
             token-uri: ${keycloak-master.base-oauth-url}/protocol/openid-connect/token
 jasypt:
