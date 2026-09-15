@@ -49,7 +49,7 @@ public class BulkRemovalIntegrationTests {
 
     private String jwt;
 
-    private static Map<String, String> testUsers = new HashMap<>();
+    private static final Map<String, String> testUsers = new HashMap<>();
 
     @BeforeAll
     public void getJWT() throws InterruptedException, ParseException, IOException {
@@ -83,13 +83,17 @@ public class BulkRemovalIntegrationTests {
 
     }
 
+    // "username" does an infix substring match (e.g. "bulk-removal-test-user-1" also matches
+    // "...-10"), so a quoted value is passed via "search" instead, which UserSpecifications
+    // treats as an exact match on username/email/firstName/lastName.
     private List<Object> getUser(String username){
-        final List<Object> usersResponse = webTestClient
+
+        return webTestClient
                 .get()
                 .uri(
                         uriBuilder -> uriBuilder
                                 .path("/users")
-                                .queryParam("username", username)
+                                .queryParam("search", "\"" + username + "\"")
                                 .build()
                 )
                 .header("Authorization", "Bearer " + jwt)
@@ -97,8 +101,6 @@ public class BulkRemovalIntegrationTests {
                 .expectBodyList(Object.class)
                 .returnResult()
                 .getResponseBody();
-
-        return usersResponse;
     }
 
     private List<Object> createUserAndGetDetails(String username){
@@ -124,31 +126,31 @@ public class BulkRemovalIntegrationTests {
     private static final String UMS_INTEGRATION_TESTS_CLIENT_ID = "24447cb4-f3b1-455b-89d9-26c081025fb9";
     private static final String NON_EXISTING = "non-existing";
 
-    private LinkedHashMap<String, Object> createRoleRepresentation(String id, String name, String containerId) {
+    private LinkedHashMap<String, Object> createRoleRepresentation(String id, String name) {
         LinkedHashMap<String, Object> roleRepresentation = new LinkedHashMap<>();
         roleRepresentation.put("id", id);
         roleRepresentation.put("name", name);
         roleRepresentation.put("composite", false);
         roleRepresentation.put("clientRole", true);
-        roleRepresentation.put("containerId", containerId);
+        roleRepresentation.put("containerId", BulkRemovalIntegrationTests.UMS_INTEGRATION_TESTS_CLIENT_ID);
 
         return roleRepresentation;
     }
 
     private LinkedHashMap<String, Object> getBulkRemovalRole1() {
-        return createRoleRepresentation("ea6dcb83-f11b-4ff3-a725-c7a70477af8d", "bulk-removal-role-1", UMS_INTEGRATION_TESTS_CLIENT_ID);
+        return createRoleRepresentation("ea6dcb83-f11b-4ff3-a725-c7a70477af8d", "bulk-removal-role-1");
     }
 
     private LinkedHashMap<String, Object> getBulkRemovalRole2() {
-        return createRoleRepresentation("ab06dd06-280f-4b6b-8c99-39eb8639d292", "bulk-removal-role-2", UMS_INTEGRATION_TESTS_CLIENT_ID);
+        return createRoleRepresentation("ab06dd06-280f-4b6b-8c99-39eb8639d292", "bulk-removal-role-2");
     }
 
     private LinkedHashMap<String, Object> getNotAssignedRole() {
-        return createRoleRepresentation("e5625153-1cd0-48f7-b305-78339520740a", "TEST_ROLE", UMS_INTEGRATION_TESTS_CLIENT_ID);
+        return createRoleRepresentation("e5625153-1cd0-48f7-b305-78339520740a", "TEST_ROLE");
     }
 
     private LinkedHashMap<String, Object> getNonExistingRole() {
-        return createRoleRepresentation(NON_EXISTING, NON_EXISTING, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        return createRoleRepresentation(NON_EXISTING, NON_EXISTING);
     }
 
 
@@ -174,10 +176,10 @@ public class BulkRemovalIntegrationTests {
                 .exchange();
     }
 
-    private List<Object> bulkRemove(BulkRemovalRequest bulkRemovalRequest, String clientId) {
+    private List<Object> bulkRemove(BulkRemovalRequest bulkRemovalRequest) {
         return webTestClient
                 .method(HttpMethod.DELETE)
-                .uri("/bulk-removal/" + clientId)
+                .uri("/bulk-removal/" + BulkRemovalIntegrationTests.UMS_INTEGRATION_TESTS_CLIENT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(bulkRemovalRequest)
                 .header("Authorization", "Bearer " + jwt)
@@ -221,7 +223,7 @@ public class BulkRemovalIntegrationTests {
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(1, response.size());
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
@@ -238,7 +240,7 @@ public class BulkRemovalIntegrationTests {
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(1, response.size());
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
@@ -253,7 +255,7 @@ public class BulkRemovalIntegrationTests {
     public void bulkRemoveOneRoleOneUserFailureUserDoesNotExist() {
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(NON_EXISTING, List.of(getBulkRemovalRole1())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(1, response.size());
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
@@ -265,7 +267,7 @@ public class BulkRemovalIntegrationTests {
     public void bulkRemoveOneRoleOneUserFailureRoleDoesNotExist() {
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getNonExistingRole())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(1, response.size());
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
@@ -279,7 +281,7 @@ public class BulkRemovalIntegrationTests {
         addTestRoles(testUsers.get("bulk-removal-test-user-1"));
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getNonExistingRole())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(1, response.size());
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
@@ -294,7 +296,7 @@ public class BulkRemovalIntegrationTests {
     public void bulkRemoveOneRoleOneUserSuccessRoleNotAssigned() {
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getNotAssignedRole())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(1, response.size());
         LinkedHashMap<String, Object> responseItem = (LinkedHashMap<String, Object>) response.get(0);
@@ -311,7 +313,7 @@ public class BulkRemovalIntegrationTests {
                 Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1()),
                         testUsers.get("bulk-removal-test-user-2"), List.of(getBulkRemovalRole1())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(2, response.size());
         assertTrue(response.stream()
@@ -332,7 +334,7 @@ public class BulkRemovalIntegrationTests {
                 Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2()),
                         testUsers.get("bulk-removal-test-user-2"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(2, response.size());
         assertTrue(response.stream()
@@ -352,7 +354,7 @@ public class BulkRemovalIntegrationTests {
                 Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1()),
                         NON_EXISTING, List.of(getBulkRemovalRole1())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(2, response.size());
         assertTrue(response.stream()
@@ -375,7 +377,7 @@ public class BulkRemovalIntegrationTests {
                 Map.of(testUsers.get("bulk-removal-test-user-1"), List.of(getBulkRemovalRole1(), getNonExistingRole()),
                         testUsers.get("bulk-removal-test-user-2"), List.of(getBulkRemovalRole1(), getBulkRemovalRole2())));
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(2, response.size());
         assertTrue(response.stream()
@@ -400,16 +402,14 @@ public class BulkRemovalIntegrationTests {
 
         BulkRemovalRequest bulkRemovalRequest = new BulkRemovalRequest(bulkRemovalRequestBody);
 
-        List<Object> response = bulkRemove(bulkRemovalRequest, UMS_INTEGRATION_TESTS_CLIENT_ID);
+        List<Object> response = bulkRemove(bulkRemovalRequest);
 
         assertEquals(10, response.size());
         assertTrue(response.stream()
                 .map(responseItem -> (LinkedHashMap<String, Object>) responseItem)
                 .allMatch(responseItem -> responseItem.get("statusCode").equals("NO_CONTENT")));
 
-        testUsers.forEach((username, id) -> {
-            assertEquals(0, getAssignedUserClientRoleMapping(id).size());
-        });
+        testUsers.forEach((username, id) -> assertEquals(0, getAssignedUserClientRoleMapping(id).size()));
     }
 
 }
